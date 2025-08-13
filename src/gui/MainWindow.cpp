@@ -4,6 +4,7 @@
 #include "PlaybackWidget.hpp"
 #include "ConfigurationWidget.hpp"
 #include "../core/QtConfiguration.hpp"
+#include "../core/IEventStorage.hpp"
 #include "../storage/EventStorageFactory.hpp"
 #include <QApplication>
 #include <QMessageBox>
@@ -14,6 +15,7 @@
 #include <QTimer>
 #include <QFileInfo>
 #include <spdlog/spdlog.h>
+#include <filesystem>
 
 namespace MouseRecorder::GUI
 {
@@ -456,12 +458,15 @@ void MainWindow::onExportEvents()
         return;
     }
 
+    QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(
       this,
       "Export Events",
       QString(),
-      "JSON Files (*.json);;XML Files (*.xml);;Binary Files (*.bin);;All Files "
-      "(*)"
+      QString::fromStdString(
+        Storage::EventStorageFactory::getFileDialogFilter()
+      ),
+      &selectedFilter
     );
 
     if (fileName.isEmpty())
@@ -469,16 +474,41 @@ void MainWindow::onExportEvents()
 
     try
     {
-        // Determine format from file extension
-        auto storage = Storage::EventStorageFactory::createStorageFromFilename(
-          fileName.toStdString()
-        );
+        // Determine format from selected filter or file extension
+        std::unique_ptr<Core::IEventStorage> storage;
+
+        // First try to determine format from selected filter
+        if (selectedFilter.contains("JSON"))
+        {
+            storage = Storage::EventStorageFactory::createStorage(
+              Core::StorageFormat::Json
+            );
+        }
+        else if (selectedFilter.contains("XML"))
+        {
+            storage = Storage::EventStorageFactory::createStorage(
+              Core::StorageFormat::Xml
+            );
+        }
+        else if (selectedFilter.contains("Binary"))
+        {
+            storage = Storage::EventStorageFactory::createStorage(
+              Core::StorageFormat::Binary
+            );
+        }
+        else
+        {
+            // Fallback to file extension-based detection
+            storage = Storage::EventStorageFactory::createStorageFromFilename(
+              fileName.toStdString()
+            );
+        }
         if (!storage)
         {
             QMessageBox::critical(
               this,
               "Export Error",
-              "Unsupported file format. Please use .json, .xml, or .bin "
+              "Unsupported file format. Please use .json, .xml, or .mre "
               "extension."
             );
             return;
@@ -495,21 +525,27 @@ void MainWindow::onExportEvents()
                     // Create a copy of the event for export
                     // This is a simplification - in practice you might want to
                     // implement a proper clone method for Event
-                    eventsToExport.push_back(
+                    eventsToExport.emplace_back(
                       std::make_unique<Core::Event>(*event)
                     );
                 }
             }
         }
 
-        if (storage->saveEvents(eventsToExport, fileName.toStdString()))
+        std::string file_with_suffix(fileName.toStdString());
+        if (std::filesystem::path(fileName.toStdString()).extension() !=
+            storage->getFileExtension())
+        {
+            file_with_suffix += storage->getFileExtension();
+        }
+        if (storage->saveEvents(eventsToExport, file_with_suffix))
         {
             QMessageBox::information(
               this,
               "Export Complete",
               QString("Successfully exported %1 events to %2")
                 .arg(eventsToExport.size())
-                .arg(QFileInfo(fileName).fileName())
+                .arg(QFileInfo(file_with_suffix.c_str()).fileName())
             );
         }
         else

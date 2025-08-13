@@ -48,3 +48,8 @@ Testing*/
 .cursor/
 .cursorignore
 *.ms
+
+*.json
+*.xml
+*.bin
+*.mre

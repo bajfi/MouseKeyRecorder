@@ -539,7 +539,8 @@ void XmlEventStorage::metadataToXml(
       metadata.screenResolution.c_str();
 }
 
-Core::StorageMetadata XmlEventStorage::xmlToMetadata(const pugi::xml_node& node
+Core::StorageMetadata XmlEventStorage::xmlToMetadata(
+  const pugi::xml_node& node
 ) const
 {
     Core::StorageMetadata metadata;

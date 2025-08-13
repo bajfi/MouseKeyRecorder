@@ -10,6 +10,8 @@ set(TEST_SOURCES
     platform/test_LinuxEventCapture.cpp
     platform/test_LinuxEventReplay.cpp
     storage/test_EventStorage.cpp
+    storage/test_EventStorageFormats.cpp
+    gui/test_ExportFunctionality.cpp
 )
 
 # Create test executable
@@ -23,6 +25,7 @@ add_executable(TestMainWindow gui/test_MainWindow.cpp)
 # Link libraries
 target_link_libraries(MouseRecorderTests
     MouseRecorderCore
+    MouseRecorderGUI
     Qt5::Test
     Qt5::Widgets
 )
