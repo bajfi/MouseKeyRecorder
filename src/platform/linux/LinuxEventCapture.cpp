@@ -20,11 +20,7 @@ LinuxEventCapture::~LinuxEventCapture()
     // Avoid logging during destruction if spdlog might be shut down
     try
     {
-        // Check if logging is still available before attempting to log
-        if (!Application::MouseRecorderApp::isLoggingShutdown())
-        {
-            spdlog::debug("LinuxEventCapture: Destructor cleanup");
-        }
+        spdlog::debug("LinuxEventCapture: Destructor cleanup");
 
         // Stop recording without logging
         if (m_recording.load())
@@ -93,10 +89,7 @@ bool LinuxEventCapture::startRecording(EventCallback callback)
 
 void LinuxEventCapture::stopRecording()
 {
-    if (!Application::MouseRecorderApp::isLoggingShutdown())
-    {
-        spdlog::info("LinuxEventCapture: Stopping recording");
-    }
+    spdlog::info("LinuxEventCapture: Stopping recording");
 
     if (!m_recording.load())
     {
@@ -114,10 +107,7 @@ void LinuxEventCapture::stopRecording()
 
     m_eventCallback = nullptr;
 
-    if (!Application::MouseRecorderApp::isLoggingShutdown())
-    {
-        spdlog::info("LinuxEventCapture: Recording stopped");
-    }
+    spdlog::info("LinuxEventCapture: Recording stopped");
 }
 
 bool LinuxEventCapture::isRecording() const noexcept
@@ -204,10 +194,7 @@ bool LinuxEventCapture::initializeX11()
 
 void LinuxEventCapture::cleanupX11()
 {
-    if (!Application::MouseRecorderApp::isLoggingShutdown())
-    {
-        spdlog::debug("LinuxEventCapture: Cleaning up X11 resources");
-    }
+    spdlog::debug("LinuxEventCapture: Cleaning up X11 resources");
 
     if (m_display)
     {

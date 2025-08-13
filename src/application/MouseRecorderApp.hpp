@@ -101,14 +101,6 @@ class MouseRecorderApp
      */
     std::string getLastError() const;
 
-    /**
-     * @brief Check if logging has been shut down
-     * @return true if logging is shut down
-     */
-    static bool isLoggingShutdown();
-
-  private:
-
   private:
     /**
      * @brief Setup platform-specific components
@@ -136,7 +128,6 @@ class MouseRecorderApp
 
     bool m_initialized{false};
     std::atomic<bool> m_shuttingDown{false};
-    static std::atomic<bool> s_loggingShutdown;
     std::string m_lastError;
     std::string m_configFile;
 };

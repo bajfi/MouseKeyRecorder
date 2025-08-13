@@ -27,10 +27,7 @@ QtConfiguration::~QtConfiguration()
     // Safely destroy QSettings before Qt might be shut down
     try
     {
-        if (!Application::MouseRecorderApp::isLoggingShutdown())
-        {
-            spdlog::debug("QtConfiguration: Destructor");
-        }
+        spdlog::debug("QtConfiguration: Destructor");
 
         // Sync and reset settings before destruction
         if (m_settings)

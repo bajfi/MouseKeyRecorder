@@ -127,10 +127,7 @@ void LinuxEventReplay::resumePlayback()
 
 void LinuxEventReplay::stopPlayback()
 {
-    if (!Application::MouseRecorderApp::isLoggingShutdown())
-    {
-        spdlog::info("LinuxEventReplay: Stopping playback");
-    }
+    spdlog::info("LinuxEventReplay: Stopping playback");
 
     if (m_state.load() == Core::PlaybackState::Stopped)
     {
@@ -150,10 +147,7 @@ void LinuxEventReplay::stopPlayback()
     setState(Core::PlaybackState::Stopped);
     m_playbackCallback = nullptr;
 
-    if (!Application::MouseRecorderApp::isLoggingShutdown())
-    {
-        spdlog::info("LinuxEventReplay: Playback stopped");
-    }
+    spdlog::info("LinuxEventReplay: Playback stopped");
 }
 
 Core::PlaybackState LinuxEventReplay::getState() const noexcept

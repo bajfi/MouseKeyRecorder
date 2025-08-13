@@ -19,9 +19,6 @@
 namespace MouseRecorder::Application
 {
 
-// Define the static member
-std::atomic<bool> MouseRecorderApp::s_loggingShutdown{false};
-
 MouseRecorderApp::MouseRecorderApp()
 {
     spdlog::debug("MouseRecorderApp: Constructor");
@@ -318,17 +315,11 @@ bool MouseRecorderApp::initializeLogging(Core::IConfiguration& config)
 
 void MouseRecorderApp::shutdownLogging()
 {
-    // Use the static member instead of local static
-    if (s_loggingShutdown.exchange(true))
-    {
-        return; // Already shut down
-    }
-
     try
     {
         spdlog::info("Skipping logging shutdown to avoid test issues");
-        // Don't call spdlog::shutdown() in tests as it can cause segfaults
-        // when platform components try to log during their destruction
+        // Don't call spdlog::shutdown() in individual app instances
+        // The test framework will handle global shutdown properly
         return;
     }
     catch (const std::exception& e)
@@ -341,11 +332,6 @@ void MouseRecorderApp::shutdownLogging()
 std::string MouseRecorderApp::getLastError() const
 {
     return m_lastError;
-}
-
-bool MouseRecorderApp::isLoggingShutdown()
-{
-    return s_loggingShutdown.load();
 }
 
 bool MouseRecorderApp::setupPlatformComponents()
