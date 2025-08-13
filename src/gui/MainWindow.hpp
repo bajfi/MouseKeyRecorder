@@ -60,6 +60,7 @@ class MainWindow : public QMainWindow
     void onStartPlayback();
     void onPausePlayback();
     void onStopPlayback();
+    void onExportEvents();
 
     // Widget signal handlers
     void onRecordingStarted();

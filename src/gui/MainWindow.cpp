@@ -4,6 +4,7 @@
 #include "PlaybackWidget.hpp"
 #include "ConfigurationWidget.hpp"
 #include "../core/QtConfiguration.hpp"
+#include "../storage/EventStorageFactory.hpp"
 #include <QApplication>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -11,6 +12,7 @@
 #include <QStatusBar>
 #include <QMetaObject>
 #include <QTimer>
+#include <QFileInfo>
 #include <spdlog/spdlog.h>
 
 namespace MouseRecorder::GUI
@@ -128,6 +130,12 @@ void MainWindow::setupWidgets()
       &RecordingWidget::recordingStopped,
       this,
       &MainWindow::onStopRecording
+    );
+    connect(
+      m_recordingWidget,
+      &RecordingWidget::exportEventsRequested,
+      this,
+      &MainWindow::onExportEvents
     );
 
     // Connect playback widget signals
@@ -356,6 +364,19 @@ void MainWindow::onStartRecording()
     {
         {
             std::lock_guard<std::mutex> lock(m_eventsMutex);
+            // Add event to the UI display (before moving to storage)
+            if (m_recordingWidget && event)
+            {
+                QMetaObject::invokeMethod(
+                  m_recordingWidget,
+                  [this, rawEvent = event.get()]()
+                  {
+                      m_recordingWidget->addEvent(rawEvent);
+                  },
+                  Qt::QueuedConnection
+                );
+            }
+
             m_recordedEvents.push_back(std::move(event));
         }
 
@@ -373,6 +394,11 @@ void MainWindow::onStartRecording()
     if (m_app.getEventRecorder().startRecording(eventCallback))
     {
         m_recordedEvents.clear();
+        // Clear the recording widget display
+        if (m_recordingWidget)
+        {
+            m_recordingWidget->clearEvents();
+        }
         ui->statusLabel->setText("Recording started");
         updateUI();
 
@@ -414,6 +440,94 @@ void MainWindow::onStopRecording()
           this,
           "Recording Error",
           QString("Failed to stop recording: %1").arg(e.what())
+        );
+    }
+}
+
+void MainWindow::onExportEvents()
+{
+    if (m_recordedEvents.empty())
+    {
+        QMessageBox::information(
+          this,
+          "Export Events",
+          "No events to export. Please record some events first."
+        );
+        return;
+    }
+
+    QString fileName = QFileDialog::getSaveFileName(
+      this,
+      "Export Events",
+      QString(),
+      "JSON Files (*.json);;XML Files (*.xml);;Binary Files (*.bin);;All Files "
+      "(*)"
+    );
+
+    if (fileName.isEmpty())
+        return;
+
+    try
+    {
+        // Determine format from file extension
+        auto storage = Storage::EventStorageFactory::createStorageFromFilename(
+          fileName.toStdString()
+        );
+        if (!storage)
+        {
+            QMessageBox::critical(
+              this,
+              "Export Error",
+              "Unsupported file format. Please use .json, .xml, or .bin "
+              "extension."
+            );
+            return;
+        }
+
+        // Copy events for export (since saveEvents expects const reference)
+        std::vector<std::unique_ptr<Core::Event>> eventsToExport;
+        {
+            std::lock_guard<std::mutex> lock(m_eventsMutex);
+            for (const auto& event : m_recordedEvents)
+            {
+                if (event)
+                {
+                    // Create a copy of the event for export
+                    // This is a simplification - in practice you might want to
+                    // implement a proper clone method for Event
+                    eventsToExport.push_back(
+                      std::make_unique<Core::Event>(*event)
+                    );
+                }
+            }
+        }
+
+        if (storage->saveEvents(eventsToExport, fileName.toStdString()))
+        {
+            QMessageBox::information(
+              this,
+              "Export Complete",
+              QString("Successfully exported %1 events to %2")
+                .arg(eventsToExport.size())
+                .arg(QFileInfo(fileName).fileName())
+            );
+        }
+        else
+        {
+            QMessageBox::critical(
+              this,
+              "Export Error",
+              QString("Failed to export events: %1")
+                .arg(QString::fromStdString(storage->getLastError()))
+            );
+        }
+    }
+    catch (const std::exception& e)
+    {
+        QMessageBox::critical(
+          this,
+          "Export Error",
+          QString("Failed to export events: %1").arg(e.what())
         );
     }
 }

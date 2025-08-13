@@ -1,6 +1,9 @@
 #pragma once
 
 #include <QWidget>
+#include "../core/Event.hpp"
+#include <vector>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 class QTimer;
@@ -30,10 +33,16 @@ class RecordingWidget : public QWidget
     void updateStatistics(
       size_t totalEvents, size_t mouseEvents, size_t keyboardEvents
     );
+    void addEvent(const Core::Event* event);
+    void clearEvents();
+    void setEvents(const std::vector<std::unique_ptr<Core::Event>>& events);
 
   signals:
     void recordingStarted();
     void recordingStopped();
+    void exportEventsRequested(
+      const std::vector<std::unique_ptr<Core::Event>>& events
+    );
 
   private slots:
     void onStartRecording();
@@ -49,6 +58,9 @@ class RecordingWidget : public QWidget
     Ui::RecordingWidget* ui;
     QTimer* m_recordingTimer;
     int m_recordingSeconds{0};
+
+    // Store references to displayed events for export
+    std::vector<const Core::Event*> m_displayedEvents;
 };
 
 } // namespace MouseRecorder::GUI

@@ -225,7 +225,8 @@ TEST_F(EventStorageTest, InvalidFileLoad)
     // Try to load non-existent file
     std::vector<std::unique_ptr<Event>> events;
     StorageMetadata metadata;
-    EXPECT_FALSE(storage.loadEvents("non_existent_file.json", events, metadata)
+    EXPECT_FALSE(
+      storage.loadEvents("non_existent_file.json", events, metadata)
     );
     EXPECT_TRUE(events.empty());
     EXPECT_FALSE(storage.getLastError().empty());
@@ -271,4 +272,100 @@ TEST_F(EventStorageTest, FileFormatDetection)
     EXPECT_NE(jsonStorage1.get(), jsonStorage2.get());
     EXPECT_NE(jsonStorage1.get(), xmlStorage.get());
     EXPECT_NE(jsonStorage1.get(), binaryStorage.get());
+}
+
+TEST_F(EventStorageTest, RecordingWidgetExportIntegration)
+{
+    // This test simulates the export process from the RecordingWidget
+    // by creating, displaying, and exporting events using the same workflow
+
+    // Simulate events being recorded (as they would be passed to
+    // RecordingWidget)
+    std::vector<std::unique_ptr<Event>> recordedEvents;
+
+    // Create events similar to what would be captured during recording
+    recordedEvents.push_back(EventFactory::createMouseMoveEvent({10, 15}));
+    recordedEvents.push_back(
+      EventFactory::createMouseClickEvent({25, 35}, MouseButton::Left)
+    );
+    recordedEvents.push_back(EventFactory::createMouseMoveEvent({50, 75}));
+    recordedEvents.push_back(
+      EventFactory::createKeyPressEvent(32, "Space", KeyModifier::None)
+    );
+    recordedEvents.push_back(
+      EventFactory::createMouseClickEvent({100, 125}, MouseButton::Right)
+    );
+    recordedEvents.push_back(
+      EventFactory::createKeyReleaseEvent(32, "Space", KeyModifier::None)
+    );
+
+    ASSERT_EQ(recordedEvents.size(), 6);
+
+    // Test export to JSON (most common format)
+    std::string exportFile = "exported_recording.json";
+    auto storage = EventStorageFactory::createStorageFromFilename(exportFile);
+    ASSERT_NE(storage, nullptr);
+
+    // Create copies for export (simulating what MainWindow::onExportEvents
+    // does)
+    std::vector<std::unique_ptr<Event>> eventsToExport;
+    for (const auto& event : recordedEvents)
+    {
+        if (event)
+        {
+            eventsToExport.push_back(std::make_unique<Event>(*event));
+        }
+    }
+
+    // Test the export process
+    EXPECT_TRUE(storage->saveEvents(eventsToExport, exportFile));
+
+    // Verify the exported file exists and contains the correct data
+    EXPECT_TRUE(std::filesystem::exists(exportFile));
+
+    // Load and verify the exported events
+    std::vector<std::unique_ptr<Event>> loadedEvents;
+    StorageMetadata metadata;
+    EXPECT_TRUE(storage->loadEvents(exportFile, loadedEvents, metadata));
+
+    // Verify event count and types match
+    EXPECT_EQ(loadedEvents.size(), recordedEvents.size());
+
+    // Verify specific events to ensure data integrity
+    if (loadedEvents.size() >= 6)
+    {
+        // Check first mouse move
+        EXPECT_EQ(loadedEvents[0]->getType(), EventType::MouseMove);
+        auto mouseData0 = loadedEvents[0]->getMouseData();
+        ASSERT_NE(mouseData0, nullptr);
+        EXPECT_EQ(mouseData0->position.x, 10);
+        EXPECT_EQ(mouseData0->position.y, 15);
+
+        // Check first mouse click
+        EXPECT_EQ(loadedEvents[1]->getType(), EventType::MouseClick);
+        auto mouseData1 = loadedEvents[1]->getMouseData();
+        ASSERT_NE(mouseData1, nullptr);
+        EXPECT_EQ(mouseData1->position.x, 25);
+        EXPECT_EQ(mouseData1->position.y, 35);
+        EXPECT_EQ(mouseData1->button, MouseButton::Left);
+
+        // Check keyboard events
+        EXPECT_EQ(loadedEvents[3]->getType(), EventType::KeyPress);
+        auto keyData3 = loadedEvents[3]->getKeyboardData();
+        ASSERT_NE(keyData3, nullptr);
+        EXPECT_EQ(keyData3->keyCode, 32u);
+        EXPECT_EQ(keyData3->keyName, "Space");
+
+        EXPECT_EQ(loadedEvents[5]->getType(), EventType::KeyRelease);
+        auto keyData5 = loadedEvents[5]->getKeyboardData();
+        ASSERT_NE(keyData5, nullptr);
+        EXPECT_EQ(keyData5->keyCode, 32u);
+        EXPECT_EQ(keyData5->keyName, "Space");
+    }
+
+    // Clean up
+    if (std::filesystem::exists(exportFile))
+    {
+        std::filesystem::remove(exportFile);
+    }
 }

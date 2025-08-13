@@ -2,7 +2,9 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QSignalSpy>
+#include <QTableWidget>
 #include "gui/RecordingWidget.hpp"
+#include "core/Event.hpp"
 
 using namespace MouseRecorder::GUI;
 
@@ -22,6 +24,8 @@ class TestRecordingWidget : public QObject
     void testSignalEmission();
     void testButtonStates();
     void testStatisticsUpdate();
+    void testEventDisplay();
+    void testEventExport();
 
   private:
     QApplication* m_app{nullptr};
@@ -189,6 +193,65 @@ void TestRecordingWidget::testStatisticsUpdate()
     // Note: This would require access to the UI elements displaying statistics
     // For now, just verify the method can be called without crashing
     QVERIFY(true);
+}
+
+void TestRecordingWidget::testEventDisplay()
+{
+    using namespace MouseRecorder::Core;
+
+    // Create test events
+    auto mouseEvent =
+      EventFactory::createMouseClickEvent(Point(100, 200), MouseButton::Left);
+    auto keyEvent =
+      EventFactory::createKeyPressEvent(65, "A", KeyModifier::None);
+
+    // Get the events table widget
+    QTableWidget* eventsTable =
+      m_widget->findChild<QTableWidget*>("eventsTableWidget");
+    QVERIFY(eventsTable != nullptr);
+
+    // Initially, table should be empty
+    QCOMPARE(eventsTable->rowCount(), 0);
+
+    // Add mouse event
+    m_widget->addEvent(mouseEvent.get());
+    QCOMPARE(eventsTable->rowCount(), 1);
+
+    // Verify mouse event data
+    QVERIFY(eventsTable->item(0, 1)->text().contains("Mouse"));
+    QVERIFY(eventsTable->item(0, 2)->text().contains("Button: Left"));
+    QVERIFY(eventsTable->item(0, 2)->text().contains("X: 100"));
+    QVERIFY(eventsTable->item(0, 2)->text().contains("Y: 200"));
+
+    // Add keyboard event
+    m_widget->addEvent(keyEvent.get());
+    QCOMPARE(eventsTable->rowCount(), 2);
+
+    // Verify keyboard event data
+    QVERIFY(eventsTable->item(1, 1)->text().contains("Keyboard"));
+    QVERIFY(eventsTable->item(1, 2)->text().contains("Key: A"));
+    QVERIFY(eventsTable->item(1, 2)->text().contains("(65)"));
+
+    // Test clear events
+    m_widget->clearEvents();
+    QCOMPARE(eventsTable->rowCount(), 0);
+}
+
+void TestRecordingWidget::testEventExport()
+{
+    using namespace MouseRecorder::Core;
+
+    // Create a signal spy to monitor export signal
+    QSignalSpy exportSpy(m_widget, &RecordingWidget::exportEventsRequested);
+
+    // Find and click the export button
+    QPushButton* exportButton =
+      m_widget->findChild<QPushButton*>("exportEventsButton");
+    QVERIFY(exportButton != nullptr);
+
+    // Click export button should emit the signal
+    QTest::mouseClick(exportButton, Qt::LeftButton);
+    QCOMPARE(exportSpy.count(), 1);
 }
 
 QTEST_APPLESS_MAIN(TestRecordingWidget)
