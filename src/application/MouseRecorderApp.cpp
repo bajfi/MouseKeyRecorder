@@ -48,7 +48,14 @@ MouseRecorderApp::~MouseRecorderApp()
 
 bool MouseRecorderApp::initialize(const std::string& configFile)
 {
-    spdlog::info("MouseRecorderApp: Initializing application");
+    return initialize(configFile, false);
+}
+
+bool MouseRecorderApp::initialize(const std::string& configFile, bool headless)
+{
+    spdlog::info(
+      "MouseRecorderApp: Initializing application (headless: {})", headless
+    );
 
     if (m_initialized)
     {
@@ -71,8 +78,8 @@ bool MouseRecorderApp::initialize(const std::string& configFile)
         return false;
     }
 
-    // Setup platform-specific components
-    if (!setupPlatformComponents())
+    // Setup platform-specific components (skip in headless mode)
+    if (!headless && !setupPlatformComponents())
     {
         return false;
     }

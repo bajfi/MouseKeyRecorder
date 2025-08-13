@@ -32,6 +32,14 @@ class MouseRecorderApp
     bool initialize(const std::string& configFile = "");
 
     /**
+     * @brief Initialize the application with options
+     * @param configFile Configuration file path (optional)
+     * @param headless Skip platform components initialization (for testing)
+     * @return true if initialization successful
+     */
+    bool initialize(const std::string& configFile, bool headless);
+
+    /**
      * @brief Shutdown the application gracefully
      */
     void shutdown();
