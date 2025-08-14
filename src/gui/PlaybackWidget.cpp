@@ -1,14 +1,22 @@
 #include "PlaybackWidget.hpp"
 #include "ui_PlaybackWidget.h"
+#include "application/MouseRecorderApp.hpp"
+#include "storage/EventStorageFactory.hpp"
+#include "TestUtils.hpp"
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QTimer>
+#include <QMessageBox>
+#include <spdlog/spdlog.h>
 
 namespace MouseRecorder::GUI
 {
 
-PlaybackWidget::PlaybackWidget(QWidget* parent)
-  : QWidget(parent), ui(new Ui::PlaybackWidget)
+PlaybackWidget::PlaybackWidget(
+  Application::MouseRecorderApp& app, QWidget* parent
+)
+  : QWidget(parent), ui(new Ui::PlaybackWidget), m_app(app)
 {
     ui->setupUi(this);
     setupUI();
@@ -67,6 +75,15 @@ void PlaybackWidget::setupUI()
     QStringList headers = {"Index", "Time", "Type", "Details"};
     ui->eventsPreviewTableWidget->setHorizontalHeaderLabels(headers);
 
+    // Setup update timer for playback progress
+    m_updateTimer = new QTimer(this);
+    connect(
+      m_updateTimer,
+      &QTimer::timeout,
+      this,
+      &PlaybackWidget::updatePlaybackProgress
+    );
+
     updateUI();
     updateSpeed();
 }
@@ -97,36 +114,134 @@ void PlaybackWidget::onReloadFile()
 
 void PlaybackWidget::onPlay()
 {
-    // TODO: Start playback
-    ui->playButton->setEnabled(false);
-    ui->pauseButton->setEnabled(true);
-    ui->stopButton->setEnabled(true);
+    if (!m_fileLoaded || m_loadedEvents.empty())
+    {
+        showWarningMessage("No Events", "Please load a recording file first.");
+        return;
+    }
 
-    emit playbackStarted();
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+
+        // Move events to player (we'll need to reload if we want to play again)
+        if (!player.loadEvents(std::move(m_loadedEvents)))
+        {
+            showErrorMessage(
+              "Playback Error", QString::fromStdString(player.getLastError())
+            );
+            // Reload events since move failed
+            loadFile(m_currentFile);
+            return;
+        }
+
+        // Set up playback callback
+        auto callback =
+          [this](Core::PlaybackState state, size_t current, size_t total)
+        {
+            // This callback runs in the playback thread, so queue the call
+            QMetaObject::invokeMethod(
+              this,
+              [this, state, current, total]()
+              {
+                  onPlaybackProgress(state, current, total);
+              },
+              Qt::QueuedConnection
+            );
+        };
+
+        if (!player.startPlayback(callback))
+        {
+            showErrorMessage(
+              "Playback Error", QString::fromStdString(player.getLastError())
+            );
+            return;
+        }
+
+        ui->playButton->setEnabled(false);
+        ui->pauseButton->setEnabled(true);
+        ui->stopButton->setEnabled(true);
+
+        // Start update timer
+        m_updateTimer->start(100); // Update every 100ms
+
+        emit playbackStarted();
+        spdlog::info("PlaybackWidget: Playback started");
+    }
+    catch (const std::exception& e)
+    {
+        showErrorMessage(
+          "Error", QString("Failed to start playback: %1").arg(e.what())
+        );
+        spdlog::error("PlaybackWidget: Exception during play: {}", e.what());
+    }
 }
 
 void PlaybackWidget::onPause()
 {
-    // TODO: Pause playback
-    ui->playButton->setEnabled(true);
-    ui->pauseButton->setEnabled(false);
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        if (player.getState() == Core::PlaybackState::Playing)
+        {
+            player.pausePlayback();
+            ui->playButton->setEnabled(true);
+            ui->pauseButton->setEnabled(false);
+            spdlog::info("PlaybackWidget: Playback paused");
+        }
+    }
+    catch (const std::exception& e)
+    {
+        showErrorMessage(
+          "Error", QString("Failed to pause playback: %1").arg(e.what())
+        );
+        spdlog::error("PlaybackWidget: Exception during pause: {}", e.what());
+    }
 }
 
 void PlaybackWidget::onStop()
 {
-    // TODO: Stop playback
-    ui->playButton->setEnabled(true);
-    ui->pauseButton->setEnabled(false);
-    ui->stopButton->setEnabled(false);
-    ui->progressSlider->setValue(0);
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        player.stopPlayback();
 
-    emit playbackStopped();
+        ui->playButton->setEnabled(true);
+        ui->pauseButton->setEnabled(false);
+        ui->stopButton->setEnabled(false);
+        ui->progressSlider->setValue(0);
+
+        // Stop update timer
+        m_updateTimer->stop();
+
+        emit playbackStopped();
+        spdlog::info("PlaybackWidget: Playback stopped");
+    }
+    catch (const std::exception& e)
+    {
+        showErrorMessage(
+          "Error", QString("Failed to stop playback: %1").arg(e.what())
+        );
+        spdlog::error("PlaybackWidget: Exception during stop: {}", e.what());
+    }
 }
 
-void PlaybackWidget::onSpeedChanged(int /*value*/)
+void PlaybackWidget::onSpeedChanged(int value)
 {
     updateSpeed();
-    // TODO: Update actual playback speed
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        double speed = value / 10.0; // Convert to decimal
+        player.setPlaybackSpeed(speed);
+        spdlog::debug("PlaybackWidget: Speed changed to {}x", speed);
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error(
+          "PlaybackWidget: Exception during speed change: {}", e.what()
+        );
+    }
 }
 
 void PlaybackWidget::onResetSpeed()
@@ -137,8 +252,20 @@ void PlaybackWidget::onResetSpeed()
 
 void PlaybackWidget::onProgressChanged(int value)
 {
-    // TODO: Seek to position
-    Q_UNUSED(value)
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        size_t position = static_cast<size_t>(value);
+        if (position < player.getTotalEvents())
+        {
+            player.seekToPosition(position);
+            spdlog::debug("PlaybackWidget: Seeked to position {}", position);
+        }
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error("PlaybackWidget: Exception during seek: {}", e.what());
+    }
 }
 
 void PlaybackWidget::loadFile(const QString& fileName)
@@ -148,19 +275,163 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
     QFileInfo fileInfo(fileName);
 
-    // TODO: Actually load and parse the file
-    // For now, just update the UI with placeholder data
-    ui->fileFormatValue->setText(fileInfo.suffix().toUpper());
-    ui->totalEventsValue->setText("0");
-    ui->durationValue->setText("00:00:00");
-    ui->createdValue->setText(
-      fileInfo.birthTime().toString("yyyy-MM-dd hh:mm:ss")
-    );
+    try
+    {
+        // Load events using storage factory
+        auto storage = Storage::EventStorageFactory::createStorageFromFilename(
+          fileName.toStdString()
+        );
 
-    m_fileLoaded = true;
-    ui->reloadFileButton->setEnabled(true);
+        if (!storage)
+        {
+            if (!TestUtils::isTestEnvironment())
+            {
+                showErrorMessage("Error", "Unsupported file format");
+            }
+            return;
+        }
 
-    updateUI();
+        std::vector<std::unique_ptr<Core::Event>> events;
+        Core::StorageMetadata metadata;
+
+        if (!storage->loadEvents(fileName.toStdString(), events, metadata))
+        {
+            showErrorMessage(
+              "Error", QString::fromStdString(storage->getLastError())
+            );
+            return;
+        }
+
+        m_loadedEvents = std::move(events);
+
+        // Update UI with actual data
+        ui->fileFormatValue->setText(fileInfo.suffix().toUpper());
+        ui->totalEventsValue->setText(QString::number(m_loadedEvents.size()));
+
+        // Calculate duration
+        if (!m_loadedEvents.empty())
+        {
+            uint64_t startTime = m_loadedEvents.front()->getTimestampMs();
+            uint64_t endTime = m_loadedEvents.back()->getTimestampMs();
+            uint64_t durationMs = endTime - startTime;
+
+            int seconds = static_cast<int>(durationMs / 1000);
+            int minutes = seconds / 60;
+            int hours = minutes / 60;
+
+            ui->durationValue->setText(QString("%1:%2:%3")
+                                         .arg(hours, 2, 10, QChar('0'))
+                                         .arg(minutes % 60, 2, 10, QChar('0'))
+                                         .arg(seconds % 60, 2, 10, QChar('0')));
+
+            // Set progress slider range
+            ui->progressSlider->setRange(
+              0, static_cast<int>(m_loadedEvents.size() - 1)
+            );
+        }
+        else
+        {
+            ui->durationValue->setText("00:00:00");
+            ui->progressSlider->setRange(0, 0);
+        }
+
+        ui->createdValue->setText(
+          fileInfo.birthTime().toString("yyyy-MM-dd hh:mm:ss")
+        );
+
+        // Update events preview table
+        ui->eventsPreviewTableWidget->setRowCount(
+          std::min(
+            static_cast<int>(m_loadedEvents.size()), 100
+          ) // Show max 100 events
+        );
+
+        for (int i = 0; i < ui->eventsPreviewTableWidget->rowCount(); ++i)
+        {
+            const auto& event = m_loadedEvents[static_cast<size_t>(i)];
+            ui->eventsPreviewTableWidget->setItem(
+              i, 0, new QTableWidgetItem(QString::number(i))
+            );
+
+            // Format timestamp
+            uint64_t timestamp = event->getTimestampMs();
+            uint64_t relativeTime =
+              timestamp - m_loadedEvents.front()->getTimestampMs();
+            int seconds = static_cast<int>(relativeTime / 1000);
+            int milliseconds = static_cast<int>(relativeTime % 1000);
+
+            ui->eventsPreviewTableWidget->setItem(
+              i,
+              1,
+              new QTableWidgetItem(QString("%1.%2s").arg(seconds).arg(
+                milliseconds, 3, 10, QChar('0')
+              ))
+            );
+
+            // Event type
+            QString typeString;
+            switch (event->getType())
+            {
+            case Core::EventType::MouseMove:
+                typeString = "Mouse Move";
+                break;
+            case Core::EventType::MouseClick:
+                typeString = "Mouse Click";
+                break;
+            case Core::EventType::MouseDoubleClick:
+                typeString = "Mouse Double Click";
+                break;
+            case Core::EventType::MouseWheel:
+                typeString = "Mouse Wheel";
+                break;
+            case Core::EventType::KeyPress:
+                typeString = "Key Press";
+                break;
+            case Core::EventType::KeyRelease:
+                typeString = "Key Release";
+                break;
+            case Core::EventType::KeyCombination:
+                typeString = "Key Combination";
+                break;
+            }
+
+            ui->eventsPreviewTableWidget->setItem(
+              i, 2, new QTableWidgetItem(typeString)
+            );
+
+            // Event details (simplified)
+            QString details = QString::fromStdString(event->toString());
+            if (details.length() > 50)
+            {
+                details = details.left(47) + "...";
+            }
+            ui->eventsPreviewTableWidget->setItem(
+              i, 3, new QTableWidgetItem(details)
+            );
+        }
+
+        m_fileLoaded = true;
+        ui->reloadFileButton->setEnabled(true);
+
+        updateUI();
+        spdlog::info(
+          "PlaybackWidget: Loaded {} events from {}",
+          m_loadedEvents.size(),
+          fileName.toStdString()
+        );
+    }
+    catch (const std::exception& e)
+    {
+        showErrorMessage(
+          "Error", QString("Failed to load file: %1").arg(e.what())
+        );
+        spdlog::error(
+          "PlaybackWidget: Exception during file load: {}", e.what()
+        );
+        m_fileLoaded = false;
+        m_loadedEvents.clear();
+        updateUI();
+    }
 }
 
 void PlaybackWidget::updateUI()
@@ -174,6 +445,112 @@ void PlaybackWidget::updateSpeed()
 {
     double speed = ui->speedSlider->value() / 10.0; // Convert to decimal
     ui->speedValueLabel->setText(QString("%1x").arg(speed, 0, 'f', 1));
+}
+
+void PlaybackWidget::updatePlaybackProgress()
+{
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        auto state = player.getState();
+
+        if (state == Core::PlaybackState::Playing ||
+            state == Core::PlaybackState::Paused)
+        {
+            size_t current = player.getCurrentPosition();
+            size_t total = player.getTotalEvents();
+
+            if (total > 0)
+            {
+                // Update progress slider without triggering signal
+                ui->progressSlider->blockSignals(true);
+                ui->progressSlider->setValue(static_cast<int>(current));
+                ui->progressSlider->blockSignals(false);
+            }
+        }
+
+        // Update UI state if playback finished
+        if (state == Core::PlaybackState::Completed ||
+            state == Core::PlaybackState::Error)
+        {
+            ui->playButton->setEnabled(true);
+            ui->pauseButton->setEnabled(false);
+            ui->stopButton->setEnabled(false);
+            m_updateTimer->stop();
+
+            if (state == Core::PlaybackState::Completed)
+            {
+                ui->progressSlider->setValue(ui->progressSlider->maximum());
+                emit playbackStopped();
+                spdlog::info("PlaybackWidget: Playback completed");
+
+                // Reload events for potential replay
+                if (!m_currentFile.isEmpty())
+                {
+                    loadFile(m_currentFile);
+                }
+            }
+            else if (state == Core::PlaybackState::Error)
+            {
+                QString errorMsg =
+                  QString::fromStdString(player.getLastError());
+                showErrorMessage("Playback Error", errorMsg);
+                spdlog::error(
+                  "PlaybackWidget: Playback error: {}", errorMsg.toStdString()
+                );
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error(
+          "PlaybackWidget: Exception during progress update: {}", e.what()
+        );
+    }
+}
+
+void PlaybackWidget::onPlaybackProgress(
+  Core::PlaybackState state, size_t current, size_t total
+)
+{
+    // This is called from the playback thread via QueuedConnection
+    emit playbackStateChanged(state);
+
+    if (total > 0)
+    {
+        // Update progress slider
+        ui->progressSlider->blockSignals(true);
+        ui->progressSlider->setValue(static_cast<int>(current));
+        ui->progressSlider->blockSignals(false);
+    }
+}
+
+void PlaybackWidget::onEventPlayed(const Core::Event& event)
+{
+    // Optional: highlight current event in the table
+    Q_UNUSED(event);
+    // Implementation can be added to highlight the current event in the preview
+    // table
+}
+
+void PlaybackWidget::showErrorMessage(
+  const QString& title, const QString& message
+)
+{
+    if (!TestUtils::isTestEnvironment())
+    {
+        showErrorMessage(title, message);
+    }
+}
+
+void PlaybackWidget::showWarningMessage(
+  const QString& title, const QString& message
+)
+{
+    if (!TestUtils::isTestEnvironment())
+    {
+        QMessageBox::warning(this, title, message);
+    }
 }
 
 } // namespace MouseRecorder::GUI

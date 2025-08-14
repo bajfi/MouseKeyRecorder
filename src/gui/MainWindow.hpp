@@ -76,6 +76,11 @@ class MainWindow : public QMainWindow
     void updateWindowTitle();
     void updateRecordingStatistics();
 
+    // Helper methods to suppress message boxes in test environments
+    void showErrorMessage(const QString& title, const QString& message);
+    void showWarningMessage(const QString& title, const QString& message);
+    void showInfoMessage(const QString& title, const QString& message);
+
   private:
     Ui::MainWindow* ui;
     Application::MouseRecorderApp& m_app;

@@ -48,6 +48,7 @@ Testing*/
 .cursor/
 .cursorignore
 *.ms
+copilot*
 
 *.json
 *.xml

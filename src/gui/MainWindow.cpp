@@ -6,6 +6,7 @@
 #include "../core/QtConfiguration.hpp"
 #include "../core/IEventStorage.hpp"
 #include "../storage/EventStorageFactory.hpp"
+#include "TestUtils.hpp"
 #include <QApplication>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -112,7 +113,7 @@ void MainWindow::setupWidgets()
 {
     // Create and setup custom widgets
     m_recordingWidget = new RecordingWidget(this);
-    m_playbackWidget = new PlaybackWidget(this);
+    m_playbackWidget = new PlaybackWidget(m_app, this);
     m_configurationWidget = new ConfigurationWidget(this);
 
     // Replace the placeholder widgets in the tabs
@@ -808,6 +809,32 @@ void MainWindow::updateRecordingStatistics()
     m_recordingWidget->updateStatistics(
       totalEvents, mouseEvents, keyboardEvents
     );
+}
+
+void MainWindow::showErrorMessage(const QString& title, const QString& message)
+{
+    if (!TestUtils::isTestEnvironment())
+    {
+        QMessageBox::critical(this, title, message);
+    }
+}
+
+void MainWindow::showWarningMessage(
+  const QString& title, const QString& message
+)
+{
+    if (!TestUtils::isTestEnvironment())
+    {
+        QMessageBox::warning(this, title, message);
+    }
+}
+
+void MainWindow::showInfoMessage(const QString& title, const QString& message)
+{
+    if (!TestUtils::isTestEnvironment())
+    {
+        QMessageBox::information(this, title, message);
+    }
 }
 
 } // namespace MouseRecorder::GUI

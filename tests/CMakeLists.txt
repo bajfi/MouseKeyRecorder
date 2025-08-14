@@ -12,6 +12,9 @@ set(TEST_SOURCES
     storage/test_EventStorage.cpp
     storage/test_EventStorageFormats.cpp
     gui/test_ExportFunctionality.cpp
+    gui/test_PlaybackWidget.cpp
+    integration/test_PlaybackIntegration.cpp
+    integration/test_E2EPlayback.cpp
 )
 
 # Create test executable
