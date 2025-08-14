@@ -25,20 +25,14 @@ QtConfiguration::QtConfiguration()
 QtConfiguration::~QtConfiguration()
 {
     // Safely destroy QSettings before Qt might be shut down
-    try
-    {
-        spdlog::debug("QtConfiguration: Destructor");
 
-        // Sync and reset settings before destruction
-        if (m_settings)
-        {
-            m_settings->sync();
-            m_settings.reset();
-        }
-    }
-    catch (...)
+    spdlog::debug("QtConfiguration: Destructor");
+
+    // Sync and reset settings before destruction
+    if (m_settings)
     {
-        // Silently handle any exceptions during destruction
+        m_settings->sync();
+        m_settings.reset();
     }
 }
 
@@ -159,6 +153,9 @@ void QtConfiguration::loadDefaults()
     m_settings->setValue(
       toQString(ConfigKeys::LOG_FILE_PATH), toQString("mouserecorder.log")
     );
+
+    // UI settings
+    m_settings->setValue(toQString(ConfigKeys::AUTO_MINIMIZE_ON_RECORD), true);
 
     m_settings->sync();
 }

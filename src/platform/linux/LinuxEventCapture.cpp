@@ -18,31 +18,25 @@ LinuxEventCapture::LinuxEventCapture()
 LinuxEventCapture::~LinuxEventCapture()
 {
     // Avoid logging during destruction if spdlog might be shut down
-    try
+
+    spdlog::debug("LinuxEventCapture: Destructor cleanup");
+
+    // Stop recording without logging
+    if (m_recording.load())
     {
-        spdlog::debug("LinuxEventCapture: Destructor cleanup");
+        m_shouldStop.store(true);
+        m_recording.store(false);
 
-        // Stop recording without logging
-        if (m_recording.load())
+        if (m_eventThread && m_eventThread->joinable())
         {
-            m_shouldStop.store(true);
-            m_recording.store(false);
-
-            if (m_eventThread && m_eventThread->joinable())
-            {
-                m_eventThread->join();
-                m_eventThread.reset();
-            }
-
-            m_eventCallback = nullptr;
+            m_eventThread->join();
+            m_eventThread.reset();
         }
 
-        cleanupX11();
+        m_eventCallback = nullptr;
     }
-    catch (...)
-    {
-        // Silently handle any exceptions during destruction
-    }
+
+    cleanupX11();
 }
 
 bool LinuxEventCapture::startRecording(EventCallback callback)

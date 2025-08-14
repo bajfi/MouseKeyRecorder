@@ -144,6 +144,7 @@ void Configuration::loadDefaults()
     m_values[ConfigKeys::WINDOW_MAXIMIZED] = false;
     m_values[ConfigKeys::THEME] = std::string("system");
     m_values[ConfigKeys::LANGUAGE] = std::string("en");
+    m_values[ConfigKeys::AUTO_MINIMIZE_ON_RECORD] = true;
 
     // Keyboard shortcuts
     m_values[ConfigKeys::SHORTCUT_START_RECORDING] = std::string("Ctrl+R");
@@ -192,8 +193,9 @@ void Configuration::setDouble(const std::string& key, double value)
     setValue(key, value);
 }
 
-double Configuration::getDouble(const std::string& key, double defaultValue)
-  const
+double Configuration::getDouble(
+  const std::string& key, double defaultValue
+) const
 {
     return getValue(key, defaultValue);
 }

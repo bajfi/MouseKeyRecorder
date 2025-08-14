@@ -24,27 +24,20 @@ LinuxEventReplay::LinuxEventReplay()
 
 LinuxEventReplay::~LinuxEventReplay()
 {
-    try
+    // Stop playback without logging if spdlog is shut down
+    if (m_state.load() != Core::PlaybackState::Stopped)
     {
-        // Stop playback without logging if spdlog is shut down
-        if (m_state.load() != Core::PlaybackState::Stopped)
+        m_shouldStop.store(true);
+        m_state.store(Core::PlaybackState::Stopped);
+
+        if (m_playbackThread && m_playbackThread->joinable())
         {
-            m_shouldStop.store(true);
-            m_state.store(Core::PlaybackState::Stopped);
-
-            if (m_playbackThread && m_playbackThread->joinable())
-            {
-                m_playbackThread->join();
-                m_playbackThread.reset();
-            }
+            m_playbackThread->join();
+            m_playbackThread.reset();
         }
+    }
 
-        cleanupX11();
-    }
-    catch (...)
-    {
-        // Silently handle any exceptions during destruction
-    }
+    cleanupX11();
 }
 
 bool LinuxEventReplay::loadEvents(

@@ -33,14 +33,7 @@ MouseRecorderApp::~MouseRecorderApp()
         spdlog::debug("MouseRecorderApp: Destructor");
     }
 
-    try
-    {
-        shutdown();
-    }
-    catch (...)
-    {
-        // Swallow any exceptions during destruction
-    }
+    shutdown();
 }
 
 bool MouseRecorderApp::initialize(const std::string& configFile)
@@ -75,8 +68,8 @@ bool MouseRecorderApp::initialize(const std::string& configFile, bool headless)
         return false;
     }
 
-    // Setup platform-specific components (skip in headless mode)
-    if (!headless && !setupPlatformComponents())
+    // Setup platform-specific components
+    if (!setupPlatformComponents())
     {
         return false;
     }
@@ -163,19 +156,7 @@ void MouseRecorderApp::shutdown()
     }
     catch (const std::exception& e)
     {
-        // Try to log the error, but don't throw
-        try
-        {
-            spdlog::error("Exception during shutdown: {}", e.what());
-        }
-        catch (...)
-        {
-            // Can't even log - silently fail
-        }
-    }
-    catch (...)
-    {
-        // Unknown exception during shutdown - silently fail
+        spdlog::error("Exception during shutdown: {}", e.what());
     }
 
     // Only shutdown logging once globally, and only after all other cleanup
@@ -315,18 +296,10 @@ bool MouseRecorderApp::initializeLogging(Core::IConfiguration& config)
 
 void MouseRecorderApp::shutdownLogging()
 {
-    try
-    {
-        spdlog::info("Skipping logging shutdown to avoid test issues");
-        // Don't call spdlog::shutdown() in individual app instances
-        // The test framework will handle global shutdown properly
-        return;
-    }
-    catch (const std::exception& e)
-    {
-        // Can't log this error since we're shutting down logging
-        // Fail silently
-    }
+    spdlog::info("Skipping logging shutdown to avoid test issues");
+    // Don't call spdlog::shutdown() in individual app instances
+    // The test framework will handle global shutdown properly
+    return;
 }
 
 std::string MouseRecorderApp::getLastError() const

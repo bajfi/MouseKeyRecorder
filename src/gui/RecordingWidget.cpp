@@ -109,6 +109,35 @@ void RecordingWidget::onStopRecording()
     // TODO: Stop actual recording
 }
 
+void RecordingWidget::setRecordingState(bool isRecording)
+{
+    ui->startRecordingButton->setEnabled(!isRecording);
+    ui->stopRecordingButton->setEnabled(isRecording);
+
+    if (isRecording)
+    {
+        if (!m_recordingTimer->isActive())
+        {
+            m_recordingSeconds = 0;
+            m_recordingTimer->start();
+        }
+    }
+    else
+    {
+        m_recordingTimer->stop();
+    }
+}
+
+void RecordingWidget::startRecordingUI()
+{
+    setRecordingState(true);
+}
+
+void RecordingWidget::stopRecordingUI()
+{
+    setRecordingState(false);
+}
+
 void RecordingWidget::onClearEvents()
 {
     ui->eventsTableWidget->setRowCount(0);

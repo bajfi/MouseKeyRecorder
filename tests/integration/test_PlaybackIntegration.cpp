@@ -52,9 +52,6 @@ class PlaybackIntegrationTest : public ::testing::Test
     {
         std::vector<std::unique_ptr<Core::Event>> events;
 
-        // Create a sequence of realistic mouse and keyboard events
-        auto baseTime = std::chrono::steady_clock::now();
-
         // Mouse move events
         for (int i = 0; i < 5; ++i)
         {
@@ -201,8 +198,7 @@ TEST_F(PlaybackIntegrationTest, PlaybackStateTransitions)
 
     // Set up callback to track state changes
     std::vector<Core::PlaybackState> stateHistory;
-    auto callback =
-      [&stateHistory](Core::PlaybackState state, size_t current, size_t total)
+    auto callback = [&stateHistory](Core::PlaybackState state, size_t, size_t)
     {
         stateHistory.push_back(state);
     };

@@ -37,6 +37,12 @@ class RecordingWidget : public QWidget
     void clearEvents();
     void setEvents(const std::vector<std::unique_ptr<Core::Event>>& events);
 
+  public:
+    // Methods to update button states programmatically (for shortcuts)
+    void setRecordingState(bool isRecording);
+    void startRecordingUI();
+    void stopRecordingUI();
+
   signals:
     void recordingStarted();
     void recordingStopped();

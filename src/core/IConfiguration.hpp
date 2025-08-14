@@ -58,13 +58,15 @@ class IConfiguration
 
     // Double values
     virtual void setDouble(const std::string& key, double value) = 0;
-    virtual double getDouble(const std::string& key, double defaultValue = 0.0)
-      const = 0;
+    virtual double getDouble(
+      const std::string& key, double defaultValue = 0.0
+    ) const = 0;
 
     // Boolean values
     virtual void setBool(const std::string& key, bool value) = 0;
-    virtual bool getBool(const std::string& key, bool defaultValue = false)
-      const = 0;
+    virtual bool getBool(
+      const std::string& key, bool defaultValue = false
+    ) const = 0;
 
     // Array values
     virtual void setStringArray(
@@ -147,6 +149,7 @@ constexpr const char* WINDOW_Y = "ui.window_y";
 constexpr const char* WINDOW_MAXIMIZED = "ui.window_maximized";
 constexpr const char* THEME = "ui.theme";
 constexpr const char* LANGUAGE = "ui.language";
+constexpr const char* AUTO_MINIMIZE_ON_RECORD = "ui.auto_minimize_on_record";
 
 // Keyboard shortcuts
 constexpr const char* SHORTCUT_START_RECORDING = "shortcuts.start_recording";

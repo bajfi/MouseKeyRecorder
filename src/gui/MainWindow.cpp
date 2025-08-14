@@ -15,8 +15,20 @@
 #include <QMetaObject>
 #include <QTimer>
 #include <QFileInfo>
+#include <QSystemTrayIcon>
+#include <QMenu>
+#include <QAction>
+#include <QEvent>
+#include <QShortcut>
+#include <QKeySequence>
 #include <spdlog/spdlog.h>
 #include <filesystem>
+
+#ifdef __linux__
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+#include <X11/extensions/XTest.h>
+#endif
 
 namespace MouseRecorder::GUI
 {
@@ -33,6 +45,8 @@ MainWindow::MainWindow(Application::MouseRecorderApp& app, QWidget* parent)
     setupWidgets();
     setupActions();
     setupStatusBar();
+    setupSystemTray();
+    setupGlobalShortcuts();
     updateUI();
     updateWindowTitle();
 
@@ -41,6 +55,12 @@ MainWindow::MainWindow(Application::MouseRecorderApp& app, QWidget* parent)
 
 MainWindow::~MainWindow()
 {
+    // Stop global shortcut monitoring
+    if (m_globalShortcutTimer)
+    {
+        m_globalShortcutTimer->stop();
+    }
+
     delete ui;
     spdlog::info("MainWindow: Destroyed");
 }
@@ -206,6 +226,184 @@ void MainWindow::setupActions()
       this,
       &MainWindow::onStopPlayback
     );
+
+    // Set up global keyboard shortcuts
+    setupKeyboardShortcuts();
+}
+
+void MainWindow::setupKeyboardShortcuts()
+{
+    const auto& config = m_app.getConfiguration();
+
+    // Start Recording shortcut
+    QString startRecordingKey = QString::fromStdString(
+      config.getString("shortcuts.start_recording", "Ctrl+R")
+    );
+    m_startRecordingShortcut =
+      new QShortcut(QKeySequence(startRecordingKey), this);
+    connect(
+      m_startRecordingShortcut,
+      &QShortcut::activated,
+      this,
+      &MainWindow::onStartRecording
+    );
+
+    // Stop Recording shortcut
+    QString stopRecordingKey = QString::fromStdString(
+      config.getString("shortcuts.stop_recording", "Ctrl+Shift+R")
+    );
+    m_stopRecordingShortcut =
+      new QShortcut(QKeySequence(stopRecordingKey), this);
+    connect(
+      m_stopRecordingShortcut,
+      &QShortcut::activated,
+      this,
+      &MainWindow::onStopRecording
+    );
+
+    // Start Playback shortcut
+    QString startPlaybackKey = QString::fromStdString(
+      config.getString("shortcuts.start_playback", "Ctrl+P")
+    );
+    m_startPlaybackShortcut =
+      new QShortcut(QKeySequence(startPlaybackKey), this);
+    connect(
+      m_startPlaybackShortcut,
+      &QShortcut::activated,
+      this,
+      &MainWindow::onStartPlayback
+    );
+
+    // Stop Playback shortcut
+    QString stopPlaybackKey = QString::fromStdString(
+      config.getString("shortcuts.stop_playback", "Ctrl+Shift+P")
+    );
+    m_stopPlaybackShortcut = new QShortcut(QKeySequence(stopPlaybackKey), this);
+    connect(
+      m_stopPlaybackShortcut,
+      &QShortcut::activated,
+      this,
+      &MainWindow::onStopPlayback
+    );
+
+    // Pause Playback shortcut
+    QString pausePlaybackKey = QString::fromStdString(
+      config.getString("shortcuts.pause_playback", "Ctrl+Space")
+    );
+    m_pausePlaybackShortcut =
+      new QShortcut(QKeySequence(pausePlaybackKey), this);
+    connect(
+      m_pausePlaybackShortcut,
+      &QShortcut::activated,
+      this,
+      &MainWindow::onPausePlayback
+    );
+
+    spdlog::info("MainWindow: Global keyboard shortcuts initialized");
+}
+
+void MainWindow::setupGlobalShortcuts()
+{
+    // Set up global shortcut monitoring timer
+    m_globalShortcutTimer = new QTimer(this);
+    connect(
+      m_globalShortcutTimer,
+      &QTimer::timeout,
+      this,
+      &MainWindow::checkGlobalShortcuts
+    );
+    m_globalShortcutTimer->start(
+      50
+    ); // Check every 50ms for responsive shortcuts
+
+    spdlog::info("MainWindow: Global shortcut monitoring started");
+}
+
+void MainWindow::checkGlobalShortcuts()
+{
+#ifdef __linux__
+    // Check for Ctrl+R (Start Recording) - XK_Control_L + XK_r
+    bool ctrlPressed = isKeyPressed(XK_Control_L) || isKeyPressed(XK_Control_R);
+    bool rPressed = isKeyPressed(XK_r);
+    bool shiftPressed = isKeyPressed(XK_Shift_L) || isKeyPressed(XK_Shift_R);
+
+    // Ctrl+R (start recording)
+    if (ctrlPressed && rPressed && !shiftPressed)
+    {
+        if (!m_startRecordingKeyPressed)
+        {
+            m_startRecordingKeyPressed = true;
+
+            // Only start if not already recording and not playing back
+            if (!m_app.getEventRecorder().isRecording() &&
+                m_app.getEventPlayer().getState() !=
+                  Core::PlaybackState::Playing)
+            {
+                QTimer::singleShot(0, this, &MainWindow::onStartRecording);
+                spdlog::info(
+                  "MainWindow: Global shortcut triggered - Start Recording"
+                );
+            }
+        }
+    }
+    else
+    {
+        m_startRecordingKeyPressed = false;
+    }
+
+    // Ctrl+Shift+R (stop recording)
+    if (ctrlPressed && rPressed && shiftPressed)
+    {
+        if (!m_stopRecordingKeyPressed)
+        {
+            m_stopRecordingKeyPressed = true;
+
+            // Only stop if currently recording
+            if (m_app.getEventRecorder().isRecording())
+            {
+                QTimer::singleShot(0, this, &MainWindow::onStopRecording);
+                spdlog::info(
+                  "MainWindow: Global shortcut triggered - Stop Recording"
+                );
+
+                // Also restore window if minimized to tray
+                if (!isVisible())
+                {
+                    QTimer::singleShot(100, this, &MainWindow::restoreFromTray);
+                }
+            }
+        }
+    }
+    else
+    {
+        m_stopRecordingKeyPressed = false;
+    }
+#endif
+}
+
+bool MainWindow::isKeyPressed(int keyCode)
+{
+#ifdef __linux__
+    Display* display = XOpenDisplay(nullptr);
+    if (!display)
+        return false;
+
+    KeyCode kc = XKeysymToKeycode(display, keyCode);
+    if (kc == NoSymbol)
+    {
+        XCloseDisplay(display);
+        return false;
+    }
+
+    char keys[32];
+    XQueryKeymap(display, keys);
+    bool pressed = (keys[kc / 8] & (1 << (kc % 8))) != 0;
+
+    XCloseDisplay(display);
+    return pressed;
+#else
+    return false;
+#endif
 }
 
 void MainWindow::setupStatusBar()
@@ -362,6 +560,15 @@ void MainWindow::onAboutQt()
 
 void MainWindow::onStartRecording()
 {
+    // Check if already recording to prevent duplicate operations
+    if (m_app.getEventRecorder().isRecording())
+    {
+        spdlog::info(
+          "MainWindow: Recording is already active, ignoring start request"
+        );
+        return;
+    }
+
     // Create event callback that stores events
     auto eventCallback = [this](std::unique_ptr<Core::Event> event)
     {
@@ -397,10 +604,11 @@ void MainWindow::onStartRecording()
     if (m_app.getEventRecorder().startRecording(eventCallback))
     {
         m_recordedEvents.clear();
-        // Clear the recording widget display
+        // Clear the recording widget display and update UI state
         if (m_recordingWidget)
         {
             m_recordingWidget->clearEvents();
+            m_recordingWidget->startRecordingUI();
         }
         ui->statusLabel->setText("Recording started");
         updateUI();
@@ -430,12 +638,26 @@ void MainWindow::onStopRecording()
             m_app.getEventRecorder().stopRecording();
             m_modified = true;
             updateWindowTitle();
-        }
-        ui->statusLabel->setText("Recording stopped");
-        updateUI();
 
-        // Call the handler that updates all UI components
-        onRecordingStopped();
+            // Update widget UI state to show recording stopped
+            if (m_recordingWidget)
+            {
+                m_recordingWidget->stopRecordingUI();
+            }
+
+            ui->statusLabel->setText("Recording stopped");
+            updateUI();
+
+            // Call the handler that updates all UI components
+            onRecordingStopped();
+        }
+        else
+        {
+            spdlog::info(
+              "MainWindow: Recording is not active, ignoring stop request"
+            );
+            ui->statusLabel->setText("Recording was not active");
+        }
     }
     catch (const std::exception& e)
     {
@@ -738,6 +960,15 @@ void MainWindow::onRecordingStarted()
         // this
         spdlog::debug("MainWindow: Recording widget updated");
     }
+
+    // Auto-minimize to tray if enabled
+    if (shouldAutoMinimize())
+    {
+        spdlog::info("MainWindow: Auto-minimizing to tray on recording start");
+        QTimer::singleShot(
+          500, this, &MainWindow::minimizeToTray
+        ); // Small delay for UI update
+    }
 }
 
 void MainWindow::onRecordingStopped()
@@ -755,6 +986,23 @@ void MainWindow::onRecordingStopped()
     if (m_recordingWidget)
     {
         spdlog::debug("MainWindow: Recording widget updated");
+    }
+
+    // Auto-restore from tray if it was auto-minimized
+    if (!isVisible())
+    {
+        bool shouldRestore =
+          shouldAutoMinimize() ||
+          (m_trayIcon && m_trayIcon->isVisible() && m_wasVisibleBeforeMinimize);
+        if (shouldRestore)
+        {
+            spdlog::info(
+              "MainWindow: Auto-restoring from tray on recording stop"
+            );
+            QTimer::singleShot(
+              200, this, &MainWindow::restoreFromTray
+            ); // Small delay
+        }
     }
 }
 
@@ -834,6 +1082,160 @@ void MainWindow::showInfoMessage(const QString& title, const QString& message)
     if (!TestUtils::isTestEnvironment())
     {
         QMessageBox::information(this, title, message);
+    }
+}
+
+void MainWindow::setupSystemTray()
+{
+    // Check if system tray is available
+    if (!QSystemTrayIcon::isSystemTrayAvailable())
+    {
+        spdlog::warn("MainWindow: System tray not available on this system");
+        return;
+    }
+
+    // Create system tray icon
+    m_trayIcon = new QSystemTrayIcon(this);
+    m_trayIcon->setIcon(QIcon(":/icons/app.png")); // Use application icon
+    m_trayIcon->setToolTip("MouseRecorder");
+
+    // Create tray menu
+    m_trayMenu = new QMenu(this);
+
+    m_showHideAction = m_trayMenu->addAction("Show/Hide");
+    connect(
+      m_showHideAction, &QAction::triggered, this, &MainWindow::onShowHideAction
+    );
+
+    m_trayMenu->addSeparator();
+
+    m_exitAction = m_trayMenu->addAction("Exit");
+    connect(
+      m_exitAction, &QAction::triggered, this, &MainWindow::onTrayExitAction
+    );
+
+    m_trayIcon->setContextMenu(m_trayMenu);
+
+    // Connect tray icon activation
+    connect(
+      m_trayIcon,
+      &QSystemTrayIcon::activated,
+      this,
+      &MainWindow::onTrayIconActivated
+    );
+
+    // Show the tray icon
+    m_trayIcon->show();
+
+    spdlog::info("MainWindow: System tray initialized");
+}
+
+void MainWindow::minimizeToTray()
+{
+    if (m_trayIcon && m_trayIcon->isVisible())
+    {
+        m_wasVisibleBeforeMinimize = isVisible();
+        hide();
+        spdlog::info("MainWindow: Minimized to system tray");
+
+        // Show balloon message on first minimize during recording
+        static bool firstTimeMinimized = true;
+        if (firstTimeMinimized && m_app.getEventRecorder().isRecording())
+        {
+            m_trayIcon->showMessage(
+              "MouseRecorder",
+              "Recording in background. Double-click tray icon to restore.",
+              QSystemTrayIcon::Information,
+              3000
+            );
+            firstTimeMinimized = false;
+        }
+    }
+    else
+    {
+        showMinimized();
+        spdlog::debug(
+          "MainWindow: System tray not available, minimized to taskbar"
+        );
+    }
+}
+
+void MainWindow::restoreFromTray()
+{
+    // Always try to restore if window is hidden and tray icon exists
+    if (!isVisible() && m_trayIcon && m_trayIcon->isVisible())
+    {
+        show();
+        raise();
+        activateWindow();
+        setWindowState(
+          (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive
+        );
+        spdlog::info("MainWindow: Restored from system tray");
+    }
+    else if (m_wasVisibleBeforeMinimize)
+    {
+        // Legacy path for cases where window state tracking worked
+        show();
+        raise();
+        activateWindow();
+        spdlog::info("MainWindow: Restored from system tray (legacy path)");
+    }
+    else
+    {
+        spdlog::debug(
+          "MainWindow: Window already visible or tray not available"
+        );
+    }
+}
+
+bool MainWindow::shouldAutoMinimize() const
+{
+    return m_app.getConfiguration().getBool("ui.auto_minimize_on_record", true);
+}
+
+void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+    case QSystemTrayIcon::DoubleClick:
+    case QSystemTrayIcon::Trigger:
+        onShowHideAction();
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::onShowHideAction()
+{
+    if (isVisible())
+    {
+        minimizeToTray();
+    }
+    else
+    {
+        restoreFromTray();
+    }
+}
+
+void MainWindow::onTrayExitAction()
+{
+    // Ensure proper shutdown
+    close();
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+    QMainWindow::changeEvent(event);
+
+    if (event->type() == QEvent::WindowStateChange)
+    {
+        // If minimized and system tray is available, hide to tray
+        if (isMinimized() && m_trayIcon && m_trayIcon->isVisible())
+        {
+            QTimer::singleShot(0, this, &MainWindow::minimizeToTray);
+        }
     }
 }
 
