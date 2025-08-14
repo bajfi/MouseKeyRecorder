@@ -84,6 +84,11 @@ set(GUI_UI_FILES
     gui/ui/ConfigurationWidget.ui
 )
 
+# GUI resource files
+set(GUI_RESOURCE_FILES
+    resources/icons.qrc
+)
+
 # Create core library
 add_library(MouseRecorderCore STATIC
     ${CORE_SOURCES}
@@ -101,6 +106,7 @@ add_library(MouseRecorderGUI STATIC
     ${GUI_SOURCES}
     ${GUI_HEADERS}
     ${GUI_UI_FILES}
+    ${GUI_RESOURCE_FILES}
 )
 
 # Link libraries

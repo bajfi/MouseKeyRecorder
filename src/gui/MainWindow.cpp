@@ -37,6 +37,8 @@ MainWindow::MainWindow(Application::MouseRecorderApp& app, QWidget* parent)
   : QMainWindow(parent), ui(new Ui::MainWindow), m_app(app)
 {
     ui->setupUi(this);
+    ui->actionAbout->setIcon(QIcon::fromTheme("help-faq"));
+    ui->actionAboutQt->setIcon(QIcon::fromTheme("help-about"));
 
     // Ensure the application quits when the main window closes
     setAttribute(Qt::WA_QuitOnClose, true);

@@ -4,6 +4,7 @@
 #include <QStandardPaths>
 #include <QCommandLineParser>
 #include <QMessageBox>
+#include <QIcon>
 #include <spdlog/spdlog.h>
 
 #include "application/MouseRecorderApp.hpp"
@@ -13,6 +14,9 @@ int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
+    // Initialize Qt resources
+    Q_INIT_RESOURCE(icons);
+
     // Set application properties
     app.setApplicationName("MouseRecorder");
     app.setApplicationVersion("1.0.0");
@@ -21,6 +25,9 @@ int main(int argc, char* argv[])
     );
     app.setOrganizationName("MouseRecorder Team");
     app.setOrganizationDomain("mouserecorder.org");
+
+    // Set application icon
+    app.setWindowIcon(QIcon(":/icons/app_icon.png"));
 
     // Setup command line parser
     QCommandLineParser parser;
