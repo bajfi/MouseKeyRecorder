@@ -164,11 +164,19 @@ void QtConfiguration::setString(
   const std::string& key, const std::string& value
 )
 {
-    QMutexLocker locker(&m_mutex);
-    QString oldValue = m_settings->value(toQString(key)).toString();
-    m_settings->setValue(toQString(key), toQString(value));
+    QString oldValue;
+    bool changed = false;
 
-    if (oldValue != toQString(value))
+    // Critical section - hold mutex only for the actual setting operation
+    {
+        QMutexLocker locker(&m_mutex);
+        oldValue = m_settings->value(toQString(key)).toString();
+        m_settings->setValue(toQString(key), toQString(value));
+        changed = (oldValue != toQString(value));
+    }
+
+    // Call callbacks outside of mutex to avoid deadlock
+    if (changed)
     {
         notifyCallbacks(key, value);
     }
@@ -186,11 +194,19 @@ std::string QtConfiguration::getString(
 
 void QtConfiguration::setInt(const std::string& key, int value)
 {
-    QMutexLocker locker(&m_mutex);
-    int oldValue = m_settings->value(toQString(key)).toInt();
-    m_settings->setValue(toQString(key), value);
+    int oldValue;
+    bool changed = false;
 
-    if (oldValue != value)
+    // Critical section - hold mutex only for the actual setting operation
+    {
+        QMutexLocker locker(&m_mutex);
+        oldValue = m_settings->value(toQString(key)).toInt();
+        m_settings->setValue(toQString(key), value);
+        changed = (oldValue != value);
+    }
+
+    // Call callbacks outside of mutex to avoid deadlock
+    if (changed)
     {
         notifyCallbacks(key, std::to_string(value));
     }
@@ -204,11 +220,20 @@ int QtConfiguration::getInt(const std::string& key, int defaultValue) const
 
 void QtConfiguration::setDouble(const std::string& key, double value)
 {
-    QMutexLocker locker(&m_mutex);
-    double oldValue = m_settings->value(toQString(key)).toDouble();
-    m_settings->setValue(toQString(key), value);
+    double oldValue;
+    bool changed = false;
 
-    if (std::abs(oldValue - value) > std::numeric_limits<double>::epsilon())
+    // Critical section - hold mutex only for the actual setting operation
+    {
+        QMutexLocker locker(&m_mutex);
+        oldValue = m_settings->value(toQString(key)).toDouble();
+        m_settings->setValue(toQString(key), value);
+        changed =
+          (std::abs(oldValue - value) > std::numeric_limits<double>::epsilon());
+    }
+
+    // Call callbacks outside of mutex to avoid deadlock
+    if (changed)
     {
         notifyCallbacks(key, std::to_string(value));
     }
@@ -224,11 +249,19 @@ double QtConfiguration::getDouble(
 
 void QtConfiguration::setBool(const std::string& key, bool value)
 {
-    QMutexLocker locker(&m_mutex);
-    bool oldValue = m_settings->value(toQString(key)).toBool();
-    m_settings->setValue(toQString(key), value);
+    bool oldValue;
+    bool changed = false;
 
-    if (oldValue != value)
+    // Critical section - hold mutex only for the actual setting operation
+    {
+        QMutexLocker locker(&m_mutex);
+        oldValue = m_settings->value(toQString(key)).toBool();
+        m_settings->setValue(toQString(key), value);
+        changed = (oldValue != value);
+    }
+
+    // Call callbacks outside of mutex to avoid deadlock
+    if (changed)
     {
         notifyCallbacks(key, value ? "true" : "false");
     }
@@ -244,25 +277,32 @@ void QtConfiguration::setStringArray(
   const std::string& key, const std::vector<std::string>& value
 )
 {
-    QMutexLocker locker(&m_mutex);
+    std::string valueStr;
 
-    QStringList qList;
-    for (const auto& str : value)
+    // Critical section - hold mutex only for the actual setting operation
     {
-        qList.append(toQString(str));
+        QMutexLocker locker(&m_mutex);
+
+        QStringList qList;
+        for (const auto& str : value)
+        {
+            qList.append(toQString(str));
+        }
+
+        m_settings->setValue(toQString(key), qList);
+
+        // For simplicity, always notify on array changes
+        valueStr = "[";
+        for (size_t i = 0; i < value.size(); ++i)
+        {
+            if (i > 0)
+                valueStr += ",";
+            valueStr += value[i];
+        }
+        valueStr += "]";
     }
 
-    m_settings->setValue(toQString(key), qList);
-
-    // For simplicity, always notify on array changes
-    std::string valueStr = "[";
-    for (size_t i = 0; i < value.size(); ++i)
-    {
-        if (i > 0)
-            valueStr += ",";
-        valueStr += value[i];
-    }
-    valueStr += "]";
+    // Call callbacks outside of mutex to avoid deadlock
     notifyCallbacks(key, valueStr);
 }
 
@@ -298,10 +338,21 @@ bool QtConfiguration::hasKey(const std::string& key) const
 
 void QtConfiguration::removeKey(const std::string& key)
 {
-    QMutexLocker locker(&m_mutex);
-    if (m_settings->contains(toQString(key)))
+    bool keyExisted = false;
+
+    // Critical section - hold mutex only for the actual removal operation
     {
-        m_settings->remove(toQString(key));
+        QMutexLocker locker(&m_mutex);
+        keyExisted = m_settings->contains(toQString(key));
+        if (keyExisted)
+        {
+            m_settings->remove(toQString(key));
+        }
+    }
+
+    // Call callbacks outside of mutex to avoid deadlock
+    if (keyExisted)
+    {
         notifyCallbacks(key, "");
     }
 }
@@ -322,10 +373,13 @@ std::vector<std::string> QtConfiguration::getAllKeys() const
 
 void QtConfiguration::clear()
 {
-    QMutexLocker locker(&m_mutex);
-    m_settings->clear();
+    // Critical section - hold mutex only for the actual clear operation
+    {
+        QMutexLocker locker(&m_mutex);
+        m_settings->clear();
+    }
 
-    // Notify about clear operation
+    // Call callbacks outside of mutex to avoid deadlock
     notifyCallbacks("*", "cleared");
 }
 

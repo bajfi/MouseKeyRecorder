@@ -7,6 +7,11 @@ namespace Ui
 class ConfigurationWidget;
 }
 
+namespace MouseRecorder::Application
+{
+class MouseRecorderApp;
+}
+
 namespace MouseRecorder::GUI
 {
 
@@ -18,7 +23,9 @@ class ConfigurationWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit ConfigurationWidget(QWidget* parent = nullptr);
+    explicit ConfigurationWidget(
+      Application::MouseRecorderApp& app, QWidget* parent = nullptr
+    );
     ~ConfigurationWidget();
 
   public slots:
@@ -36,6 +43,7 @@ class ConfigurationWidget : public QWidget
 
   private:
     Ui::ConfigurationWidget* ui;
+    Application::MouseRecorderApp& m_app;
 };
 
 } // namespace MouseRecorder::GUI

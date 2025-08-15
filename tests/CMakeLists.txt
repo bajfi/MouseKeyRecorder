@@ -5,6 +5,7 @@ set(TEST_SOURCES
     test_main.cpp
     core/test_Event.cpp
     core/test_EventRecording.cpp
+    core/test_QtConfiguration.cpp
     application/test_MouseRecorderApp.cpp
     application/test_ShutdownBehavior.cpp
     platform/test_LinuxEventCapture.cpp
@@ -13,6 +14,7 @@ set(TEST_SOURCES
     storage/test_EventStorageFormats.cpp
     gui/test_ExportFunctionality.cpp
     gui/test_PlaybackWidget.cpp
+    gui/test_ConfigurationPersistence.cpp
     # gui/test_SystemTrayKeyboardShortcuts.cpp  # Temporarily disabled due to namespace complexity
     # gui/test_UIStateSynchronization.cpp       # Temporarily disabled due to namespace complexity
     integration/test_PlaybackIntegration.cpp

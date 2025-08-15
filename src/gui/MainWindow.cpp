@@ -136,7 +136,7 @@ void MainWindow::setupWidgets()
     // Create and setup custom widgets
     m_recordingWidget = new RecordingWidget(this);
     m_playbackWidget = new PlaybackWidget(m_app, this);
-    m_configurationWidget = new ConfigurationWidget(this);
+    m_configurationWidget = new ConfigurationWidget(m_app, this);
 
     // Replace the placeholder widgets in the tabs
     ui->recordingLayout->addWidget(m_recordingWidget);
