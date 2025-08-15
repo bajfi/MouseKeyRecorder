@@ -425,6 +425,9 @@ void PlaybackWidget::loadFile(const QString& fileName)
           m_loadedEvents.size(),
           m_currentFile.toStdString()
         );
+
+        // Emit signal to notify that file was loaded
+        emit fileLoaded(m_currentFile);
     }
     catch (const std::exception& e)
     {
@@ -558,6 +561,12 @@ void PlaybackWidget::showWarningMessage(
     {
         QMessageBox::warning(this, title, message);
     }
+}
+
+void PlaybackWidget::loadFileRequested(const QString& filename)
+{
+    // Delegate to the existing loadFile method
+    loadFile(filename);
 }
 
 } // namespace MouseRecorder::GUI

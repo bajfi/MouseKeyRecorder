@@ -37,6 +37,7 @@ class PlaybackWidget : public QWidget
     void playbackStarted();
     void playbackStopped();
     void playbackStateChanged(Core::PlaybackState state);
+    void fileLoaded(const QString& filename);
 
   private slots:
     void onBrowseFile();
@@ -48,6 +49,9 @@ class PlaybackWidget : public QWidget
     void onResetSpeed();
     void onProgressChanged(int value);
     void updatePlaybackProgress();
+
+  public slots:
+    void loadFileRequested(const QString& filename);
 
   private:
     void setupUI();

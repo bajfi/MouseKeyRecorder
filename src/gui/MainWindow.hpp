@@ -75,6 +75,7 @@ class MainWindow : public QMainWindow
     void onRecordingStopped();
     void onPlaybackStarted();
     void onPlaybackStopped();
+    void onFileLoaded(const QString& filename);
 
     // System tray slots
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -85,6 +86,9 @@ class MainWindow : public QMainWindow
     // Public methods for testing tray functionality
     void minimizeToTray();
     void restoreFromTray();
+
+  signals:
+    void fileLoadRequested(const QString& filename);
 
   private:
     void setupWidgets();
@@ -99,7 +103,6 @@ class MainWindow : public QMainWindow
     void addToRecentFiles(const QString& filename);
     void loadRecentFiles();
     void saveRecentFiles();
-    bool loadEventsFromFile(const QString& filename);
     bool saveEventsToFile(const QString& filename);
 
     bool shouldAutoMinimize() const;

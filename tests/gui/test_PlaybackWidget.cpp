@@ -276,4 +276,63 @@ TEST_F(PlaybackWidgetTest, ErrorHandling)
     EXPECT_FALSE(playButton->isEnabled());
 }
 
+TEST_F(PlaybackWidgetTest, LoadFileRequestedSlot)
+{
+    if (!playbackWidget)
+    {
+        GTEST_SKIP() << "PlaybackWidget could not be created";
+    }
+
+    // Create a temporary test file
+    QTemporaryFile tempFile;
+    tempFile.setFileTemplate("test_XXXXXX.json");
+    ASSERT_TRUE(tempFile.open());
+
+    // Create some test events
+    std::vector<std::unique_ptr<Core::Event>> events;
+    events.push_back(
+      Core::EventFactory::createMouseClickEvent(
+        Core::Point{150, 250}, Core::MouseButton::Left
+      )
+    );
+    events.push_back(Core::EventFactory::createKeyPressEvent(72, "H"));
+
+    // Save test events to file
+    Storage::JsonEventStorage storage;
+    Core::StorageMetadata metadata;
+    metadata.version = "1.0";
+    metadata.description = "Test events";
+
+    ASSERT_TRUE(
+      storage.saveEvents(events, tempFile.fileName().toStdString(), metadata)
+    );
+
+    tempFile.close();
+
+    // Set up signal spy to monitor fileLoaded signal
+    QSignalSpy fileLoadedSpy(playbackWidget.get(), &PlaybackWidget::fileLoaded);
+
+    // Test the loadFileRequested slot
+    playbackWidget->loadFileRequested(tempFile.fileName());
+
+    // Allow some time for the file to load
+    QTest::qWait(500);
+
+    // Verify the signal was emitted
+    EXPECT_EQ(fileLoadedSpy.count(), 1);
+
+    if (fileLoadedSpy.count() > 0)
+    {
+        // Verify the signal parameter is correct
+        QList<QVariant> arguments = fileLoadedSpy.takeFirst();
+        QString loadedFileName = arguments.at(0).toString();
+        EXPECT_EQ(loadedFileName, tempFile.fileName());
+    }
+
+    // Verify UI elements are updated correctly
+    auto* playButton = playbackWidget->findChild<QPushButton*>("playButton");
+    ASSERT_NE(playButton, nullptr);
+    EXPECT_TRUE(playButton->isEnabled());
+}
+
 } // namespace MouseRecorder::Tests::GUI

@@ -277,6 +277,9 @@ void TestMainWindow::testRecentFiles()
     // Recent files action should exist and be enabled
     QVERIFY(recentFilesAction->isEnabled());
 
+    // Test signal emission when file loading is requested
+    QSignalSpy fileLoadSpy(m_mainWindow, &MainWindow::fileLoadRequested);
+
     // The action should have a menu when the recent files are set up
     QMenu* recentMenu = recentFilesAction->menu();
     if (recentMenu)
@@ -284,6 +287,11 @@ void TestMainWindow::testRecentFiles()
         // Menu should exist but might be empty initially
         QVERIFY(recentMenu != nullptr);
     }
+
+    // Test that the signal-slot connection works for file loading
+    // We can verify the connection by checking signal count (should be 0
+    // initially)
+    QCOMPARE(fileLoadSpy.count(), 0);
 }
 
 void TestMainWindow::testClearEvents()

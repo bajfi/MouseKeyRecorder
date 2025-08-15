@@ -183,6 +183,20 @@ void MainWindow::setupWidgets()
       this,
       &MainWindow::onPlaybackStopped
     );
+
+    // Connect file loading signals
+    connect(
+      this,
+      &MainWindow::fileLoadRequested,
+      m_playbackWidget,
+      &PlaybackWidget::loadFileRequested
+    );
+    connect(
+      m_playbackWidget,
+      &PlaybackWidget::fileLoaded,
+      this,
+      &MainWindow::onFileLoaded
+    );
 }
 
 void MainWindow::setupActions()
@@ -1189,6 +1203,20 @@ void MainWindow::onPlaybackStopped()
     ui->statusLabel->setText("Playback stopped from widget");
 }
 
+void MainWindow::onFileLoaded(const QString& filename)
+{
+    // Switch to playback tab when file is loaded
+    ui->tabWidget->setCurrentWidget(ui->playbackTab);
+
+    // Add to recent files
+    addToRecentFiles(filename);
+
+    // Update status
+    ui->statusLabel->setText("File loaded: " + QFileInfo(filename).fileName());
+
+    updateUI();
+}
+
 void MainWindow::updateRecordingStatistics()
 {
     if (!m_recordingWidget)
@@ -1432,36 +1460,32 @@ void MainWindow::updateRecentFilesMenu()
         QAction* action = m_recentFilesMenu->addAction(displayName);
         action->setToolTip(filePath);
 
-        // Connect the action to open the specific file
+        // Connect the action to emit the fileLoadRequested signal
         connect(
           action,
           &QAction::triggered,
           this,
           [this, filePath]()
           {
-              if (loadEventsFromFile(filePath))
+              // Check if file exists before attempting to load
+              QFileInfo fileInfo(filePath);
+              if (!fileInfo.exists())
               {
-                  m_currentFile = filePath;
-                  addToRecentFiles(filePath);
-                  m_modified = false;
-                  updateWindowTitle();
-                  updateUI();
-                  ui->statusLabel->setText(
-                    "File loaded: " + QFileInfo(filePath).fileName()
-                  );
-              }
-              else
-              {
-                  // Remove file from recent files if it can't be loaded
+                  // Remove file from recent files if it doesn't exist
                   m_recentFiles.removeAll(filePath);
                   updateRecentFilesMenu();
                   saveRecentFiles();
                   showErrorMessage(
                     "Load Error",
-                    "Failed to load file: " + filePath +
+                    "File not found: " + filePath +
                       "\n\nFile has been removed from recent files."
                   );
+                  return;
               }
+
+              // Emit signal to request file loading - this will be handled
+              // by PlaybackWidget asynchronously
+              emit fileLoadRequested(filePath);
           }
         );
     }
@@ -1540,72 +1564,6 @@ void MainWindow::saveRecentFiles()
     auto& config = const_cast<Core::IConfiguration&>(m_app.getConfiguration());
     config.setString("ui.recent_files", recentFilesString.toStdString());
     // The configuration is automatically saved by the MouseRecorderApp
-}
-
-bool MainWindow::loadEventsFromFile(const QString& filename)
-{
-    try
-    {
-        auto storage = Storage::EventStorageFactory::createStorageFromFilename(
-          filename.toStdString()
-        );
-
-        if (!storage)
-        {
-            spdlog::error(
-              "MainWindow: Unsupported file format for: {}",
-              filename.toStdString()
-            );
-            return false;
-        }
-
-        std::vector<std::unique_ptr<Core::Event>> events;
-        Core::StorageMetadata metadata;
-        if (storage->loadEvents(filename.toStdString(), events, metadata))
-        {
-            std::lock_guard<std::mutex> lock(m_eventsMutex);
-            m_recordedEvents = std::move(events);
-
-            // Update recording widget
-            if (m_recordingWidget)
-            {
-                m_recordingWidget->clearEvents();
-                for (const auto& event : m_recordedEvents)
-                {
-                    if (event)
-                    {
-                        m_recordingWidget->addEvent(event.get());
-                    }
-                }
-            }
-
-            updateRecordingStatistics();
-            spdlog::info(
-              "MainWindow: Loaded {} events from {}",
-              m_recordedEvents.size(),
-              filename.toStdString()
-            );
-            return true;
-        }
-        else
-        {
-            spdlog::error(
-              "MainWindow: Failed to load events from {}: {}",
-              filename.toStdString(),
-              storage->getLastError()
-            );
-            return false;
-        }
-    }
-    catch (const std::exception& e)
-    {
-        spdlog::error(
-          "MainWindow: Exception loading events from {}: {}",
-          filename.toStdString(),
-          e.what()
-        );
-        return false;
-    }
 }
 
 bool MainWindow::saveEventsToFile(const QString& filename)

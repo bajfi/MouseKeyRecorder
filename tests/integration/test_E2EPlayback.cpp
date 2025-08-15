@@ -212,4 +212,61 @@ TEST_F(EndToEndPlaybackTest, AppIntegrationTest)
     EXPECT_EQ(player.getState(), Core::PlaybackState::Stopped);
 }
 
+TEST_F(EndToEndPlaybackTest, RecentFilesIntegration)
+{
+    // Create MainWindow to test recent files functionality
+    GUI::MainWindow mainWindow(*mouseRecorderApp);
+    mainWindow.show();
+    QTest::qWait(100);
+
+    // Create a test file
+    QString testFile = createSimpleTestFile();
+
+    // Get references to playback widget and tab widget
+    auto* playbackWidget = mainWindow.findChild<GUI::PlaybackWidget*>();
+    ASSERT_NE(playbackWidget, nullptr);
+
+    auto* tabWidget = mainWindow.findChild<QTabWidget*>("tabWidget");
+    ASSERT_NE(tabWidget, nullptr);
+
+    // Set up signal spies
+    QSignalSpy fileLoadRequestedSpy(
+      &mainWindow, &GUI::MainWindow::fileLoadRequested
+    );
+    QSignalSpy fileLoadedSpy(playbackWidget, &GUI::PlaybackWidget::fileLoaded);
+
+    // Initially we should be on Recording tab (index 0)
+    EXPECT_EQ(tabWidget->currentIndex(), 0);
+
+    // Emit fileLoadRequested signal to simulate recent file click
+    emit mainWindow.fileLoadRequested(testFile);
+
+    // Allow time for file loading
+    QTest::qWait(500);
+
+    // Verify signal was received
+    EXPECT_EQ(fileLoadRequestedSpy.count(), 1);
+
+    // Verify file was loaded in PlaybackWidget
+    EXPECT_EQ(fileLoadedSpy.count(), 1);
+
+    if (fileLoadedSpy.count() > 0)
+    {
+        QList<QVariant> arguments = fileLoadedSpy.takeFirst();
+        QString loadedFileName = arguments.at(0).toString();
+        EXPECT_EQ(loadedFileName, testFile);
+    }
+
+    // Verify we switched to Playback tab (index 1)
+    EXPECT_EQ(tabWidget->currentIndex(), 1);
+
+    // Verify play button is enabled
+    auto* playButton = playbackWidget->findChild<QPushButton*>("playButton");
+    ASSERT_NE(playButton, nullptr);
+    EXPECT_TRUE(playButton->isEnabled());
+
+    // Cleanup
+    QFile::remove(testFile);
+}
+
 } // namespace MouseRecorder::Tests::E2E
