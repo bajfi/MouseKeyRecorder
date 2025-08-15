@@ -5,6 +5,8 @@
 #include "TestUtils.hpp"
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QDir>
+#include <QFile>
 #include <QDateTime>
 #include <QTimer>
 #include <QMessageBox>
@@ -92,13 +94,43 @@ void PlaybackWidget::setupUI()
 
 void PlaybackWidget::onBrowseFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(
-      this,
-      "Open Recording File",
-      "",
-      "All Supported (*.json *.mre *.xml);;JSON Files (*.json);;Binary Files "
-      "(*.mre);;XML Files (*.xml)"
-    );
+    QString fileName;
+
+    // In test environment, use a test file to avoid hanging on dialog
+    if (TestUtils::isTestEnvironment())
+    {
+        // Use an existing test file if available, or create a temp one
+        QDir tempDir = QDir::temp();
+        fileName = tempDir.absoluteFilePath("test_playback.json");
+
+        // Create a simple test file if it doesn't exist
+        if (!QFile::exists(fileName))
+        {
+            QFile testFile(fileName);
+            if (testFile.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                testFile.write(
+                  "{\"events\":[], \"metadata\":{\"version\":\"1.0\"}}"
+                );
+                testFile.close();
+            }
+        }
+        spdlog::info(
+          "PlaybackWidget: Test environment - using temp file: {}",
+          fileName.toStdString()
+        );
+    }
+    else
+    {
+        fileName = QFileDialog::getOpenFileName(
+          this,
+          "Open Recording File",
+          "",
+          "All Supported (*.json *.mre *.xml);;JSON Files (*.json);;Binary "
+          "Files "
+          "(*.mre);;XML Files (*.xml)"
+        );
+    }
 
     if (!fileName.isEmpty())
     {

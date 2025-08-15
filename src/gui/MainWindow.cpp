@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QDir>
 #include <QCloseEvent>
 #include <QStatusBar>
 #include <QMetaObject>
@@ -79,23 +80,34 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     if (m_modified)
     {
-        QMessageBox::StandardButton reply = QMessageBox::question(
-          this,
-          "Unsaved Changes",
-          "You have unsaved changes. Do you want to save before closing?",
-          QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
-        );
+        // In test environment, automatically discard changes to avoid hanging
+        if (TestUtils::isTestEnvironment())
+        {
+            spdlog::info(
+              "MainWindow: Test environment - discarding unsaved changes"
+            );
+            // Continue with closing, no user interaction needed
+        }
+        else
+        {
+            QMessageBox::StandardButton reply = QMessageBox::question(
+              this,
+              "Unsaved Changes",
+              "You have unsaved changes. Do you want to save before closing?",
+              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
+            );
 
-        if (reply == QMessageBox::Save)
-        {
-            onSaveFile();
+            if (reply == QMessageBox::Save)
+            {
+                onSaveFile();
+            }
+            else if (reply == QMessageBox::Cancel)
+            {
+                event->ignore();
+                return;
+            }
+            // If Discard, continue with closing
         }
-        else if (reply == QMessageBox::Cancel)
-        {
-            event->ignore();
-            return;
-        }
-        // If Discard, continue with closing
     }
 
     // Stop any active operations
@@ -503,21 +515,34 @@ void MainWindow::onNewFile()
 {
     if (m_modified)
     {
-        QMessageBox::StandardButton reply = QMessageBox::question(
-          this,
-          "Unsaved Changes",
-          "You have unsaved changes. Do you want to save before creating a new "
-          "file?",
-          QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
-        );
-
-        if (reply == QMessageBox::Save)
+        // In test environment, automatically discard changes to avoid hanging
+        if (TestUtils::isTestEnvironment())
         {
-            onSaveFile();
+            spdlog::info(
+              "MainWindow: Test environment - discarding unsaved changes for "
+              "new file"
+            );
+            // Continue with creating new file, no user interaction needed
         }
-        else if (reply == QMessageBox::Cancel)
+        else
         {
-            return;
+            QMessageBox::StandardButton reply = QMessageBox::question(
+              this,
+              "Unsaved Changes",
+              "You have unsaved changes. Do you want to save before creating a "
+              "new "
+              "file?",
+              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
+            );
+
+            if (reply == QMessageBox::Save)
+            {
+                onSaveFile();
+            }
+            else if (reply == QMessageBox::Cancel)
+            {
+                return;
+            }
         }
     }
 
@@ -565,15 +590,33 @@ void MainWindow::onSaveFile()
 void MainWindow::onSaveAsFile()
 {
     QString selectedFilter;
-    QString fileName = QFileDialog::getSaveFileName(
-      this,
-      "Save Recording File",
-      m_currentFile.isEmpty() ? "" : m_currentFile,
-      QString::fromStdString(
-        Storage::EventStorageFactory::getFileDialogFilter()
-      ),
-      &selectedFilter
-    );
+    QString fileName;
+
+    // In test environment, use a temporary file path to avoid hanging on dialog
+    if (TestUtils::isTestEnvironment())
+    {
+        fileName = QDir::temp().absoluteFilePath(
+          "test_recording_" +
+          QString::number(QCoreApplication::applicationPid()) + ".json"
+        );
+        selectedFilter = "JSON Files (*.json)";
+        spdlog::info(
+          "MainWindow: Test environment - using temp file: {}",
+          fileName.toStdString()
+        );
+    }
+    else
+    {
+        fileName = QFileDialog::getSaveFileName(
+          this,
+          "Save Recording File",
+          m_currentFile.isEmpty() ? "" : m_currentFile,
+          QString::fromStdString(
+            Storage::EventStorageFactory::getFileDialogFilter()
+          ),
+          &selectedFilter
+        );
+    }
 
     if (!fileName.isEmpty())
     {
@@ -601,6 +644,13 @@ void MainWindow::onExit()
 
 void MainWindow::onAbout()
 {
+    // Skip showing About dialog in test environment
+    if (TestUtils::isTestEnvironment())
+    {
+        spdlog::info("MainWindow: Skipping About dialog in test environment");
+        return;
+    }
+
     QString aboutText =
       QString(
         "<h3>%1 v%2</h3>"
@@ -616,6 +666,15 @@ void MainWindow::onAbout()
 
 void MainWindow::onAboutQt()
 {
+    // Skip showing About Qt dialog in test environment
+    if (TestUtils::isTestEnvironment())
+    {
+        spdlog::info(
+          "MainWindow: Skipping About Qt dialog in test environment"
+        );
+        return;
+    }
+
     QMessageBox::aboutQt(this);
 }
 
@@ -643,16 +702,23 @@ void MainWindow::onClear()
         return;
     }
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-      this,
-      "Clear Events",
-      "Are you sure you want to clear all recorded events? This action cannot "
-      "be undone.",
-      QMessageBox::Yes | QMessageBox::No,
-      QMessageBox::No
-    );
+    // In test environment, automatically clear events without confirmation
+    bool shouldClear = true;
+    if (!TestUtils::isTestEnvironment())
+    {
+        QMessageBox::StandardButton reply = QMessageBox::question(
+          this,
+          "Clear Events",
+          "Are you sure you want to clear all recorded events? This action "
+          "cannot "
+          "be undone.",
+          QMessageBox::Yes | QMessageBox::No,
+          QMessageBox::No
+        );
+        shouldClear = (reply == QMessageBox::Yes);
+    }
 
-    if (reply == QMessageBox::Yes)
+    if (shouldClear)
     {
         std::lock_guard<std::mutex> lock(m_eventsMutex);
         m_recordedEvents.clear();

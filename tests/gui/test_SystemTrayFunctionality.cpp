@@ -221,6 +221,10 @@ void TestSystemTrayFunctionality::testAutoMinimizeOnRecording()
 
     // Window should be hidden after recording starts
     QVERIFY(!m_mainWindow->isVisible());
+
+    // Stop recording to clean up properly
+    simulateRecordingStop();
+    QTest::qWait(300); // Wait for restore timer
 }
 
 void TestSystemTrayFunctionality::testAutoRestoreOnRecordingStop()

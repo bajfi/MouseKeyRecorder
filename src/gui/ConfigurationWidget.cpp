@@ -2,7 +2,9 @@
 #include "ui_ConfigurationWidget.h"
 #include "application/MouseRecorderApp.hpp"
 #include "core/IConfiguration.hpp"
+#include "TestUtils.hpp"
 #include <QFileDialog>
+#include <QDir>
 #include <QKeySequence>
 #include <spdlog/spdlog.h>
 
@@ -310,12 +312,26 @@ void ConfigurationWidget::onApply()
 
 void ConfigurationWidget::onBrowseLogFile()
 {
-    QString fileName = QFileDialog::getSaveFileName(
-      this,
-      "Select Log File",
-      ui->logFilePathLineEdit->text(),
-      "Log Files (*.log);;Text Files (*.txt);;All Files (*)"
-    );
+    QString fileName;
+
+    // In test environment, use a temp file to avoid hanging on dialog
+    if (TestUtils::isTestEnvironment())
+    {
+        fileName = QDir::temp().absoluteFilePath("test_log.log");
+        spdlog::info(
+          "ConfigurationWidget: Test environment - using temp log file: {}",
+          fileName.toStdString()
+        );
+    }
+    else
+    {
+        fileName = QFileDialog::getSaveFileName(
+          this,
+          "Select Log File",
+          ui->logFilePathLineEdit->text(),
+          "Log Files (*.log);;Text Files (*.txt);;All Files (*)"
+        );
+    }
 
     if (!fileName.isEmpty())
     {
