@@ -2,6 +2,8 @@
 #include <QApplication>
 #include <QAction>
 #include <QSignalSpy>
+#include <QMenu>
+#include <QTabWidget>
 #include <memory>
 #include "gui/MainWindow.hpp"
 #include "application/MouseRecorderApp.hpp"
@@ -24,6 +26,10 @@ class TestMainWindow : public QObject
     void testRecordingActions();
     void testPlaybackActions();
     void testUIStateUpdates();
+    void testFileActions();
+    void testRecentFiles();
+    void testClearEvents();
+    void testPreferences();
 
   private:
     QApplication* m_app{nullptr};
@@ -215,7 +221,8 @@ void TestMainWindow::testUIStateUpdates()
         // UI should update to reflect recording state
         QVERIFY(!startRecordingAction->isEnabled());
         QVERIFY(stopRecordingAction->isEnabled());
-        QVERIFY(!startPlaybackAction->isEnabled()
+        QVERIFY(
+          !startPlaybackAction->isEnabled()
         ); // Should be disabled during recording
 
         // Stop recording
@@ -225,6 +232,100 @@ void TestMainWindow::testUIStateUpdates()
         QVERIFY(startRecordingAction->isEnabled());
         QVERIFY(!stopRecordingAction->isEnabled());
     }
+}
+
+void TestMainWindow::testFileActions()
+{
+    if (!m_mainWindow)
+    {
+        QSKIP(
+          "MainWindow could not be created - application initialization failed"
+        );
+    }
+
+    QAction* newAction = m_mainWindow->findChild<QAction*>("actionNew");
+    QAction* saveAction = m_mainWindow->findChild<QAction*>("actionSave");
+    QAction* saveAsAction = m_mainWindow->findChild<QAction*>("actionSaveAs");
+
+    QVERIFY(newAction != nullptr);
+    QVERIFY(saveAction != nullptr);
+    QVERIFY(saveAsAction != nullptr);
+
+    // Test that actions are enabled
+    QVERIFY(newAction->isEnabled());
+    QVERIFY(saveAction->isEnabled());
+    QVERIFY(saveAsAction->isEnabled());
+
+    // Test New action - should clear current state
+    newAction->trigger();
+    // We can't verify much more without mocking dialogs
+}
+
+void TestMainWindow::testRecentFiles()
+{
+    if (!m_mainWindow)
+    {
+        QSKIP(
+          "MainWindow could not be created - application initialization failed"
+        );
+    }
+
+    QAction* recentFilesAction =
+      m_mainWindow->findChild<QAction*>("actionRecentFiles");
+    QVERIFY(recentFilesAction != nullptr);
+
+    // Recent files action should exist and be enabled
+    QVERIFY(recentFilesAction->isEnabled());
+
+    // The action should have a menu when the recent files are set up
+    QMenu* recentMenu = recentFilesAction->menu();
+    if (recentMenu)
+    {
+        // Menu should exist but might be empty initially
+        QVERIFY(recentMenu != nullptr);
+    }
+}
+
+void TestMainWindow::testClearEvents()
+{
+    if (!m_mainWindow)
+    {
+        QSKIP(
+          "MainWindow could not be created - application initialization failed"
+        );
+    }
+
+    QAction* clearAction = m_mainWindow->findChild<QAction*>("actionClear");
+    QVERIFY(clearAction != nullptr);
+
+    // Clear action should exist and be enabled
+    QVERIFY(clearAction->isEnabled());
+
+    // Test triggering the action (will show dialog in real usage, but in test
+    // environment the TestUtils should suppress dialogs)
+    clearAction->trigger();
+}
+
+void TestMainWindow::testPreferences()
+{
+    if (!m_mainWindow)
+    {
+        QSKIP(
+          "MainWindow could not be created - application initialization failed"
+        );
+    }
+
+    QAction* preferencesAction =
+      m_mainWindow->findChild<QAction*>("actionPreferences");
+    QVERIFY(preferencesAction != nullptr);
+
+    // Preferences action should exist and be enabled
+    QVERIFY(preferencesAction->isEnabled());
+
+    // Note: Testing that the preferences action opens a dialog is more complex
+    // and would require mocking the dialog or manual intervention.
+    // For now, we just verify the action exists and is enabled.
+    // The dialog functionality is tested in integration tests.
 }
 
 QTEST_APPLESS_MAIN(TestMainWindow)

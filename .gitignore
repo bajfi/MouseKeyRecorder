@@ -54,3 +54,5 @@ copilot*
 *.xml
 *.bin
 *.mre
+
+mouserecorder.conf

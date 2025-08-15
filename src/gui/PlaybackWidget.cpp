@@ -8,6 +8,8 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QMessageBox>
+#include <QProgressDialog>
+#include <QApplication>
 #include <spdlog/spdlog.h>
 
 namespace MouseRecorder::GUI
@@ -275,6 +277,13 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
     QFileInfo fileInfo(fileName);
 
+    // Show progress dialog for large files
+    QProgressDialog progress("Loading events...", "Cancel", 0, 0, this);
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(500); // Show after 500ms
+    progress.show();
+    QApplication::processEvents();    // Allow the progress dialog to show
+
     try
     {
         // Load events using storage factory
@@ -411,13 +420,10 @@ void PlaybackWidget::loadFile(const QString& fileName)
         }
 
         m_fileLoaded = true;
-        ui->reloadFileButton->setEnabled(true);
-
-        updateUI();
         spdlog::info(
           "PlaybackWidget: Loaded {} events from {}",
           m_loadedEvents.size(),
-          fileName.toStdString()
+          m_currentFile.toStdString()
         );
     }
     catch (const std::exception& e)
@@ -425,13 +431,14 @@ void PlaybackWidget::loadFile(const QString& fileName)
         showErrorMessage(
           "Error", QString("Failed to load file: %1").arg(e.what())
         );
-        spdlog::error(
-          "PlaybackWidget: Exception during file load: {}", e.what()
-        );
         m_fileLoaded = false;
         m_loadedEvents.clear();
-        updateUI();
     }
+
+    // Re-enable UI
+    ui->browseFileButton->setEnabled(true);
+    ui->reloadFileButton->setEnabled(m_fileLoaded);
+    updateUI();
 }
 
 void PlaybackWidget::updateUI()

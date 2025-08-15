@@ -27,7 +27,6 @@ namespace MouseRecorder::GUI
 {
 class RecordingWidget;
 class PlaybackWidget;
-class ConfigurationWidget;
 } // namespace MouseRecorder::GUI
 
 namespace MouseRecorder::GUI
@@ -55,9 +54,11 @@ class MainWindow : public QMainWindow
 
   private slots:
     void onNewFile();
-    void onOpenFile();
     void onSaveFile();
     void onSaveAsFile();
+    void onRecentFiles();
+    void onClear();
+    void onPreferences();
     void onExit();
     void onAbout();
     void onAboutQt();
@@ -94,6 +95,12 @@ class MainWindow : public QMainWindow
     void updateUI();
     void updateWindowTitle();
     void updateRecordingStatistics();
+    void updateRecentFilesMenu();
+    void addToRecentFiles(const QString& filename);
+    void loadRecentFiles();
+    void saveRecentFiles();
+    bool loadEventsFromFile(const QString& filename);
+    bool saveEventsToFile(const QString& filename);
 
     bool shouldAutoMinimize() const;
 
@@ -107,11 +114,13 @@ class MainWindow : public QMainWindow
     Application::MouseRecorderApp& m_app;
     QString m_currentFile;
     bool m_modified{false};
+    QStringList m_recentFiles;
+    QMenu* m_recentFilesMenu{nullptr};
+    static constexpr int MaxRecentFiles = 10;
 
     // Custom widgets
     RecordingWidget* m_recordingWidget{nullptr};
     PlaybackWidget* m_playbackWidget{nullptr};
-    ConfigurationWidget* m_configurationWidget{nullptr};
 
     // Event storage for recording session
     std::vector<std::unique_ptr<Core::Event>> m_recordedEvents;

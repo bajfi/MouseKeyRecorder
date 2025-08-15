@@ -52,20 +52,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="configurationTab">
-       <attribute name="title">
-        <string>Configuration</string>
-       </attribute>
-       <attribute name="icon">
-        <iconset>
-         <normaloff>:/icons/settings.png</normaloff>:/icons/settings.png</iconset>
-       </attribute>
-       <layout class="QVBoxLayout" name="configurationLayout">
-        <item>
-         <widget class="QWidget" name="configurationWidget" native="true"/>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
     <item>
@@ -120,7 +106,6 @@
      <string>File</string>
     </property>
     <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
@@ -182,7 +167,6 @@
    <addaction name="actionPausePlayback"/>
    <addaction name="actionStopPlayback"/>
    <addaction name="separator"/>
-   <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
   </widget>
   <action name="actionNew">
@@ -195,18 +179,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
-   </property>
-  </action>
-  <action name="actionOpen">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
-   </property>
-   <property name="text">
-    <string>Open...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
