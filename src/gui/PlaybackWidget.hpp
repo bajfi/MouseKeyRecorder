@@ -63,6 +63,10 @@ class PlaybackWidget : public QWidget
     );
     void onEventPlayed(const Core::Event& event);
 
+    // Helper methods for time display
+    void updateTimeLabels(size_t currentEvent, size_t totalEvents);
+    QString formatTime(std::chrono::milliseconds duration);
+
     // Helper method to show message boxes only when not in test environment
     void showErrorMessage(const QString& title, const QString& message);
     void showWarningMessage(const QString& title, const QString& message);

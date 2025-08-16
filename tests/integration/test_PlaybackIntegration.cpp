@@ -391,9 +391,9 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
     // Start first playback
     bool firstPlaybackStarted = false;
     bool playbackCompleted = false;
-    auto callback = [&firstPlaybackStarted, &playbackCompleted](
-                      Core::PlaybackState state, size_t current, size_t total
-                    )
+    auto callback =
+      [&firstPlaybackStarted,
+       &playbackCompleted](Core::PlaybackState state, size_t, size_t)
     {
         if (state == Core::PlaybackState::Playing && !firstPlaybackStarted)
         {
@@ -423,9 +423,7 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
     // Now test restarting playback - THIS IS THE BUG WE FIXED
     bool secondPlaybackStarted = false;
     auto secondCallback =
-      [&secondPlaybackStarted](
-        Core::PlaybackState state, size_t current, size_t total
-      )
+      [&secondPlaybackStarted](Core::PlaybackState state, size_t, size_t)
     {
         if (state == Core::PlaybackState::Playing)
         {

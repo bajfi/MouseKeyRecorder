@@ -271,6 +271,12 @@ void PlaybackWidget::onStop()
         ui->stopButton->setEnabled(false);
         ui->progressSlider->setValue(0);
 
+        // Reset time labels to initial state
+        if (!m_loadedEvents.empty())
+        {
+            updateTimeLabels(0, m_loadedEvents.size());
+        }
+
         // Stop update timer
         m_updateTimer->stop();
 
@@ -395,6 +401,9 @@ void PlaybackWidget::loadFile(const QString& fileName)
             ui->progressSlider->setRange(
               0, static_cast<int>(m_loadedEvents.size() - 1)
             );
+
+            // Initialize time labels
+            updateTimeLabels(0, m_loadedEvents.size());
         }
         else
         {
@@ -534,6 +543,9 @@ void PlaybackWidget::updatePlaybackProgress()
                 ui->progressSlider->blockSignals(true);
                 ui->progressSlider->setValue(static_cast<int>(current));
                 ui->progressSlider->blockSignals(false);
+
+                // Update time labels
+                updateTimeLabels(current, total);
             }
         }
 
@@ -549,6 +561,13 @@ void PlaybackWidget::updatePlaybackProgress()
             if (state == Core::PlaybackState::Completed)
             {
                 ui->progressSlider->setValue(ui->progressSlider->maximum());
+                // Update time labels to show total duration
+                if (!m_loadedEvents.empty())
+                {
+                    updateTimeLabels(
+                      m_loadedEvents.size(), m_loadedEvents.size()
+                    );
+                }
                 emit playbackStopped();
                 spdlog::info("PlaybackWidget: Playback completed");
 
@@ -598,13 +617,62 @@ void PlaybackWidget::onEventPlayed(const Core::Event& event)
     // table
 }
 
+void PlaybackWidget::updateTimeLabels(size_t currentEvent, size_t totalEvents)
+{
+    if (m_loadedEvents.empty())
+    {
+        ui->currentTimeLabel->setText("00:00");
+        ui->totalTimeLabel->setText("00:00");
+        return;
+    }
+
+    // Calculate current time based on event timestamps
+    auto firstEventTime = m_loadedEvents[0]->getTimestamp();
+    auto totalDuration = std::chrono::milliseconds(0);
+    auto currentDuration = std::chrono::milliseconds(0);
+
+    if (totalEvents > 0)
+    {
+        // Calculate total duration (time from first to last event)
+        auto lastEventTime = m_loadedEvents[totalEvents - 1]->getTimestamp();
+        totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+          lastEventTime - firstEventTime
+        );
+
+        // Calculate current duration based on current event position
+        if (currentEvent > 0 && currentEvent <= totalEvents)
+        {
+            auto currentEventTime =
+              m_loadedEvents[currentEvent - 1]->getTimestamp();
+            currentDuration =
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+                currentEventTime - firstEventTime
+              );
+        }
+    }
+
+    ui->currentTimeLabel->setText(formatTime(currentDuration));
+    ui->totalTimeLabel->setText(formatTime(totalDuration));
+}
+
+QString PlaybackWidget::formatTime(std::chrono::milliseconds duration)
+{
+    auto totalSeconds = duration.count() / 1000;
+    int minutes = static_cast<int>(totalSeconds / 60);
+    int seconds = static_cast<int>(totalSeconds % 60);
+
+    return QString("%1:%2")
+      .arg(minutes, 2, 10, QChar('0'))
+      .arg(seconds, 2, 10, QChar('0'));
+}
+
 void PlaybackWidget::showErrorMessage(
   const QString& title, const QString& message
 )
 {
     if (!TestUtils::isTestEnvironment())
     {
-        showErrorMessage(title, message);
+        QMessageBox::critical(this, title, message);
     }
 }
 
