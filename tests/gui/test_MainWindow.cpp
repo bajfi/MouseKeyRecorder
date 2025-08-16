@@ -176,19 +176,16 @@ void TestMainWindow::testPlaybackActions()
 
     QAction* startPlaybackAction =
       m_mainWindow->findChild<QAction*>("actionStartPlayback");
-    QAction* pausePlaybackAction =
-      m_mainWindow->findChild<QAction*>("actionPausePlayback");
     QAction* stopPlaybackAction =
       m_mainWindow->findChild<QAction*>("actionStopPlayback");
 
-    if (!startPlaybackAction || !pausePlaybackAction || !stopPlaybackAction)
+    if (!startPlaybackAction || !stopPlaybackAction)
     {
         QSKIP("Playback actions not found");
     }
 
     // Initially playback actions should be disabled (no events to play)
     QVERIFY(!startPlaybackAction->isEnabled());
-    QVERIFY(!pausePlaybackAction->isEnabled());
     QVERIFY(!stopPlaybackAction->isEnabled());
 }
 

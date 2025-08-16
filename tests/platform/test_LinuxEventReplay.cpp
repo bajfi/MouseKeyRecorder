@@ -142,28 +142,6 @@ TEST_F(LinuxEventReplayTest, StartPlaybackWithEvents)
     }
 }
 
-TEST_F(LinuxEventReplayTest, PauseAndResumePlayback)
-{
-    auto events = createTestEvents();
-    EXPECT_TRUE(m_eventPlayer->loadEvents(std::move(events)));
-
-    bool started = m_eventPlayer->startPlayback();
-    if (started)
-    {
-        EXPECT_EQ(m_eventPlayer->getState(), PlaybackState::Playing);
-
-        // Pause
-        m_eventPlayer->pausePlayback();
-        EXPECT_EQ(m_eventPlayer->getState(), PlaybackState::Paused);
-
-        // Resume
-        m_eventPlayer->resumePlayback();
-        EXPECT_EQ(m_eventPlayer->getState(), PlaybackState::Playing);
-
-        m_eventPlayer->stopPlayback();
-    }
-}
-
 TEST_F(LinuxEventReplayTest, PlaybackSpeed)
 {
     // Test speed limits

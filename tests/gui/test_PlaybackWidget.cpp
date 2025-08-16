@@ -108,15 +108,12 @@ TEST_F(PlaybackWidgetTest, InitialState)
 
     // Check initial UI state - buttons should be disabled initially
     auto* playButton = playbackWidget->findChild<QPushButton*>("playButton");
-    auto* pauseButton = playbackWidget->findChild<QPushButton*>("pauseButton");
     auto* stopButton = playbackWidget->findChild<QPushButton*>("stopButton");
 
     ASSERT_TRUE(playButton != nullptr);
-    ASSERT_TRUE(pauseButton != nullptr);
     ASSERT_TRUE(stopButton != nullptr);
 
     EXPECT_FALSE(playButton->isEnabled());
-    EXPECT_FALSE(pauseButton->isEnabled());
     EXPECT_FALSE(stopButton->isEnabled());
 }
 
@@ -162,7 +159,6 @@ TEST_F(PlaybackWidgetTest, PlaybackControls)
     );
 
     auto* playButton = playbackWidget->findChild<QPushButton*>("playButton");
-    auto* pauseButton = playbackWidget->findChild<QPushButton*>("pauseButton");
     auto* stopButton = playbackWidget->findChild<QPushButton*>("stopButton");
 
     // Test play
@@ -171,7 +167,6 @@ TEST_F(PlaybackWidgetTest, PlaybackControls)
 
     EXPECT_GE(playbackStartedSpy.count(), 1);
     EXPECT_FALSE(playButton->isEnabled());
-    EXPECT_TRUE(pauseButton->isEnabled());
     EXPECT_TRUE(stopButton->isEnabled());
 
     // Test stop
@@ -180,7 +175,6 @@ TEST_F(PlaybackWidgetTest, PlaybackControls)
 
     EXPECT_GE(playbackStoppedSpy.count(), 1);
     EXPECT_TRUE(playButton->isEnabled());
-    EXPECT_FALSE(pauseButton->isEnabled());
     EXPECT_FALSE(stopButton->isEnabled());
 }
 

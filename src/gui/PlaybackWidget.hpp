@@ -43,7 +43,6 @@ class PlaybackWidget : public QWidget
     void onBrowseFile();
     void onReloadFile();
     void onPlay();
-    void onPause();
     void onStop();
     void onSpeedChanged(int value);
     void onResetSpeed();

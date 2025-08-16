@@ -28,8 +28,6 @@ class LinuxEventReplay : public Core::IEventPlayer
     // IEventPlayer interface
     bool loadEvents(std::vector<std::unique_ptr<Core::Event>> events) override;
     bool startPlayback(PlaybackCallback callback = nullptr) override;
-    void pausePlayback() override;
-    void resumePlayback() override;
     void stopPlayback() override;
     Core::PlaybackState getState() const noexcept override;
     void setPlaybackSpeed(double speed) override;
@@ -124,9 +122,6 @@ class LinuxEventReplay : public Core::IEventPlayer
     // Threading and synchronization
     std::unique_ptr<std::thread> m_playbackThread;
     std::atomic<bool> m_shouldStop{false};
-    std::mutex m_pauseMutex;
-    std::condition_variable m_pauseCondition;
-    std::atomic<bool> m_isPaused{false};
 
     // Configuration
     std::atomic<double> m_playbackSpeed{1.0};

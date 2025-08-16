@@ -151,7 +151,6 @@ void Configuration::loadDefaults()
     m_values[ConfigKeys::SHORTCUT_STOP_RECORDING] = std::string("Ctrl+Shift+R");
     m_values[ConfigKeys::SHORTCUT_START_PLAYBACK] = std::string("Ctrl+P");
     m_values[ConfigKeys::SHORTCUT_STOP_PLAYBACK] = std::string("Ctrl+Shift+P");
-    m_values[ConfigKeys::SHORTCUT_PAUSE_PLAYBACK] = std::string("Ctrl+Space");
 
     // File paths
     m_values[ConfigKeys::LAST_SAVE_DIRECTORY] = std::string("");

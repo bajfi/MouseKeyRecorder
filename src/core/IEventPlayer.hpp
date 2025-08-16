@@ -15,7 +15,6 @@ enum class PlaybackState
 {
     Stopped,
     Playing,
-    Paused,
     Completed,
     Error
 };
@@ -49,16 +48,6 @@ class IEventPlayer
      * @return true if playback started successfully
      */
     virtual bool startPlayback(PlaybackCallback callback = nullptr) = 0;
-
-    /**
-     * @brief Pause current playback
-     */
-    virtual void pausePlayback() = 0;
-
-    /**
-     * @brief Resume paused playback
-     */
-    virtual void resumePlayback() = 0;
 
     /**
      * @brief Stop current playback

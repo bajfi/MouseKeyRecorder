@@ -264,12 +264,6 @@ void MainWindow::setupActions()
       &MainWindow::onStartPlayback
     );
     connect(
-      ui->actionPausePlayback,
-      &QAction::triggered,
-      this,
-      &MainWindow::onPausePlayback
-    );
-    connect(
       ui->actionStopPlayback,
       &QAction::triggered,
       this,
@@ -333,19 +327,6 @@ void MainWindow::setupKeyboardShortcuts()
       &QShortcut::activated,
       this,
       &MainWindow::onStopPlayback
-    );
-
-    // Pause Playback shortcut
-    QString pausePlaybackKey = QString::fromStdString(
-      config.getString("shortcuts.pause_playback", "Ctrl+Space")
-    );
-    m_pausePlaybackShortcut =
-      new QShortcut(QKeySequence(pausePlaybackKey), this);
-    connect(
-      m_pausePlaybackShortcut,
-      &QShortcut::activated,
-      this,
-      &MainWindow::onPausePlayback
     );
 
     spdlog::info("MainWindow: Global keyboard shortcuts initialized");
@@ -475,7 +456,6 @@ void MainWindow::updateUI()
     ui->actionStartPlayback->setEnabled(
       !isRecording && !isPlayingBack && !m_currentFile.isEmpty()
     );
-    ui->actionPausePlayback->setEnabled(isPlayingBack);
     ui->actionStopPlayback->setEnabled(isPlayingBack);
 
     // Update status
@@ -1152,24 +1132,6 @@ void MainWindow::onStartPlayback()
           this,
           "Playback Error",
           QString("Failed to start playback: %1").arg(e.what())
-        );
-    }
-}
-
-void MainWindow::onPausePlayback()
-{
-    try
-    {
-        m_app.getEventPlayer().pausePlayback();
-        ui->statusLabel->setText("Playback paused");
-        updateUI();
-    }
-    catch (const std::exception& e)
-    {
-        QMessageBox::critical(
-          this,
-          "Playback Error",
-          QString("Failed to pause playback: %1").arg(e.what())
         );
     }
 }

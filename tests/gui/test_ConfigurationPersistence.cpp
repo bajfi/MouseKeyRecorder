@@ -125,7 +125,6 @@ TEST_F(ConfigurationPersistenceTest, ConfigurationKeysExist)
     m_config->setString(ConfigKeys::SHORTCUT_STOP_RECORDING, "Ctrl+Shift+R");
     m_config->setString(ConfigKeys::SHORTCUT_START_PLAYBACK, "Ctrl+P");
     m_config->setString(ConfigKeys::SHORTCUT_STOP_PLAYBACK, "Ctrl+Shift+P");
-    m_config->setString(ConfigKeys::SHORTCUT_PAUSE_PLAYBACK, "Ctrl+Space");
 
     // Test logging settings
     m_config->setString(ConfigKeys::LOG_LEVEL, "info");

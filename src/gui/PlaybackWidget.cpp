@@ -50,9 +50,6 @@ void PlaybackWidget::setupUI()
       ui->playButton, &QPushButton::clicked, this, &PlaybackWidget::onPlay
     );
     connect(
-      ui->pauseButton, &QPushButton::clicked, this, &PlaybackWidget::onPause
-    );
-    connect(
       ui->stopButton, &QPushButton::clicked, this, &PlaybackWidget::onStop
     );
     connect(
@@ -231,7 +228,6 @@ void PlaybackWidget::onPlay()
         }
 
         ui->playButton->setEnabled(false);
-        ui->pauseButton->setEnabled(true);
         ui->stopButton->setEnabled(true);
 
         // Start update timer
@@ -249,28 +245,6 @@ void PlaybackWidget::onPlay()
     }
 }
 
-void PlaybackWidget::onPause()
-{
-    try
-    {
-        auto& player = m_app.getEventPlayer();
-        if (player.getState() == Core::PlaybackState::Playing)
-        {
-            player.pausePlayback();
-            ui->playButton->setEnabled(true);
-            ui->pauseButton->setEnabled(false);
-            spdlog::info("PlaybackWidget: Playback paused");
-        }
-    }
-    catch (const std::exception& e)
-    {
-        showErrorMessage(
-          "Error", QString("Failed to pause playback: %1").arg(e.what())
-        );
-        spdlog::error("PlaybackWidget: Exception during pause: {}", e.what());
-    }
-}
-
 void PlaybackWidget::onStop()
 {
     try
@@ -279,7 +253,6 @@ void PlaybackWidget::onStop()
         player.stopPlayback();
 
         ui->playButton->setEnabled(true);
-        ui->pauseButton->setEnabled(false);
         ui->stopButton->setEnabled(false);
         ui->progressSlider->setValue(0);
 
@@ -573,7 +546,6 @@ void PlaybackWidget::loadFile(const QString& fileName)
 void PlaybackWidget::updateUI()
 {
     ui->playButton->setEnabled(m_fileLoaded);
-    ui->pauseButton->setEnabled(false);
     ui->stopButton->setEnabled(false);
 }
 
@@ -590,8 +562,7 @@ void PlaybackWidget::updatePlaybackProgress()
         auto& player = m_app.getEventPlayer();
         auto state = player.getState();
 
-        if (state == Core::PlaybackState::Playing ||
-            state == Core::PlaybackState::Paused)
+        if (state == Core::PlaybackState::Playing)
         {
             size_t current = player.getCurrentPosition();
             size_t total = player.getTotalEvents();
@@ -613,7 +584,6 @@ void PlaybackWidget::updatePlaybackProgress()
             state == Core::PlaybackState::Error)
         {
             ui->playButton->setEnabled(true);
-            ui->pauseButton->setEnabled(false);
             ui->stopButton->setEnabled(false);
             m_updateTimer->stop();
 

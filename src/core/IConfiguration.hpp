@@ -156,7 +156,6 @@ constexpr const char* SHORTCUT_START_RECORDING = "shortcuts.start_recording";
 constexpr const char* SHORTCUT_STOP_RECORDING = "shortcuts.stop_recording";
 constexpr const char* SHORTCUT_START_PLAYBACK = "shortcuts.start_playback";
 constexpr const char* SHORTCUT_STOP_PLAYBACK = "shortcuts.stop_playback";
-constexpr const char* SHORTCUT_PAUSE_PLAYBACK = "shortcuts.pause_playback";
 
 // File paths
 constexpr const char* LAST_SAVE_DIRECTORY = "files.last_save_directory";

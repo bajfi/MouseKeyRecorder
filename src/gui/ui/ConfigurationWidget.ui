@@ -1,434 +1,424 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ConfigurationWidget</class>
- <widget class="QWidget" name="ConfigurationWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>800</width>
-    <height>600</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Configuration</string>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <widget class="QTabWidget" name="configTabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="recordingConfigTab">
-      <attribute name="title">
-       <string>Recording</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="recordingConfigLayout">
-       <item>
-        <widget class="QGroupBox" name="captureGroupBox">
-         <property name="title">
-          <string>Event Capture</string>
-         </property>
-         <layout class="QGridLayout" name="captureLayout">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="captureMouseEventsCheckBox">
-            <property name="text">
-             <string>Capture Mouse Events</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QCheckBox" name="captureKeyboardEventsCheckBox">
-            <property name="text">
-             <string>Capture Keyboard Events</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="optimizeMouseMovementsCheckBox">
-            <property name="text">
-             <string>Optimize Mouse Movements</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="movementThresholdLabel">
-            <property name="text">
-             <string>Mouse Movement Threshold:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="movementThresholdSpinBox">
-            <property name="suffix">
-             <string> pixels</string>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="value">
-             <number>5</number>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="storageGroupBox">
-         <property name="title">
-          <string>File Storage</string>
-         </property>
-         <layout class="QGridLayout" name="storageLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="defaultFormatLabel">
-            <property name="text">
-             <string>Default File Format:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="defaultFormatComboBox">
+    <class>ConfigurationWidget</class>
+    <widget class="QWidget" name="ConfigurationWidget">
+        <property name="geometry">
+            <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>800</width>
+                <height>600</height>
+            </rect>
+        </property>
+        <property name="windowTitle">
+            <string>Configuration</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <property name="text">
-              <string>JSON (.json)</string>
-             </property>
+                <widget class="QTabWidget" name="configTabWidget">
+                    <property name="currentIndex">
+                        <number>0</number>
+                    </property>
+                    <widget class="QWidget" name="recordingConfigTab">
+                        <attribute name="title">
+                            <string>Recording</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="recordingConfigLayout">
+                            <item>
+                                <widget class="QGroupBox" name="captureGroupBox">
+                                    <property name="title">
+                                        <string>Event Capture</string>
+                                    </property>
+                                    <layout class="QGridLayout" name="captureLayout">
+                                        <item row="0" column="0">
+                                            <widget class="QCheckBox" name="captureMouseEventsCheckBox">
+                                                <property name="text">
+                                                    <string>Capture Mouse Events</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <widget class="QCheckBox" name="captureKeyboardEventsCheckBox">
+                                                <property name="text">
+                                                    <string>Capture Keyboard Events</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="0">
+                                            <widget class="QCheckBox" name="optimizeMouseMovementsCheckBox">
+                                                <property name="text">
+                                                    <string>Optimize Mouse Movements</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="0">
+                                            <widget class="QLabel" name="movementThresholdLabel">
+                                                <property name="text">
+                                                    <string>Mouse Movement Threshold:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="1">
+                                            <widget class="QSpinBox" name="movementThresholdSpinBox">
+                                                <property name="suffix">
+                                                    <string> pixels</string>
+                                                </property>
+                                                <property name="minimum">
+                                                    <number>0</number>
+                                                </property>
+                                                <property name="maximum">
+                                                    <number>100</number>
+                                                </property>
+                                                <property name="value">
+                                                    <number>5</number>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </widget>
+                            </item>
+                            <item>
+                                <widget class="QGroupBox" name="storageGroupBox">
+                                    <property name="title">
+                                        <string>File Storage</string>
+                                    </property>
+                                    <layout class="QGridLayout" name="storageLayout">
+                                        <item row="0" column="0">
+                                            <widget class="QLabel" name="defaultFormatLabel">
+                                                <property name="text">
+                                                    <string>Default File Format:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <widget class="QComboBox" name="defaultFormatComboBox">
+                                                <item>
+                                                    <property name="text">
+                                                        <string>JSON (.json)</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Binary (.mre)</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>XML (.xml)</string>
+                                                    </property>
+                                                </item>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </widget>
+                            </item>
+                            <item>
+                                <spacer name="recordingConfigSpacer">
+                                    <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                    </property>
+                                    <property name="sizeHint" stdset="0">
+                                        <size>
+                                            <width>20</width>
+                                            <height>40</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                            </item>
+                        </layout>
+                    </widget>
+                    <widget class="QWidget" name="playbackConfigTab">
+                        <attribute name="title">
+                            <string>Playback</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="playbackConfigLayout">
+                            <item>
+                                <widget class="QGroupBox" name="playbackGroupBox">
+                                    <property name="title">
+                                        <string>Playback Settings</string>
+                                    </property>
+                                    <layout class="QGridLayout" name="playbackLayout">
+                                        <item row="0" column="0">
+                                            <widget class="QLabel" name="defaultSpeedLabel">
+                                                <property name="text">
+                                                    <string>Default Playback Speed:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <widget class="QDoubleSpinBox" name="defaultSpeedSpinBox">
+                                                <property name="suffix">
+                                                    <string>x</string>
+                                                </property>
+                                                <property name="minimum">
+                                                    <double>0.100000000000000</double>
+                                                </property>
+                                                <property name="maximum">
+                                                    <double>10.000000000000000</double>
+                                                </property>
+                                                <property name="singleStep">
+                                                    <double>0.100000000000000</double>
+                                                </property>
+                                                <property name="value">
+                                                    <double>1.000000000000000</double>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="0">
+                                            <widget class="QCheckBox" name="loopPlaybackCheckBox">
+                                                <property name="text">
+                                                    <string>Loop Playback by Default</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="1">
+                                            <widget class="QCheckBox" name="showPlaybackCursorCheckBox">
+                                                <property name="text">
+                                                    <string>Show Playback Cursor</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </widget>
+                            </item>
+                            <item>
+                                <spacer name="playbackConfigSpacer">
+                                    <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                    </property>
+                                    <property name="sizeHint" stdset="0">
+                                        <size>
+                                            <width>20</width>
+                                            <height>40</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                            </item>
+                        </layout>
+                    </widget>
+                    <widget class="QWidget" name="shortcutsConfigTab">
+                        <attribute name="title">
+                            <string>Shortcuts</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="shortcutsConfigLayout">
+                            <item>
+                                <widget class="QGroupBox" name="shortcutsGroupBox">
+                                    <property name="title">
+                                        <string>Keyboard Shortcuts</string>
+                                    </property>
+                                    <layout class="QGridLayout" name="shortcutsLayout">
+                                        <item row="0" column="0">
+                                            <widget class="QLabel" name="startRecordingShortcutLabel">
+                                                <property name="text">
+                                                    <string>Start Recording:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <widget class="QKeySequenceEdit" name="startRecordingShortcutEdit"/>
+                                        </item>
+                                        <item row="1" column="0">
+                                            <widget class="QLabel" name="stopRecordingShortcutLabel">
+                                                <property name="text">
+                                                    <string>Stop Recording:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="1">
+                                            <widget class="QKeySequenceEdit" name="stopRecordingShortcutEdit"/>
+                                        </item>
+                                        <item row="2" column="0">
+                                            <widget class="QLabel" name="startPlaybackShortcutLabel">
+                                                <property name="text">
+                                                    <string>Start Playback:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="1">
+                                            <widget class="QKeySequenceEdit" name="startPlaybackShortcutEdit"/>
+                                        </item>
+                                        <item row="3" column="0">
+                                            <widget class="QLabel" name="stopPlaybackShortcutLabel">
+                                                <property name="text">
+                                                    <string>Stop Playback:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="3" column="1">
+                                            <widget class="QKeySequenceEdit" name="stopPlaybackShortcutEdit"/>
+                                        </item>
+                                    </layout>
+                                </widget>
+                            </item>
+                            <item>
+                                <spacer name="shortcutsConfigSpacer">
+                                    <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                    </property>
+                                    <property name="sizeHint" stdset="0">
+                                        <size>
+                                            <width>20</width>
+                                            <height>40</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                            </item>
+                        </layout>
+                    </widget>
+                    <widget class="QWidget" name="systemConfigTab">
+                        <attribute name="title">
+                            <string>System</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="systemConfigLayout">
+                            <item>
+                                <widget class="QGroupBox" name="loggingGroupBox">
+                                    <property name="title">
+                                        <string>Logging</string>
+                                    </property>
+                                    <layout class="QGridLayout" name="loggingLayout">
+                                        <item row="0" column="0">
+                                            <widget class="QLabel" name="logLevelLabel">
+                                                <property name="text">
+                                                    <string>Log Level:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <widget class="QComboBox" name="logLevelComboBox">
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Off</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Critical</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Error</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Warning</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Info</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Debug</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Trace</string>
+                                                    </property>
+                                                </item>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="0">
+                                            <widget class="QCheckBox" name="logToFileCheckBox">
+                                                <property name="text">
+                                                    <string>Log to File</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="0">
+                                            <widget class="QLabel" name="logFilePathLabel">
+                                                <property name="text">
+                                                    <string>Log File Path:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="1">
+                                            <layout class="QHBoxLayout" name="logFilePathLayout">
+                                                <item>
+                                                    <widget class="QLineEdit" name="logFilePathLineEdit">
+                                                        <property name="text">
+                                                            <string>mouserecorder.log</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                                <item>
+                                                    <widget class="QPushButton" name="browseLogFileButton">
+                                                        <property name="text">
+                                                            <string>Browse...</string>
+                                                        </property>
+                                                    </widget>
+                                                </item>
+                                            </layout>
+                                        </item>
+                                    </layout>
+                                </widget>
+                            </item>
+                            <item>
+                                <spacer name="systemConfigSpacer">
+                                    <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                    </property>
+                                    <property name="sizeHint" stdset="0">
+                                        <size>
+                                            <width>20</width>
+                                            <height>40</height>
+                                        </size>
+                                    </property>
+                                </spacer>
+                            </item>
+                        </layout>
+                    </widget>
+                </widget>
             </item>
             <item>
-             <property name="text">
-              <string>Binary (.mre)</string>
-             </property>
+                <layout class="QHBoxLayout" name="buttonsLayout">
+                    <item>
+                        <spacer name="buttonsSpacer">
+                            <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                                <size>
+                                    <width>40</width>
+                                    <height>20</height>
+                                </size>
+                            </property>
+                        </spacer>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="restoreDefaultsButton">
+                            <property name="text">
+                                <string>Restore Defaults</string>
+                            </property>
+                        </widget>
+                    </item>
+                    <item>
+                        <widget class="QPushButton" name="applyButton">
+                            <property name="text">
+                                <string>Apply</string>
+                            </property>
+                        </widget>
+                    </item>
+                </layout>
             </item>
-            <item>
-             <property name="text">
-              <string>XML (.xml)</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="recordingConfigSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="playbackConfigTab">
-      <attribute name="title">
-       <string>Playback</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="playbackConfigLayout">
-       <item>
-        <widget class="QGroupBox" name="playbackGroupBox">
-         <property name="title">
-          <string>Playback Settings</string>
-         </property>
-         <layout class="QGridLayout" name="playbackLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="defaultSpeedLabel">
-            <property name="text">
-             <string>Default Playback Speed:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="defaultSpeedSpinBox">
-            <property name="suffix">
-             <string>x</string>
-            </property>
-            <property name="minimum">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="maximum">
-             <double>10.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="loopPlaybackCheckBox">
-            <property name="text">
-             <string>Loop Playback by Default</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QCheckBox" name="showPlaybackCursorCheckBox">
-            <property name="text">
-             <string>Show Playback Cursor</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="playbackConfigSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="shortcutsConfigTab">
-      <attribute name="title">
-       <string>Shortcuts</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="shortcutsConfigLayout">
-       <item>
-        <widget class="QGroupBox" name="shortcutsGroupBox">
-         <property name="title">
-          <string>Keyboard Shortcuts</string>
-         </property>
-         <layout class="QGridLayout" name="shortcutsLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="startRecordingShortcutLabel">
-            <property name="text">
-             <string>Start Recording:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QKeySequenceEdit" name="startRecordingShortcutEdit"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="stopRecordingShortcutLabel">
-            <property name="text">
-             <string>Stop Recording:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QKeySequenceEdit" name="stopRecordingShortcutEdit"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="startPlaybackShortcutLabel">
-            <property name="text">
-             <string>Start Playback:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QKeySequenceEdit" name="startPlaybackShortcutEdit"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="stopPlaybackShortcutLabel">
-            <property name="text">
-             <string>Stop Playback:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QKeySequenceEdit" name="stopPlaybackShortcutEdit"/>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="pausePlaybackShortcutLabel">
-            <property name="text">
-             <string>Pause Playback:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QKeySequenceEdit" name="pausePlaybackShortcutEdit"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="shortcutsConfigSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="systemConfigTab">
-      <attribute name="title">
-       <string>System</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="systemConfigLayout">
-       <item>
-        <widget class="QGroupBox" name="loggingGroupBox">
-         <property name="title">
-          <string>Logging</string>
-         </property>
-         <layout class="QGridLayout" name="loggingLayout">
-          <item row="0" column="0">
-           <widget class="QLabel" name="logLevelLabel">
-            <property name="text">
-             <string>Log Level:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="logLevelComboBox">
-            <item>
-             <property name="text">
-              <string>Off</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Critical</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Error</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Warning</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Info</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Debug</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Trace</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="logToFileCheckBox">
-            <property name="text">
-             <string>Log to File</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="logFilePathLabel">
-            <property name="text">
-             <string>Log File Path:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <layout class="QHBoxLayout" name="logFilePathLayout">
-            <item>
-             <widget class="QLineEdit" name="logFilePathLineEdit">
-              <property name="text">
-               <string>mouserecorder.log</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="browseLogFileButton">
-              <property name="text">
-               <string>Browse...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <spacer name="systemConfigSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
+        </layout>
     </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="buttonsLayout">
-     <item>
-      <spacer name="buttonsSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="restoreDefaultsButton">
-       <property name="text">
-        <string>Restore Defaults</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="applyButton">
-       <property name="text">
-        <string>Apply</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-  </layout>
- </widget>
- <resources/>
- <connections/>
+    <resources/>
+    <connections/>
 </ui>

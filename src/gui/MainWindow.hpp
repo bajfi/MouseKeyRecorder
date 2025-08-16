@@ -66,7 +66,6 @@ class MainWindow : public QMainWindow
     void onStartRecording();
     void onStopRecording();
     void onStartPlayback();
-    void onPausePlayback();
     void onStopPlayback();
     void onExportEvents();
 
@@ -141,7 +140,6 @@ class MainWindow : public QMainWindow
     QShortcut* m_stopRecordingShortcut{nullptr};
     QShortcut* m_startPlaybackShortcut{nullptr};
     QShortcut* m_stopPlaybackShortcut{nullptr};
-    QShortcut* m_pausePlaybackShortcut{nullptr};
 
     // Global shortcut monitoring
     QTimer* m_globalShortcutTimer{nullptr};

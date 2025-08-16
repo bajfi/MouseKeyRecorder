@@ -52,8 +52,6 @@ LinuxEventReplay::~LinuxEventReplay()
     if (m_state.load() != Core::PlaybackState::Stopped)
     {
         m_shouldStop.store(true);
-        m_isPaused.store(false);
-        m_pauseCondition.notify_all();
         m_state.store(Core::PlaybackState::Stopped);
 
         if (m_playbackThread && m_playbackThread->joinable())
@@ -179,7 +177,6 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
 
     m_playbackCallback = std::move(callback);
     m_shouldStop.store(false);
-    m_isPaused.store(false);
 
     // Reset position when starting playback (especially important for replay)
     m_currentPosition.store(0);
@@ -207,29 +204,6 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
     return true;
 }
 
-void LinuxEventReplay::pausePlayback()
-{
-    spdlog::info("LinuxEventReplay: Pausing playback");
-
-    if (m_state.load() == Core::PlaybackState::Playing)
-    {
-        m_isPaused.store(true);
-        setState(Core::PlaybackState::Paused);
-    }
-}
-
-void LinuxEventReplay::resumePlayback()
-{
-    spdlog::info("LinuxEventReplay: Resuming playback");
-
-    if (m_state.load() == Core::PlaybackState::Paused)
-    {
-        m_isPaused.store(false);
-        m_pauseCondition.notify_all();
-        setState(Core::PlaybackState::Playing);
-    }
-}
-
 void LinuxEventReplay::stopPlayback()
 {
     spdlog::info("LinuxEventReplay: Stopping playback");
@@ -242,8 +216,6 @@ void LinuxEventReplay::stopPlayback()
 
     // Signal the playback thread to stop
     m_shouldStop.store(true);
-    m_isPaused.store(false);
-    m_pauseCondition.notify_all();
 
     // Set state to stopping to prevent race conditions
     setState(Core::PlaybackState::Stopped);
@@ -577,18 +549,6 @@ void LinuxEventReplay::playbackLoop()
                       m_events.size()
                     );
                     break;
-                }
-
-                // Handle pause
-                {
-                    std::unique_lock<std::mutex> lock(m_pauseMutex);
-                    m_pauseCondition.wait(
-                      lock,
-                      [this]
-                      {
-                          return !m_isPaused.load() || m_shouldStop.load();
-                      }
-                    );
                 }
 
                 if (m_shouldStop.load())

@@ -64,7 +64,6 @@ void ConfigurationWidget::setupUI()
     ui->stopRecordingShortcutEdit->setKeySequence(QKeySequence("Ctrl+Shift+R"));
     ui->startPlaybackShortcutEdit->setKeySequence(QKeySequence("Ctrl+P"));
     ui->stopPlaybackShortcutEdit->setKeySequence(QKeySequence("Ctrl+Shift+P"));
-    ui->pausePlaybackShortcutEdit->setKeySequence(QKeySequence("Ctrl+Space"));
 
     ui->logLevelComboBox->setCurrentIndex(4); // Info
     ui->logToFileCheckBox->setChecked(false);
@@ -140,11 +139,6 @@ void ConfigurationWidget::loadConfiguration()
     ui->stopPlaybackShortcutEdit->setKeySequence(QKeySequence(
       QString::fromStdString(
         config.getString(ConfigKeys::SHORTCUT_STOP_PLAYBACK, "Ctrl+Shift+P")
-      )
-    ));
-    ui->pausePlaybackShortcutEdit->setKeySequence(QKeySequence(
-      QString::fromStdString(
-        config.getString(ConfigKeys::SHORTCUT_PAUSE_PLAYBACK, "Ctrl+Space")
       )
     ));
 
@@ -243,10 +237,6 @@ void ConfigurationWidget::saveConfiguration()
       ConfigKeys::SHORTCUT_STOP_PLAYBACK,
       ui->stopPlaybackShortcutEdit->keySequence().toString().toStdString()
     );
-    config.setString(
-      ConfigKeys::SHORTCUT_PAUSE_PLAYBACK,
-      ui->pausePlaybackShortcutEdit->keySequence().toString().toStdString()
-    );
 
     // Save logging settings
     const QStringList logLevels = {
@@ -296,7 +286,6 @@ void ConfigurationWidget::onRestoreDefaults()
     ui->stopRecordingShortcutEdit->setKeySequence(QKeySequence("Ctrl+Shift+R"));
     ui->startPlaybackShortcutEdit->setKeySequence(QKeySequence("Ctrl+P"));
     ui->stopPlaybackShortcutEdit->setKeySequence(QKeySequence("Ctrl+Shift+P"));
-    ui->pausePlaybackShortcutEdit->setKeySequence(QKeySequence("Ctrl+Space"));
 
     ui->logLevelComboBox->setCurrentIndex(4);
     ui->logToFileCheckBox->setChecked(false);

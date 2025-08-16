@@ -217,24 +217,6 @@ TEST_F(PlaybackIntegrationTest, PlaybackStateTransitions)
       state == Core::PlaybackState::Completed
     );
 
-    // Only test pause/resume if still playing
-    if (state == Core::PlaybackState::Playing)
-    {
-        // Test pause
-        player.pausePlayback();
-        QTest::qWait(10);
-        EXPECT_EQ(player.getState(), Core::PlaybackState::Paused);
-
-        // Test resume
-        player.resumePlayback();
-        QTest::qWait(10);
-        state = player.getState();
-        EXPECT_TRUE(
-          state == Core::PlaybackState::Playing ||
-          state == Core::PlaybackState::Completed
-        );
-    }
-
     // Test stop
     player.stopPlayback();
     QTest::qWait(10);
