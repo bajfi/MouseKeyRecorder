@@ -12,6 +12,7 @@ set(TEST_SOURCES
     platform/test_LinuxEventReplay.cpp
     storage/test_EventStorage.cpp
     storage/test_EventStorageFormats.cpp
+    storage/test_EventStorageMetadata.cpp
     gui/test_ExportFunctionality.cpp
     gui/test_PlaybackWidget.cpp
     gui/test_ConfigurationPersistence.cpp

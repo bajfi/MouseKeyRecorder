@@ -26,6 +26,10 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <QDateTime>
+#include <QSysInfo>
+#include <QScreen>
+#include <QGuiApplication>
 #include <spdlog/spdlog.h>
 #include <filesystem>
 
@@ -986,13 +990,43 @@ void MainWindow::onExportEvents()
             }
         }
 
+        // Create metadata for the export
+        Core::StorageMetadata metadata;
+        metadata.version = "1.0.0";
+        metadata.applicationName = "MouseRecorder";
+        metadata.createdBy = QString(qgetenv("USER")).toStdString();
+        metadata.description = "Mouse and keyboard event recording";
+        metadata.creationTimestamp =
+          static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
+        metadata.totalEvents = eventsToExport.size();
+        metadata.platform = QSysInfo::prettyProductName().toStdString();
+
+        // Get screen resolution using the modern Qt API
+        QScreen* primaryScreen = QGuiApplication::primaryScreen();
+        if (primaryScreen)
+        {
+            QRect screenGeometry = primaryScreen->geometry();
+            metadata.screenResolution = QString("%1x%2")
+                                          .arg(screenGeometry.width())
+                                          .arg(screenGeometry.height())
+                                          .toStdString();
+        }
+
+        // Calculate total duration from first to last event
+        if (!eventsToExport.empty() && eventsToExport.size() > 1)
+        {
+            uint64_t firstTimestamp = eventsToExport.front()->getTimestampMs();
+            uint64_t lastTimestamp = eventsToExport.back()->getTimestampMs();
+            metadata.totalDurationMs = lastTimestamp - firstTimestamp;
+        }
+
         std::string file_with_suffix(fileName.toStdString());
         if (std::filesystem::path(fileName.toStdString()).extension() !=
             storage->getFileExtension())
         {
             file_with_suffix += storage->getFileExtension();
         }
-        if (storage->saveEvents(eventsToExport, file_with_suffix))
+        if (storage->saveEvents(eventsToExport, file_with_suffix, metadata))
         {
             QMessageBox::information(
               this,
@@ -1634,6 +1668,36 @@ bool MainWindow::saveEventsToFile(const QString& filename)
             }
         }
 
+        // Create metadata for the save
+        Core::StorageMetadata metadata;
+        metadata.version = "1.0.0";
+        metadata.applicationName = "MouseRecorder";
+        metadata.createdBy = QString(qgetenv("USER")).toStdString();
+        metadata.description = "Mouse and keyboard event recording";
+        metadata.creationTimestamp =
+          static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
+        metadata.totalEvents = eventsToSave.size();
+        metadata.platform = QSysInfo::prettyProductName().toStdString();
+
+        // Get screen resolution using the modern Qt API
+        QScreen* primaryScreen = QGuiApplication::primaryScreen();
+        if (primaryScreen)
+        {
+            QRect screenGeometry = primaryScreen->geometry();
+            metadata.screenResolution = QString("%1x%2")
+                                          .arg(screenGeometry.width())
+                                          .arg(screenGeometry.height())
+                                          .toStdString();
+        }
+
+        // Calculate total duration from first to last event
+        if (!eventsToSave.empty() && eventsToSave.size() > 1)
+        {
+            uint64_t firstTimestamp = eventsToSave.front()->getTimestampMs();
+            uint64_t lastTimestamp = eventsToSave.back()->getTimestampMs();
+            metadata.totalDurationMs = lastTimestamp - firstTimestamp;
+        }
+
         // Ensure the file has the correct extension
         std::string fileWithExtension = filename.toStdString();
         if (std::filesystem::path(filename.toStdString()).extension() !=
@@ -1642,7 +1706,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
             fileWithExtension += storage->getFileExtension();
         }
 
-        if (storage->saveEvents(eventsToSave, fileWithExtension))
+        if (storage->saveEvents(eventsToSave, fileWithExtension, metadata))
         {
             spdlog::info(
               "MainWindow: Saved {} events to {}",
