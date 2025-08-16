@@ -370,4 +370,78 @@ TEST_F(PlaybackIntegrationTest, ErrorHandling)
     QTest::qWait(50);
 }
 
+TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
+{
+    auto events = createTestEvents();
+    QString testFile = saveTestEvents(events);
+
+    auto& player = mouseRecorderApp->getEventPlayer();
+
+    // Load events from file via storage
+    auto storage = mouseRecorderApp->createStorage(Core::StorageFormat::Json);
+    std::vector<std::unique_ptr<Core::Event>> loadedEvents;
+    Core::StorageMetadata metadata;
+    storage->loadEvents(testFile.toStdString(), loadedEvents, metadata);
+
+    EXPECT_TRUE(player.loadEvents(std::move(loadedEvents)));
+
+    // Test initial state
+    EXPECT_EQ(player.getState(), Core::PlaybackState::Stopped);
+
+    // Start first playback
+    bool firstPlaybackStarted = false;
+    bool playbackCompleted = false;
+    auto callback = [&firstPlaybackStarted, &playbackCompleted](
+                      Core::PlaybackState state, size_t current, size_t total
+                    )
+    {
+        if (state == Core::PlaybackState::Playing && !firstPlaybackStarted)
+        {
+            firstPlaybackStarted = true;
+        }
+        if (state == Core::PlaybackState::Completed)
+        {
+            playbackCompleted = true;
+        }
+    };
+
+    // Set fast speed to complete quickly
+    player.setPlaybackSpeed(100.0);
+    EXPECT_TRUE(player.startPlayback(callback));
+
+    // Wait for playback to complete
+    int timeout = 0;
+    while (!playbackCompleted && timeout < 1000)
+    {
+        QTest::qWait(10);
+        timeout += 10;
+    }
+
+    EXPECT_TRUE(playbackCompleted);
+    EXPECT_EQ(player.getState(), Core::PlaybackState::Completed);
+
+    // Now test restarting playback - THIS IS THE BUG WE FIXED
+    bool secondPlaybackStarted = false;
+    auto secondCallback =
+      [&secondPlaybackStarted](
+        Core::PlaybackState state, size_t current, size_t total
+      )
+    {
+        if (state == Core::PlaybackState::Playing)
+        {
+            secondPlaybackStarted = true;
+        }
+    };
+
+    // This should succeed after our fix
+    EXPECT_TRUE(player.startPlayback(secondCallback));
+
+    QTest::qWait(50);
+    EXPECT_TRUE(secondPlaybackStarted);
+
+    // Clean up
+    player.stopPlayback();
+    EXPECT_EQ(player.getState(), Core::PlaybackState::Stopped);
+}
+
 } // namespace MouseRecorder::Tests::Integration

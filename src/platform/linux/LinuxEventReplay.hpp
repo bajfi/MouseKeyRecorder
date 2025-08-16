@@ -8,6 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <queue>
+#include <set>
 
 namespace MouseRecorder::Platform::Linux
 {
@@ -128,6 +129,11 @@ class LinuxEventReplay : public Core::IEventPlayer
     // Configuration
     std::atomic<double> m_playbackSpeed{1.0};
     std::atomic<bool> m_loopEnabled{false};
+
+    // Key state tracking for cleanup
+    std::mutex m_pressedKeysMutex;
+    std::set<KeyCode> m_pressedKeys;
+    std::set<unsigned int> m_pressedButtons;
 
     // Callbacks
     PlaybackCallback m_playbackCallback;

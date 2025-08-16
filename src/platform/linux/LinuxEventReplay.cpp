@@ -3,8 +3,12 @@
 #include "application/MouseRecorderApp.hpp"
 #include <X11/extensions/XTest.h>
 #include <X11/XKBlib.h>
+#include <X11/keysym.h>
 #include <spdlog/spdlog.h>
 #include <algorithm>
+#include <csignal>
+#include <atomic>
+#include <string>
 
 // Undefine X11 macros that conflict with our enums
 #ifdef KeyPress
@@ -17,27 +21,72 @@
 namespace MouseRecorder::Platform::Linux
 {
 
+// Global cleanup for emergency X11 situations
+static std::atomic<Display*> g_emergency_display{nullptr};
+
+static void emergencyCleanupHandler(int signal)
+{
+    Display* display = g_emergency_display.load();
+    if (display)
+    {
+        XCloseDisplay(display);
+        g_emergency_display.store(nullptr);
+    }
+    std::exit(signal);
+}
+
 LinuxEventReplay::LinuxEventReplay()
 {
     spdlog::debug("LinuxEventReplay: Constructor");
+    // Install signal handlers for emergency cleanup
+    std::signal(SIGSEGV, emergencyCleanupHandler);
+    std::signal(SIGTERM, emergencyCleanupHandler);
+    std::signal(SIGINT, emergencyCleanupHandler);
 }
 
 LinuxEventReplay::~LinuxEventReplay()
 {
-    // Stop playback without logging if spdlog is shut down
+    spdlog::debug("LinuxEventReplay: Destructor called");
+
+    // Stop playback and clean up resources immediately
     if (m_state.load() != Core::PlaybackState::Stopped)
     {
         m_shouldStop.store(true);
+        m_isPaused.store(false);
+        m_pauseCondition.notify_all();
         m_state.store(Core::PlaybackState::Stopped);
 
         if (m_playbackThread && m_playbackThread->joinable())
         {
-            m_playbackThread->join();
-            m_playbackThread.reset();
+            try
+            {
+                // Longer timeout for thread cleanup in destructor
+                if (m_playbackThread->joinable())
+                {
+                    m_playbackThread->join();
+                }
+                m_playbackThread.reset();
+            }
+            catch (const std::exception& e)
+            {
+                spdlog::error(
+                  "LinuxEventReplay: Exception in destructor thread cleanup: "
+                  "{}",
+                  e.what()
+                );
+            }
         }
     }
 
     cleanupX11();
+
+    // Clear emergency display reference
+    if (g_emergency_display.load() == m_display)
+    {
+        g_emergency_display.store(nullptr);
+    }
+
+    spdlog::debug("LinuxEventReplay: Destructor completed");
 }
 
 bool LinuxEventReplay::loadEvents(
@@ -46,14 +95,43 @@ bool LinuxEventReplay::loadEvents(
 {
     spdlog::info("LinuxEventReplay: Loading {} events", events.size());
 
-    if (m_state.load() != Core::PlaybackState::Stopped)
+    // Enhanced state checking with timeout for safety
+    auto currentState = m_state.load();
+    if (currentState != Core::PlaybackState::Stopped &&
+        currentState != Core::PlaybackState::Completed &&
+        currentState != Core::PlaybackState::Error)
     {
+        spdlog::error(
+          "LinuxEventReplay: Cannot load events while playback is active "
+          "(state: {})",
+          static_cast<int>(currentState)
+        );
         setLastError("Cannot load events while playback is active");
         return false;
     }
 
+    // Extra safety: wait for any potential thread cleanup
+    if (m_playbackThread && m_playbackThread->joinable())
+    {
+        spdlog::warn(
+          "LinuxEventReplay: Waiting for thread cleanup during event loading"
+        );
+        m_playbackThread->join();
+        m_playbackThread.reset();
+    }
+
     m_events = std::move(events);
     m_currentPosition.store(0);
+
+    // Reset state to Stopped when loading new events
+    setState(Core::PlaybackState::Stopped);
+
+    // Clear any tracked pressed keys
+    {
+        std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
+        m_pressedKeys.clear();
+        m_pressedButtons.clear();
+    }
 
     spdlog::info(
       "LinuxEventReplay: {} events loaded successfully", m_events.size()
@@ -65,8 +143,14 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
 {
     spdlog::info("LinuxEventReplay: Starting playback");
 
-    if (m_state.load() != Core::PlaybackState::Stopped)
+    auto currentState = m_state.load();
+    if (currentState != Core::PlaybackState::Stopped &&
+        currentState != Core::PlaybackState::Completed)
     {
+        spdlog::error(
+          "LinuxEventReplay: Playback is already active (state: {})",
+          static_cast<int>(currentState)
+        );
         setLastError("Playback is already active");
         return false;
     }
@@ -75,6 +159,17 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
     {
         setLastError("No events loaded for playback");
         return false;
+    }
+
+    // Ensure any previous thread is fully cleaned up
+    if (m_playbackThread)
+    {
+        if (m_playbackThread->joinable())
+        {
+            spdlog::warn("LinuxEventReplay: Joining previous playback thread");
+            m_playbackThread->join();
+        }
+        m_playbackThread.reset();
     }
 
     if (!initializeX11())
@@ -86,9 +181,24 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
     m_shouldStop.store(false);
     m_isPaused.store(false);
 
+    // Reset position when starting playback (especially important for replay)
+    m_currentPosition.store(0);
+
     // Start playback thread
-    m_playbackThread =
-      std::make_unique<std::thread>(&LinuxEventReplay::playbackLoop, this);
+    try
+    {
+        m_playbackThread =
+          std::make_unique<std::thread>(&LinuxEventReplay::playbackLoop, this);
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error(
+          "LinuxEventReplay: Failed to create playback thread: {}", e.what()
+        );
+        setLastError("Failed to create playback thread");
+        cleanupX11();
+        return false;
+    }
 
     setState(Core::PlaybackState::Playing);
     spdlog::info("LinuxEventReplay: Playback started successfully");
@@ -122,22 +232,46 @@ void LinuxEventReplay::stopPlayback()
 {
     spdlog::info("LinuxEventReplay: Stopping playback");
 
-    if (m_state.load() == Core::PlaybackState::Stopped)
+    auto currentState = m_state.load();
+    if (currentState == Core::PlaybackState::Stopped)
     {
         return;
     }
 
+    // Signal the playback thread to stop
     m_shouldStop.store(true);
     m_isPaused.store(false);
     m_pauseCondition.notify_all();
 
+    // Set state to stopping to prevent race conditions
+    setState(Core::PlaybackState::Stopped);
+
     if (m_playbackThread && m_playbackThread->joinable())
     {
-        m_playbackThread->join();
+        // Give the thread some time to cleanup gracefully
+        try
+        {
+            m_playbackThread->join();
+        }
+        catch (const std::exception& e)
+        {
+            spdlog::error(
+              "LinuxEventReplay: Exception during thread join: {}", e.what()
+            );
+        }
         m_playbackThread.reset();
     }
 
-    setState(Core::PlaybackState::Stopped);
+    // Cleanup X11 resources to prevent keyboard state corruption
+    cleanupX11();
+
+    // Clear tracked keys
+    {
+        std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
+        m_pressedKeys.clear();
+        m_pressedButtons.clear();
+    }
+
     m_playbackCallback = nullptr;
 
     spdlog::info("LinuxEventReplay: Playback stopped");
@@ -209,12 +343,22 @@ bool LinuxEventReplay::initializeX11()
 {
     spdlog::debug("LinuxEventReplay: Initializing X11");
 
+    // Cleanup any existing connection first
+    if (m_display)
+    {
+        XCloseDisplay(m_display);
+        m_display = nullptr;
+    }
+
     m_display = XOpenDisplay(nullptr);
     if (!m_display)
     {
         setLastError("Failed to open X11 display");
         return false;
     }
+
+    // Set emergency display for signal handler
+    g_emergency_display.store(m_display);
 
     m_rootWindow = DefaultRootWindow(m_display);
 
@@ -225,8 +369,12 @@ bool LinuxEventReplay::initializeX11()
         ))
     {
         setLastError("XTest extension not available");
+        cleanupX11();
         return false;
     }
+
+    // Enable synchronous mode for more predictable behavior during debugging
+    XSynchronize(m_display, True);
 
     spdlog::debug(
       "LinuxEventReplay: X11 initialized successfully, XTest version {}.{}",
@@ -242,8 +390,134 @@ void LinuxEventReplay::cleanupX11()
 
     if (m_display)
     {
-        XCloseDisplay(m_display);
+        // Clear emergency reference first
+        if (g_emergency_display.load() == m_display)
+        {
+            g_emergency_display.store(nullptr);
+        }
+
+        // Force synchronous cleanup to ensure all pending events are processed
+        try
+        {
+            XSync(m_display, True);
+
+            // Release all tracked pressed keys first
+            {
+                std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
+                for (KeyCode keycode : m_pressedKeys)
+                {
+                    XTestFakeKeyEvent(m_display, keycode, False, 0);
+                    spdlog::debug(
+                      "LinuxEventReplay: Released tracked key {}", keycode
+                    );
+                }
+                m_pressedKeys.clear();
+
+                for (unsigned int button : m_pressedButtons)
+                {
+                    XTestFakeButtonEvent(m_display, button, False, 0);
+                    spdlog::debug(
+                      "LinuxEventReplay: Released tracked button {}", button
+                    );
+                }
+                m_pressedButtons.clear();
+            }
+
+            // Reset any potentially stuck keys/buttons - this is critical for
+            // preventing keyboard corruption
+            // Release all possible mouse buttons (1-9) as additional safety
+            for (unsigned int button = 1; button <= 9; ++button)
+            {
+                XTestFakeButtonEvent(m_display, button, False, 0);
+            }
+
+            // Release all printable ASCII keys as additional safety
+            for (char c = 'a'; c <= 'z'; ++c)
+            {
+                KeySym keysym = XStringToKeysym(std::string(1, c).c_str());
+                if (keysym != NoSymbol)
+                {
+                    KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+                    if (keycode != 0)
+                    {
+                        XTestFakeKeyEvent(m_display, keycode, False, 0);
+                    }
+                }
+            }
+
+            // Release number keys
+            for (char c = '0'; c <= '9'; ++c)
+            {
+                KeySym keysym = XStringToKeysym(std::string(1, c).c_str());
+                if (keysym != NoSymbol)
+                {
+                    KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+                    if (keycode != 0)
+                    {
+                        XTestFakeKeyEvent(m_display, keycode, False, 0);
+                    }
+                }
+            }
+
+            // Release common modifier keys that might be stuck
+            const std::vector<KeySym> modifierKeys = {
+              XK_Shift_L,
+              XK_Shift_R,
+              XK_Control_L,
+              XK_Control_R,
+              XK_Alt_L,
+              XK_Alt_R,
+              XK_Meta_L,
+              XK_Meta_R,
+              XK_Super_L,
+              XK_Super_R,
+              XK_space,
+              XK_Return,
+              XK_Tab,
+              XK_Escape
+            };
+
+            for (KeySym keysym : modifierKeys)
+            {
+                KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+                if (keycode != 0)
+                {
+                    XTestFakeKeyEvent(m_display, keycode, False, 0);
+                }
+            }
+
+            // Ensure all events are flushed
+            XFlush(m_display);
+            XSync(m_display, False);
+        }
+        catch (const std::exception& e)
+        {
+            spdlog::error(
+              "LinuxEventReplay: Exception during input state cleanup: {}",
+              e.what()
+            );
+        }
+        catch (...)
+        {
+            // If cleanup fails, still proceed to close the display
+            spdlog::warn(
+              "LinuxEventReplay: Unknown exception during input state cleanup"
+            );
+        }
+
+        try
+        {
+            XCloseDisplay(m_display);
+        }
+        catch (...)
+        {
+            spdlog::error(
+              "LinuxEventReplay: Exception while closing X11 display"
+            );
+        }
+
         m_display = nullptr;
+        m_rootWindow = 0;
     }
 }
 
@@ -251,88 +525,179 @@ void LinuxEventReplay::playbackLoop()
 {
     spdlog::debug("LinuxEventReplay: Playback loop started");
 
-    // Get first event time for potential future timing calculations
-    [[maybe_unused]] auto startTime = std::chrono::steady_clock::now();
-    [[maybe_unused]] uint64_t firstEventTime = 0;
-
-    if (!m_events.empty())
+    try
     {
-        firstEventTime = m_events[0]->getTimestampMs();
-    }
+        // Get first event time for potential future timing calculations
+        [[maybe_unused]] auto startTime = std::chrono::steady_clock::now();
+        [[maybe_unused]] uint64_t firstEventTime = 0;
 
-    do
-    {
-        for (size_t i = m_currentPosition.load();
-             i < m_events.size() && !m_shouldStop.load();
-             ++i)
+        if (!m_events.empty())
         {
-            // Handle pause
+            firstEventTime = m_events[0]->getTimestampMs();
+        }
+
+        do
+        {
+            for (size_t i = m_currentPosition.load();
+                 i < m_events.size() && !m_shouldStop.load();
+                 ++i)
             {
-                std::unique_lock<std::mutex> lock(m_pauseMutex);
-                m_pauseCondition.wait(
-                  lock,
-                  [this]
-                  {
-                      return !m_isPaused.load() || m_shouldStop.load();
-                  }
-                );
-            }
-
-            if (m_shouldStop.load())
-            {
-                break;
-            }
-
-            const auto& event = m_events[i];
-
-            // Calculate delay
-            if (i > 0)
-            {
-                uint64_t currentEventTime = m_events[i - 1]->getTimestampMs();
-                uint64_t nextEventTime = event->getTimestampMs();
-                auto delay = calculateDelay(currentEventTime, nextEventTime);
-
-                if (delay.count() > 0)
+                // Safety check: ensure we're not accessing invalid memory
+                if (i >= m_events.size())
                 {
-                    std::this_thread::sleep_for(delay);
+                    spdlog::error(
+                      "LinuxEventReplay: Index {} out of bounds (size: {})",
+                      i,
+                      m_events.size()
+                    );
+                    break;
+                }
+
+                // Handle pause
+                {
+                    std::unique_lock<std::mutex> lock(m_pauseMutex);
+                    m_pauseCondition.wait(
+                      lock,
+                      [this]
+                      {
+                          return !m_isPaused.load() || m_shouldStop.load();
+                      }
+                    );
+                }
+
+                if (m_shouldStop.load())
+                {
+                    break;
+                }
+
+                // Additional safety check after potential wait
+                if (i >= m_events.size())
+                {
+                    spdlog::warn(
+                      "LinuxEventReplay: Event index invalid after wait"
+                    );
+                    break;
+                }
+
+                const auto& event = m_events[i];
+                if (!event)
+                {
+                    spdlog::error(
+                      "LinuxEventReplay: Null event at position {}", i
+                    );
+                    continue;
+                }
+
+                // Calculate delay
+                if (i > 0 && i - 1 < m_events.size())
+                {
+                    uint64_t currentEventTime =
+                      m_events[i - 1]->getTimestampMs();
+                    uint64_t nextEventTime = event->getTimestampMs();
+                    auto delay =
+                      calculateDelay(currentEventTime, nextEventTime);
+
+                    if (delay.count() > 0)
+                    {
+                        std::this_thread::sleep_for(delay);
+                    }
+                }
+
+                // Execute event callback
+                if (m_eventCallback)
+                {
+                    try
+                    {
+                        m_eventCallback(*event);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        spdlog::error(
+                          "LinuxEventReplay: Exception in event callback: {}",
+                          e.what()
+                        );
+                    }
+                }
+
+                // Execute the event with error handling
+                try
+                {
+                    if (!executeEvent(*event))
+                    {
+                        spdlog::warn(
+                          "LinuxEventReplay: Failed to execute event at "
+                          "position {}",
+                          i
+                        );
+                        // Continue with next event rather than stopping
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    spdlog::error(
+                      "LinuxEventReplay: Exception executing event {}: {}",
+                      i,
+                      e.what()
+                    );
+                    // Continue with next event
+                }
+
+                m_currentPosition.store(i + 1);
+
+                // Update progress callback
+                if (m_playbackCallback)
+                {
+                    try
+                    {
+                        m_playbackCallback(
+                          m_state.load(), i + 1, m_events.size()
+                        );
+                    }
+                    catch (const std::exception& e)
+                    {
+                        spdlog::error(
+                          "LinuxEventReplay: Exception in playback callback: "
+                          "{}",
+                          e.what()
+                        );
+                    }
                 }
             }
 
-            // Execute event callback
-            if (m_eventCallback)
+            // Handle looping
+            if (m_loopEnabled.load() && !m_shouldStop.load())
             {
-                m_eventCallback(*event);
+                m_currentPosition.store(0);
+                spdlog::debug("LinuxEventReplay: Looping playback");
             }
 
-            // Execute the event
-            if (!executeEvent(*event))
-            {
-                spdlog::warn(
-                  "LinuxEventReplay: Failed to execute event at position {}", i
-                );
-            }
+        } while (m_loopEnabled.load() && !m_shouldStop.load());
 
-            m_currentPosition.store(i + 1);
-
-            // Update progress callback
-            if (m_playbackCallback)
-            {
-                m_playbackCallback(m_state.load(), i + 1, m_events.size());
-            }
-        }
-
-        // Handle looping
-        if (m_loopEnabled.load() && !m_shouldStop.load())
+        if (!m_shouldStop.load())
         {
-            m_currentPosition.store(0);
-            spdlog::debug("LinuxEventReplay: Looping playback");
+            setState(Core::PlaybackState::Completed);
         }
-
-    } while (m_loopEnabled.load() && !m_shouldStop.load());
-
-    if (!m_shouldStop.load())
+        else
+        {
+            // If stopped explicitly, ensure state is set to Stopped
+            setState(Core::PlaybackState::Stopped);
+        }
+    }
+    catch (const std::exception& e)
     {
-        setState(Core::PlaybackState::Completed);
+        spdlog::error(
+          "LinuxEventReplay: Exception in playback loop: {}", e.what()
+        );
+        setLastError(
+          "Playback loop encountered an error: " + std::string(e.what())
+        );
+        setState(Core::PlaybackState::Error);
+    }
+    catch (...)
+    {
+        spdlog::error("LinuxEventReplay: Unknown exception in playback loop");
+        setLastError("Unknown error occurred during playback");
+        setState(Core::PlaybackState::Error);
     }
 
     spdlog::debug("LinuxEventReplay: Playback loop ended");
@@ -509,11 +874,21 @@ bool LinuxEventReplay::executeKeyboardEvent(const Core::Event& event)
     {
     case Core::EventType::KeyPress: {
         XTestFakeKeyEvent(m_display, keycode, True, 0);
+        // Track pressed key for cleanup
+        {
+            std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
+            m_pressedKeys.insert(keycode);
+        }
         break;
     }
 
     case Core::EventType::KeyRelease: {
         XTestFakeKeyEvent(m_display, keycode, False, 0);
+        // Remove from pressed keys tracking
+        {
+            std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
+            m_pressedKeys.erase(keycode);
+        }
         break;
     }
 
@@ -522,6 +897,7 @@ bool LinuxEventReplay::executeKeyboardEvent(const Core::Event& event)
         // This is a simplified implementation
         XTestFakeKeyEvent(m_display, keycode, True, 0);
         XTestFakeKeyEvent(m_display, keycode, False, 0);
+        // No need to track since we immediately release
         break;
     }
 

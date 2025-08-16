@@ -158,14 +158,40 @@ void PlaybackWidget::onPlay()
     {
         auto& player = m_app.getEventPlayer();
 
-        // Move events to player (we'll need to reload if we want to play again)
-        if (!player.loadEvents(std::move(m_loadedEvents)))
+        // Check current state before proceeding
+        auto currentState = player.getState();
+        if (currentState != Core::PlaybackState::Stopped &&
+            currentState != Core::PlaybackState::Completed)
+        {
+            spdlog::warn(
+              "PlaybackWidget: Attempted to play while state is: {}",
+              static_cast<int>(currentState)
+            );
+            showWarningMessage(
+              "Playback Active",
+              "Playback is already in progress. Please stop it first."
+            );
+            return;
+        }
+
+        // Create copies of events instead of moving them
+        // This prevents the issue where subsequent plays fail due to empty
+        // event vector
+        std::vector<std::unique_ptr<Core::Event>> eventsCopy;
+        eventsCopy.reserve(m_loadedEvents.size());
+
+        for (const auto& event : m_loadedEvents)
+        {
+            // Create a copy of each event
+            auto eventCopy = std::make_unique<Core::Event>(*event);
+            eventsCopy.push_back(std::move(eventCopy));
+        }
+
+        if (!player.loadEvents(std::move(eventsCopy)))
         {
             showErrorMessage(
               "Playback Error", QString::fromStdString(player.getLastError())
             );
-            // Reload events since move failed
-            loadFile(m_currentFile);
             return;
         }
 
@@ -526,11 +552,8 @@ void PlaybackWidget::updatePlaybackProgress()
                 emit playbackStopped();
                 spdlog::info("PlaybackWidget: Playback completed");
 
-                // Reload events for potential replay
-                if (!m_currentFile.isEmpty())
-                {
-                    loadFile(m_currentFile);
-                }
+                // No need to reload file - we keep the events in memory for
+                // replay
             }
             else if (state == Core::PlaybackState::Error)
             {
