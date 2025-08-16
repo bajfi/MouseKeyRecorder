@@ -109,6 +109,12 @@ class LinuxEventReplay : public Core::IEventPlayer
      */
     void setLastError(const std::string& error);
 
+    /**
+     * @brief Clean up any pending input state without closing the display
+     * @brief This ensures mouse/keyboard state is clean after playback
+     */
+    void cleanupInputState();
+
   private:
     // X11 resources
     Display* m_display{nullptr};

@@ -236,8 +236,8 @@ void LinuxEventReplay::stopPlayback()
         m_playbackThread.reset();
     }
 
-    // Cleanup X11 resources to prevent keyboard state corruption
-    cleanupX11();
+    // Cleanup input state to prevent keyboard/mouse state corruption
+    cleanupInputState();
 
     // Clear tracked keys
     {
@@ -369,6 +369,97 @@ bool LinuxEventReplay::initializeX11()
     return true;
 }
 
+void LinuxEventReplay::cleanupInputState()
+{
+    spdlog::debug("LinuxEventReplay: Cleaning up input state");
+
+    if (!m_display)
+    {
+        return;
+    }
+
+    try
+    {
+        // Force synchronous cleanup to ensure all pending events are processed
+        XSync(m_display, True);
+
+        // Release all tracked pressed keys first
+        {
+            std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
+            for (KeyCode keycode : m_pressedKeys)
+            {
+                XTestFakeKeyEvent(m_display, keycode, False, 0);
+                spdlog::debug(
+                  "LinuxEventReplay: Released tracked key {}", keycode
+                );
+            }
+            m_pressedKeys.clear();
+
+            for (unsigned int button : m_pressedButtons)
+            {
+                XTestFakeButtonEvent(m_display, button, False, 0);
+                spdlog::debug(
+                  "LinuxEventReplay: Released tracked button {}", button
+                );
+            }
+            m_pressedButtons.clear();
+        }
+
+        // Reset any potentially stuck keys/buttons - this is critical for
+        // preventing input corruption
+        // Release all possible mouse buttons (1-9) as additional safety
+        for (unsigned int button = 1; button <= 9; ++button)
+        {
+            XTestFakeButtonEvent(m_display, button, False, 0);
+        }
+
+        // Release common modifier keys that might be stuck
+        const std::vector<KeySym> modifierKeys = {
+          XK_Shift_L,
+          XK_Shift_R,
+          XK_Control_L,
+          XK_Control_R,
+          XK_Alt_L,
+          XK_Alt_R,
+          XK_Meta_L,
+          XK_Meta_R,
+          XK_Super_L,
+          XK_Super_R,
+          XK_space,
+          XK_Return,
+          XK_Tab,
+          XK_Escape
+        };
+
+        for (KeySym keysym : modifierKeys)
+        {
+            KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+            if (keycode != 0)
+            {
+                XTestFakeKeyEvent(m_display, keycode, False, 0);
+            }
+        }
+
+        // Ensure all events are flushed and processed immediately
+        XFlush(m_display);
+        XSync(m_display, False);
+
+        spdlog::debug("LinuxEventReplay: Input state cleanup completed");
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error(
+          "LinuxEventReplay: Exception during input state cleanup: {}", e.what()
+        );
+    }
+    catch (...)
+    {
+        spdlog::warn(
+          "LinuxEventReplay: Unknown exception during input state cleanup"
+        );
+    }
+}
+
 void LinuxEventReplay::cleanupX11()
 {
     spdlog::debug("LinuxEventReplay: Cleaning up X11 resources");
@@ -381,114 +472,8 @@ void LinuxEventReplay::cleanupX11()
             g_emergency_display.store(nullptr);
         }
 
-        // Force synchronous cleanup to ensure all pending events are processed
-        try
-        {
-            XSync(m_display, True);
-
-            // Release all tracked pressed keys first
-            {
-                std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
-                for (KeyCode keycode : m_pressedKeys)
-                {
-                    XTestFakeKeyEvent(m_display, keycode, False, 0);
-                    spdlog::debug(
-                      "LinuxEventReplay: Released tracked key {}", keycode
-                    );
-                }
-                m_pressedKeys.clear();
-
-                for (unsigned int button : m_pressedButtons)
-                {
-                    XTestFakeButtonEvent(m_display, button, False, 0);
-                    spdlog::debug(
-                      "LinuxEventReplay: Released tracked button {}", button
-                    );
-                }
-                m_pressedButtons.clear();
-            }
-
-            // Reset any potentially stuck keys/buttons - this is critical for
-            // preventing keyboard corruption
-            // Release all possible mouse buttons (1-9) as additional safety
-            for (unsigned int button = 1; button <= 9; ++button)
-            {
-                XTestFakeButtonEvent(m_display, button, False, 0);
-            }
-
-            // Release all printable ASCII keys as additional safety
-            for (char c = 'a'; c <= 'z'; ++c)
-            {
-                KeySym keysym = XStringToKeysym(std::string(1, c).c_str());
-                if (keysym != NoSymbol)
-                {
-                    KeyCode keycode = XKeysymToKeycode(m_display, keysym);
-                    if (keycode != 0)
-                    {
-                        XTestFakeKeyEvent(m_display, keycode, False, 0);
-                    }
-                }
-            }
-
-            // Release number keys
-            for (char c = '0'; c <= '9'; ++c)
-            {
-                KeySym keysym = XStringToKeysym(std::string(1, c).c_str());
-                if (keysym != NoSymbol)
-                {
-                    KeyCode keycode = XKeysymToKeycode(m_display, keysym);
-                    if (keycode != 0)
-                    {
-                        XTestFakeKeyEvent(m_display, keycode, False, 0);
-                    }
-                }
-            }
-
-            // Release common modifier keys that might be stuck
-            const std::vector<KeySym> modifierKeys = {
-              XK_Shift_L,
-              XK_Shift_R,
-              XK_Control_L,
-              XK_Control_R,
-              XK_Alt_L,
-              XK_Alt_R,
-              XK_Meta_L,
-              XK_Meta_R,
-              XK_Super_L,
-              XK_Super_R,
-              XK_space,
-              XK_Return,
-              XK_Tab,
-              XK_Escape
-            };
-
-            for (KeySym keysym : modifierKeys)
-            {
-                KeyCode keycode = XKeysymToKeycode(m_display, keysym);
-                if (keycode != 0)
-                {
-                    XTestFakeKeyEvent(m_display, keycode, False, 0);
-                }
-            }
-
-            // Ensure all events are flushed
-            XFlush(m_display);
-            XSync(m_display, False);
-        }
-        catch (const std::exception& e)
-        {
-            spdlog::error(
-              "LinuxEventReplay: Exception during input state cleanup: {}",
-              e.what()
-            );
-        }
-        catch (...)
-        {
-            // If cleanup fails, still proceed to close the display
-            spdlog::warn(
-              "LinuxEventReplay: Unknown exception during input state cleanup"
-            );
-        }
+        // Clean up input state first
+        cleanupInputState();
 
         try
         {
@@ -695,11 +680,14 @@ void LinuxEventReplay::playbackLoop()
 
         if (!m_shouldStop.load())
         {
+            // Clean up input state immediately when playback completes normally
+            cleanupInputState();
             setState(Core::PlaybackState::Completed);
         }
         else
         {
             // If stopped explicitly, ensure state is set to Stopped
+            cleanupInputState();
             setState(Core::PlaybackState::Stopped);
         }
     }
@@ -762,6 +750,9 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
           mouseData->position.y,
           0
         );
+        // Ensure mouse movement is immediately processed
+        XFlush(m_display);
+        XSync(m_display, False);
         break;
     }
 
@@ -799,6 +790,9 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
         // Press and release
         XTestFakeButtonEvent(m_display, button, True, 0);
         XTestFakeButtonEvent(m_display, button, False, 0);
+        // Ensure click events are immediately processed
+        XFlush(m_display);
+        XSync(m_display, False);
         break;
     }
 
@@ -838,6 +832,9 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
         XTestFakeButtonEvent(m_display, button, False, 0);
         XTestFakeButtonEvent(m_display, button, True, 0);
         XTestFakeButtonEvent(m_display, button, False, 0);
+        // Ensure double-click events are immediately processed
+        XFlush(m_display);
+        XSync(m_display, False);
         break;
     }
 
@@ -899,6 +896,9 @@ bool LinuxEventReplay::executeKeyboardEvent(const Core::Event& event)
             std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
             m_pressedKeys.insert(keycode);
         }
+        // Ensure key press is immediately processed
+        XFlush(m_display);
+        XSync(m_display, False);
         break;
     }
 
@@ -909,6 +909,9 @@ bool LinuxEventReplay::executeKeyboardEvent(const Core::Event& event)
             std::lock_guard<std::mutex> lock(m_pressedKeysMutex);
             m_pressedKeys.erase(keycode);
         }
+        // Ensure key release is immediately processed
+        XFlush(m_display);
+        XSync(m_display, False);
         break;
     }
 
@@ -918,6 +921,9 @@ bool LinuxEventReplay::executeKeyboardEvent(const Core::Event& event)
         XTestFakeKeyEvent(m_display, keycode, True, 0);
         XTestFakeKeyEvent(m_display, keycode, False, 0);
         // No need to track since we immediately release
+        // Ensure key combination is immediately processed
+        XFlush(m_display);
+        XSync(m_display, False);
         break;
     }
 
