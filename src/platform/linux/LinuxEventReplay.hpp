@@ -123,6 +123,7 @@ class LinuxEventReplay : public Core::IEventPlayer
     // Events and playback control
     std::vector<std::unique_ptr<Core::Event>> m_events;
     std::atomic<size_t> m_currentPosition{0};
+    std::atomic<size_t> m_totalEvents{0}; // Thread-safe total events count
     std::atomic<Core::PlaybackState> m_state{Core::PlaybackState::Stopped};
 
     // Threading and synchronization

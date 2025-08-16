@@ -9,6 +9,8 @@
 #include <QLabel>
 #include <QSlider>
 #include <QTableWidget>
+#include <thread>
+#include <chrono>
 #include "gui/PlaybackWidget.hpp"
 #include "application/MouseRecorderApp.hpp"
 #include "core/Event.hpp"
@@ -20,19 +22,27 @@ using namespace MouseRecorder::GUI;
 namespace MouseRecorder::Tests::GUI
 {
 
+// Global static QApplication for all GUI tests to avoid recreation issues
+static QApplication* getGlobalTestApp()
+{
+    static std::unique_ptr<QApplication> globalApp;
+    if (!globalApp && !QApplication::instance())
+    {
+        static int argc = 1;
+        static char argv0[] = "test";
+        static char* argv[] = {argv0};
+        globalApp = std::make_unique<QApplication>(argc, argv);
+    }
+    return globalApp.get();
+}
+
 class PlaybackWidgetTest : public ::testing::Test
 {
   protected:
     void SetUp() override
     {
-        // Initialize QApplication if not already done
-        if (!QApplication::instance())
-        {
-            static int argc = 1;
-            static char argv0[] = "test";
-            static char* argv[] = {argv0};
-            app = std::make_unique<QApplication>(argc, argv);
-        }
+        // Ensure we have a QApplication instance
+        getGlobalTestApp();
 
         // Initialize MouseRecorderApp (NOT in headless mode for testing)
         mouseRecorderApp = std::make_unique<Application::MouseRecorderApp>();
@@ -48,8 +58,18 @@ class PlaybackWidgetTest : public ::testing::Test
 
     void TearDown() override
     {
-        playbackWidget.reset();
-        mouseRecorderApp.reset();
+        // Simply clean up without forcing Qt event processing
+        if (playbackWidget)
+        {
+            playbackWidget->disconnect();
+            playbackWidget.reset();
+        }
+        
+        if (mouseRecorderApp)
+        {
+            mouseRecorderApp->shutdown();
+            mouseRecorderApp.reset();
+        }
     }
 
     // Helper method to create a test recording file
@@ -96,7 +116,6 @@ class PlaybackWidgetTest : public ::testing::Test
         return fileName;
     }
 
-    std::unique_ptr<QApplication> app;
     std::unique_ptr<Application::MouseRecorderApp> mouseRecorderApp;
     std::unique_ptr<MouseRecorder::GUI::PlaybackWidget> playbackWidget;
     std::vector<std::unique_ptr<QTemporaryFile>> tempFiles;
@@ -264,7 +283,12 @@ TEST_F(PlaybackWidgetTest, ErrorHandling)
     // Try to load an invalid file
     QString invalidFile = "/nonexistent/file.json";
     playbackWidget->loadFile(invalidFile);
-    QTest::qWait(100);
+    
+    // Process any pending Qt events from the loadFile operation
+    if (QApplication::instance())
+    {
+        QApplication::processEvents(QEventLoop::AllEvents, 200);
+    }
 
     // Play button should still be disabled
     EXPECT_FALSE(playButton->isEnabled());

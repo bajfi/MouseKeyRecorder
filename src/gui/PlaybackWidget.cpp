@@ -28,6 +28,21 @@ PlaybackWidget::PlaybackWidget(
 
 PlaybackWidget::~PlaybackWidget()
 {
+    // Stop timer to prevent any pending timer events
+    if (m_updateTimer)
+    {
+        m_updateTimer->stop();
+        m_updateTimer->disconnect();
+        m_updateTimer->deleteLater();
+        m_updateTimer = nullptr;
+    }
+    
+    // Disconnect all signals to prevent callbacks during destruction
+    disconnect();
+    
+    // Clear any loaded events to free memory
+    m_loadedEvents.clear();
+    
     delete ui;
 }
 
@@ -373,12 +388,18 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
     QFileInfo fileInfo(fileName);
 
-    // Show progress dialog for large files
-    QProgressDialog progress("Loading events...", "Cancel", 0, 0, this);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setMinimumDuration(500); // Show after 500ms
-    progress.show();
-    QApplication::processEvents();    // Allow the progress dialog to show
+    // Show progress dialog for large files (but not in test environment)
+    std::unique_ptr<QProgressDialog> progress;
+    if (!TestUtils::isTestEnvironment())
+    {
+        progress = std::make_unique<QProgressDialog>(
+          "Loading events...", "Cancel", 0, 0, nullptr
+        );
+        progress->setWindowModality(Qt::WindowModal);
+        progress->setMinimumDuration(500); // Show after 500ms
+        progress->show();
+        QApplication::processEvents();     // Allow the progress dialog to show
+    }
 
     try
     {
@@ -389,6 +410,11 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
         if (!storage)
         {
+            if (progress)
+            {
+                progress->close();
+                QApplication::processEvents();
+            }
             if (!TestUtils::isTestEnvironment())
             {
                 showErrorMessage("Error", "Unsupported file format");
@@ -401,6 +427,11 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
         if (!storage->loadEvents(fileName.toStdString(), events, metadata))
         {
+            if (progress)
+            {
+                progress->close();
+                QApplication::processEvents();
+            }
             showErrorMessage(
               "Error", QString::fromStdString(storage->getLastError())
             );
@@ -525,11 +556,23 @@ void PlaybackWidget::loadFile(const QString& fileName)
           m_currentFile.toStdString()
         );
 
+        // Close progress dialog before emitting signal
+        if (progress)
+        {
+            progress->close();
+            QApplication::processEvents();
+        }
+
         // Emit signal to notify that file was loaded
         emit fileLoaded(m_currentFile);
     }
     catch (const std::exception& e)
     {
+        if (progress)
+        {
+            progress->close();
+            QApplication::processEvents();
+        }
         showErrorMessage(
           "Error", QString("Failed to load file: %1").arg(e.what())
         );

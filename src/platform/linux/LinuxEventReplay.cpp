@@ -120,6 +120,7 @@ bool LinuxEventReplay::loadEvents(
 
     m_events = std::move(events);
     m_currentPosition.store(0);
+    m_totalEvents.store(m_events.size()); // Store thread-safe total count
 
     // Reset state to Stopped when loading new events
     setState(Core::PlaybackState::Stopped);
@@ -297,12 +298,12 @@ size_t LinuxEventReplay::getCurrentPosition() const noexcept
 
 size_t LinuxEventReplay::getTotalEvents() const noexcept
 {
-    return m_events.size();
+    return m_totalEvents.load();
 }
 
 bool LinuxEventReplay::seekToPosition(size_t position)
 {
-    if (position >= m_events.size())
+    if (position >= m_totalEvents.load())
     {
         setLastError("Seek position out of range");
         return false;
@@ -621,7 +622,7 @@ void LinuxEventReplay::playbackLoop()
                     try
                     {
                         m_playbackCallback(
-                          m_state.load(), i + 1, m_events.size()
+                          m_state.load(), i + 1, m_totalEvents.load()
                         );
                     }
                     catch (const std::exception& e)
@@ -978,7 +979,9 @@ void LinuxEventReplay::setState(Core::PlaybackState newState)
 
     if (m_playbackCallback)
     {
-        m_playbackCallback(newState, m_currentPosition.load(), m_events.size());
+        m_playbackCallback(
+          newState, m_currentPosition.load(), m_totalEvents.load()
+        );
     }
 }
 

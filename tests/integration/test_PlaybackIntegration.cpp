@@ -248,7 +248,7 @@ TEST_F(PlaybackIntegrationTest, PlaybackWithCallback)
     Core::PlaybackState lastState = Core::PlaybackState::Stopped;
 
     auto progressCallback =
-      [&](Core::PlaybackState state, size_t current, size_t total)
+      [&, totalEvents](Core::PlaybackState state, size_t current, size_t total)
     {
         callbackCount++;
         lastPosition = current;
