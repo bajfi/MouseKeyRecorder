@@ -64,7 +64,7 @@ class PlaybackWidgetTest : public ::testing::Test
             playbackWidget->disconnect();
             playbackWidget.reset();
         }
-        
+
         if (mouseRecorderApp)
         {
             mouseRecorderApp->shutdown();
@@ -283,7 +283,7 @@ TEST_F(PlaybackWidgetTest, ErrorHandling)
     // Try to load an invalid file
     QString invalidFile = "/nonexistent/file.json";
     playbackWidget->loadFile(invalidFile);
-    
+
     // Process any pending Qt events from the loadFile operation
     if (QApplication::instance())
     {

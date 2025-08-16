@@ -36,13 +36,13 @@ PlaybackWidget::~PlaybackWidget()
         m_updateTimer->deleteLater();
         m_updateTimer = nullptr;
     }
-    
+
     // Disconnect all signals to prevent callbacks during destruction
     disconnect();
-    
+
     // Clear any loaded events to free memory
     m_loadedEvents.clear();
-    
+
     delete ui;
 }
 
