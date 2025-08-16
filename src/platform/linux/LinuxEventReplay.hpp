@@ -36,6 +36,8 @@ class LinuxEventReplay : public Core::IEventPlayer
     double getPlaybackSpeed() const noexcept override;
     void setLoopPlayback(bool loop) override;
     bool isLoopEnabled() const noexcept override;
+    void setLoopCount(int count) override;
+    int getLoopCount() const noexcept override;
     size_t getCurrentPosition() const noexcept override;
     size_t getTotalEvents() const noexcept override;
     bool seekToPosition(size_t position) override;
@@ -129,6 +131,10 @@ class LinuxEventReplay : public Core::IEventPlayer
     // Configuration
     std::atomic<double> m_playbackSpeed{1.0};
     std::atomic<bool> m_loopEnabled{false};
+    std::atomic<int> m_loopCount{
+      0
+    }; // 0 = infinite, 1 = no loop, >1 = specific count
+    std::atomic<int> m_currentLoopIteration{0}; // Current iteration counter
 
     // Key state tracking for cleanup
     std::mutex m_pressedKeysMutex;

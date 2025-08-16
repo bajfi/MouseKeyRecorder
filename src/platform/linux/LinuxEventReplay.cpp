@@ -183,6 +183,8 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
 
     // Reset position when starting playback (especially important for replay)
     m_currentPosition.store(0);
+    // Reset loop iteration counter
+    m_currentLoopIteration.store(0);
 
     // Start playback thread
     try
@@ -303,6 +305,17 @@ void LinuxEventReplay::setLoopPlayback(bool loop)
 bool LinuxEventReplay::isLoopEnabled() const noexcept
 {
     return m_loopEnabled.load();
+}
+
+void LinuxEventReplay::setLoopCount(int count)
+{
+    m_loopCount.store(count);
+    spdlog::debug("LinuxEventReplay: Loop count set to {}", count);
+}
+
+int LinuxEventReplay::getLoopCount() const noexcept
+{
+    return m_loopCount.load();
 }
 
 size_t LinuxEventReplay::getCurrentPosition() const noexcept
@@ -536,8 +549,21 @@ void LinuxEventReplay::playbackLoop()
             firstEventTime = m_events[0]->getTimestampMs();
         }
 
+        // Reset loop iteration counter
+        m_currentLoopIteration.store(0);
+
         do
         {
+            // Increment loop iteration for finite loops
+            if (m_loopEnabled.load() && m_loopCount.load() > 0)
+            {
+                m_currentLoopIteration.fetch_add(1);
+                spdlog::debug(
+                  "LinuxEventReplay: Starting loop iteration {}/{}",
+                  m_currentLoopIteration.load(),
+                  m_loopCount.load()
+                );
+            }
             for (size_t i = m_currentPosition.load();
                  i < m_events.size() && !m_shouldStop.load();
                  ++i)
@@ -667,8 +693,42 @@ void LinuxEventReplay::playbackLoop()
             // Handle looping
             if (m_loopEnabled.load() && !m_shouldStop.load())
             {
-                m_currentPosition.store(0);
-                spdlog::debug("LinuxEventReplay: Looping playback");
+                int loopCount = m_loopCount.load();
+                int currentIteration = m_currentLoopIteration.load();
+
+                // Check if we should continue looping
+                bool shouldContinueLoop = false;
+                if (loopCount == 0) // Infinite loop
+                {
+                    shouldContinueLoop = true;
+                    spdlog::debug("LinuxEventReplay: Continuing infinite loop");
+                }
+                else if (currentIteration < loopCount) // Finite loop
+                {
+                    shouldContinueLoop = true;
+                    spdlog::debug(
+                      "LinuxEventReplay: Continuing loop iteration {}/{}",
+                      currentIteration,
+                      loopCount
+                    );
+                }
+                else
+                {
+                    spdlog::debug(
+                      "LinuxEventReplay: Completed {} loops, stopping",
+                      loopCount
+                    );
+                }
+
+                if (shouldContinueLoop)
+                {
+                    m_currentPosition.store(0);
+                }
+                else
+                {
+                    // Exit the loop for finite loops that have completed
+                    break;
+                }
             }
 
         } while (m_loopEnabled.load() && !m_shouldStop.load());

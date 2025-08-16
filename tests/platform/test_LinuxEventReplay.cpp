@@ -192,6 +192,24 @@ TEST_F(LinuxEventReplayTest, LoopPlayback)
     EXPECT_FALSE(m_eventPlayer->isLoopEnabled());
 }
 
+TEST_F(LinuxEventReplayTest, LoopCount)
+{
+    // Test default loop count
+    EXPECT_EQ(m_eventPlayer->getLoopCount(), 0);
+
+    // Test setting loop count
+    m_eventPlayer->setLoopCount(5);
+    EXPECT_EQ(m_eventPlayer->getLoopCount(), 5);
+
+    // Test infinite loop (0)
+    m_eventPlayer->setLoopCount(0);
+    EXPECT_EQ(m_eventPlayer->getLoopCount(), 0);
+
+    // Test single loop (1)
+    m_eventPlayer->setLoopCount(1);
+    EXPECT_EQ(m_eventPlayer->getLoopCount(), 1);
+}
+
 TEST_F(LinuxEventReplayTest, SeekToPosition)
 {
     auto events = createTestEvents();

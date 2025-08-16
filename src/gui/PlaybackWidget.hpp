@@ -48,6 +48,8 @@ class PlaybackWidget : public QWidget
     void onSpeedChanged(int value);
     void onResetSpeed();
     void onProgressChanged(int value);
+    void onLoopToggled(bool enabled);
+    void onLoopCountChanged(int count);
     void updatePlaybackProgress();
 
   public slots:

@@ -73,6 +73,18 @@ void PlaybackWidget::setupUI()
       this,
       &PlaybackWidget::onProgressChanged
     );
+    connect(
+      ui->loopCheckBox,
+      &QCheckBox::toggled,
+      this,
+      &PlaybackWidget::onLoopToggled
+    );
+    connect(
+      ui->loopCountSpinBox,
+      QOverload<int>::of(&QSpinBox::valueChanged),
+      this,
+      &PlaybackWidget::onLoopCountChanged
+    );
 
     // Initialize table headers
     ui->eventsPreviewTableWidget->setColumnCount(4);
@@ -331,6 +343,53 @@ void PlaybackWidget::onProgressChanged(int value)
     catch (const std::exception& e)
     {
         spdlog::error("PlaybackWidget: Exception during seek: {}", e.what());
+    }
+}
+
+void PlaybackWidget::onLoopToggled(bool enabled)
+{
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        player.setLoopPlayback(enabled);
+
+        // Enable/disable the loop count controls
+        ui->loopCountLabel->setEnabled(enabled);
+        ui->loopCountSpinBox->setEnabled(enabled);
+
+        // Set the loop count based on the current spin box value
+        if (enabled)
+        {
+            player.setLoopCount(ui->loopCountSpinBox->value());
+        }
+
+        spdlog::info("PlaybackWidget: Loop playback set to {}", enabled);
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error(
+          "PlaybackWidget: Exception during loop toggle: {}", e.what()
+        );
+    }
+}
+
+void PlaybackWidget::onLoopCountChanged(int count)
+{
+    try
+    {
+        auto& player = m_app.getEventPlayer();
+        player.setLoopCount(count);
+        spdlog::info(
+          "PlaybackWidget: Loop count set to {} ({})",
+          count,
+          count == 0 ? "infinite" : "finite"
+        );
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error(
+          "PlaybackWidget: Exception during loop count change: {}", e.what()
+        );
     }
 }
 

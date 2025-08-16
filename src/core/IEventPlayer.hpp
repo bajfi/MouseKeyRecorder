@@ -97,6 +97,19 @@ class IEventPlayer
     virtual bool isLoopEnabled() const noexcept = 0;
 
     /**
+     * @brief Set the number of times to loop playback
+     * @param count Number of loops (0 = infinite, 1 = no loop, >1 = specific
+     * count)
+     */
+    virtual void setLoopCount(int count) = 0;
+
+    /**
+     * @brief Get the current loop count setting
+     * @return loop count (0 = infinite, 1 = no loop, >1 = specific count)
+     */
+    virtual int getLoopCount() const noexcept = 0;
+
+    /**
      * @brief Get current playback position
      * @return current event index
      */
