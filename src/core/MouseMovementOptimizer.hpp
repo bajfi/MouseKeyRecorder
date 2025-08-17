@@ -9,7 +9,7 @@ namespace MouseRecorder::Core
 
 /**
  * @brief Utility class for optimizing mouse movement sequences
- * 
+ *
  * This class provides algorithms to reduce redundant mouse movements
  * while preserving the essential path and timing information.
  */
@@ -21,10 +21,10 @@ class MouseMovementOptimizer
      */
     enum class OptimizationStrategy
     {
-        DistanceThreshold,  // Remove points within threshold distance
-        DouglasPeucker,     // Douglas-Peucker line simplification
-        TimeBased,          // Remove points within time threshold
-        Combined            // Combination of multiple strategies
+        DistanceThreshold, // Remove points within threshold distance
+        DouglasPeucker,    // Douglas-Peucker line simplification
+        TimeBased,         // Remove points within time threshold
+        Combined           // Combination of multiple strategies
     };
 
     /**
@@ -34,22 +34,25 @@ class MouseMovementOptimizer
     {
         bool enabled{true};
         OptimizationStrategy strategy{OptimizationStrategy::Combined};
-        int distanceThreshold{5};           // pixels
-        int timeThresholdMs{16};            // milliseconds (~60fps)
-        double douglasPeuckerEpsilon{2.0};  // tolerance for line simplification
-        bool preserveClicks{true};          // always preserve click positions
-        bool preserveFirstLast{true};       // always preserve first and last positions
+        int distanceThreshold{5};          // pixels
+        int timeThresholdMs{16};           // milliseconds (~60fps)
+        double douglasPeuckerEpsilon{2.0}; // tolerance for line simplification
+        bool preserveClicks{true};         // always preserve click positions
+        bool preserveFirstLast{
+          true
+        }; // always preserve first and last positions
     };
 
     /**
-     * @brief Optimize a sequence of events by reducing redundant mouse movements
+     * @brief Optimize a sequence of events by reducing redundant mouse
+     * movements
      * @param events Input vector of events (will be modified in place)
      * @param config Optimization configuration
      * @return Number of events removed during optimization
      */
     static size_t optimizeEvents(
-        std::vector<std::unique_ptr<Event>>& events,
-        const OptimizationConfig& config
+      std::vector<std::unique_ptr<Event>>& events,
+      const OptimizationConfig& config
     );
 
     /**
@@ -59,7 +62,7 @@ class MouseMovementOptimizer
      * @return Vector of mouse move events with their original indices
      */
     static std::vector<std::pair<size_t, const Event*>> extractMouseMoveEvents(
-        const std::vector<std::unique_ptr<Event>>& events
+      const std::vector<std::unique_ptr<Event>>& events
     );
 
     /**
@@ -70,9 +73,9 @@ class MouseMovementOptimizer
      * @return Set of indices to remove
      */
     static std::vector<size_t> applyDistanceThreshold(
-        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-        int threshold,
-        bool preserveFirstLast = true
+      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+      int threshold,
+      bool preserveFirstLast = true
     );
 
     /**
@@ -82,8 +85,8 @@ class MouseMovementOptimizer
      * @return Set of indices to keep (not remove)
      */
     static std::vector<size_t> applyDouglasPeucker(
-        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-        double epsilon
+      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+      double epsilon
     );
 
     /**
@@ -94,9 +97,9 @@ class MouseMovementOptimizer
      * @return Set of indices to remove
      */
     static std::vector<size_t> applyTimeThreshold(
-        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-        int timeThresholdMs,
-        bool preserveFirstLast = true
+      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+      int timeThresholdMs,
+      bool preserveFirstLast = true
     );
 
     /**
@@ -115,9 +118,7 @@ class MouseMovementOptimizer
      * @return Perpendicular distance
      */
     static double perpendicularDistance(
-        const Point& point,
-        const Point& lineStart,
-        const Point& lineEnd
+      const Point& point, const Point& lineStart, const Point& lineEnd
     );
 
     /**
@@ -126,8 +127,8 @@ class MouseMovementOptimizer
      * @param indicesToRemove Sorted vector of indices to remove
      */
     static void removeEventsAtIndices(
-        std::vector<std::unique_ptr<Event>>& events,
-        const std::vector<size_t>& indicesToRemove
+      std::vector<std::unique_ptr<Event>>& events,
+      const std::vector<size_t>& indicesToRemove
     );
 
   private:
@@ -135,11 +136,11 @@ class MouseMovementOptimizer
      * @brief Recursive Douglas-Peucker implementation
      */
     static void douglasPeuckerRecursive(
-        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-        size_t startIdx,
-        size_t endIdx,
-        double epsilon,
-        std::vector<bool>& keep
+      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+      size_t startIdx,
+      size_t endIdx,
+      double epsilon,
+      std::vector<bool>& keep
     );
 };
 

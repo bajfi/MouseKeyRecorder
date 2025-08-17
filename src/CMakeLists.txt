@@ -147,14 +147,14 @@ target_link_libraries(MouseRecorderGUI
 
 # Platform-specific libraries
 if(UNIX AND NOT APPLE)
-    target_link_libraries(MouseRecorderCore 
-        ${X11_LIBRARIES} 
-        ${XTST_LIBRARIES} 
+    target_link_libraries(MouseRecorderCore
+        ${X11_LIBRARIES}
+        ${XTST_LIBRARIES}
         ${XI_LIBRARIES}
     )
-    target_include_directories(MouseRecorderCore PRIVATE 
-        ${X11_INCLUDE_DIRS} 
-        ${XTST_INCLUDE_DIRS} 
+    target_include_directories(MouseRecorderCore PRIVATE
+        ${X11_INCLUDE_DIRS}
+        ${XTST_INCLUDE_DIRS}
         ${XI_INCLUDE_DIRS}
     )
 elseif(WIN32)

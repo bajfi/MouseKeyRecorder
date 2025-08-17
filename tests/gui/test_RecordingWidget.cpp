@@ -58,7 +58,7 @@ void TestRecordingWidget::cleanupTestCase()
 void TestRecordingWidget::init()
 {
     m_mouseApp = std::make_unique<MouseRecorderApp>();
-    
+
     // Initialize the application
     if (m_mouseApp->initialize())
     {
@@ -70,7 +70,7 @@ void TestRecordingWidget::cleanup()
 {
     delete m_widget;
     m_widget = nullptr;
-    
+
     if (m_mouseApp)
     {
         m_mouseApp->shutdown();

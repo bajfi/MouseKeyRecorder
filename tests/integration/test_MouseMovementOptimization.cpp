@@ -80,28 +80,33 @@ class MouseMovementOptimizationIntegrationTest : public ::testing::Test
 TEST_F(MouseMovementOptimizationIntegrationTest, ConfigurationIntegration)
 {
     auto& config = m_app->getConfiguration();
-    
-    // Test default configuration values (check if they exist, don't assume specific values
-    // since they might be persisted from previous tests)
-    bool hasOptimizationSetting = config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false);
+
+    // Test default configuration values (check if they exist, don't assume
+    // specific values since they might be persisted from previous tests)
+    bool hasOptimizationSetting =
+      config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false);
     int thresholdValue = config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 0);
-    
+
     // The settings should exist (not use default values)
-    EXPECT_TRUE(config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false) || 
-                !config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true));  // Either true or false, not default
+    EXPECT_TRUE(
+      config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false) ||
+      !config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true)
+    );                            // Either true or false, not default
     EXPECT_GT(thresholdValue, 0); // Should have a positive threshold value
-    
+
     // Test changing configuration values
     config.setBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false);
     EXPECT_FALSE(config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true));
-    
+
     config.setInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 15);
     EXPECT_EQ(config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 0), 15);
-    
+
     // Restore a reasonable value for other tests
     config.setBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
     config.setInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
-}TEST_F(MouseMovementOptimizationIntegrationTest, OptimizationAppliedDuringSave)
+}
+
+TEST_F(MouseMovementOptimizationIntegrationTest, OptimizationAppliedDuringSave)
 {
     // Create test events
     auto events = createTestEventSequence();

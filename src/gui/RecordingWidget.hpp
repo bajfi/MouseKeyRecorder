@@ -31,7 +31,7 @@ class RecordingWidget : public QWidget
 
   public:
     explicit RecordingWidget(
-        Application::MouseRecorderApp& app, QWidget* parent = nullptr
+      Application::MouseRecorderApp& app, QWidget* parent = nullptr
     );
     ~RecordingWidget();
 

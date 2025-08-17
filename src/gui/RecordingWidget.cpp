@@ -12,7 +12,8 @@ namespace MouseRecorder::GUI
 {
 
 RecordingWidget::RecordingWidget(
-    Application::MouseRecorderApp& app, QWidget* parent)
+  Application::MouseRecorderApp& app, QWidget* parent
+)
   : QWidget(parent),
     ui(new Ui::RecordingWidget),
     m_app(app),
@@ -72,7 +73,8 @@ void RecordingWidget::setupUI()
     connect(
       ui->captureMouseCheckBox,
       &QCheckBox::toggled,
-      [this](bool enabled) {
+      [this](bool enabled)
+      {
           auto& config = m_app.getConfiguration();
           config.setBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, enabled);
       }
@@ -80,7 +82,8 @@ void RecordingWidget::setupUI()
     connect(
       ui->captureKeyboardCheckBox,
       &QCheckBox::toggled,
-      [this](bool enabled) {
+      [this](bool enabled)
+      {
           auto& config = m_app.getConfiguration();
           config.setBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, enabled);
       }
@@ -372,48 +375,60 @@ void RecordingWidget::setEvents(
 void RecordingWidget::loadConfigurationSettings()
 {
     auto& config = m_app.getConfiguration();
-    
+
     // Load optimization settings
-    bool optimizeEnabled = config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
+    bool optimizeEnabled =
+      config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
     ui->optimizeMovementCheckBox->setChecked(optimizeEnabled);
-    
-    int threshold = config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+
+    int threshold =
+      config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
     ui->movementThresholdSpinBox->setValue(threshold);
-    
+
     // Enable/disable threshold controls based on optimization setting
     ui->movementThresholdSpinBox->setEnabled(optimizeEnabled);
     ui->thresholdLabel->setEnabled(optimizeEnabled);
-    
+
     // Load capture settings
-    bool captureMouseEnabled = config.getBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, true);
+    bool captureMouseEnabled =
+      config.getBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, true);
     ui->captureMouseCheckBox->setChecked(captureMouseEnabled);
-    
-    bool captureKeyboardEnabled = config.getBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true);
+
+    bool captureKeyboardEnabled =
+      config.getBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true);
     ui->captureKeyboardCheckBox->setChecked(captureKeyboardEnabled);
 }
 
 void RecordingWidget::saveConfigurationSettings()
 {
     auto& config = m_app.getConfiguration();
-    
+
     // Save optimization settings
-    config.setBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, 
-                   ui->optimizeMovementCheckBox->isChecked());
-    config.setInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
-                  ui->movementThresholdSpinBox->value());
-    
+    config.setBool(
+      Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
+      ui->optimizeMovementCheckBox->isChecked()
+    );
+    config.setInt(
+      Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
+      ui->movementThresholdSpinBox->value()
+    );
+
     // Save capture settings
-    config.setBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS,
-                   ui->captureMouseCheckBox->isChecked());
-    config.setBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
-                   ui->captureKeyboardCheckBox->isChecked());
+    config.setBool(
+      Core::ConfigKeys::CAPTURE_MOUSE_EVENTS,
+      ui->captureMouseCheckBox->isChecked()
+    );
+    config.setBool(
+      Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
+      ui->captureKeyboardCheckBox->isChecked()
+    );
 }
 
 void RecordingWidget::onOptimizeMovementChanged(bool enabled)
 {
     auto& config = m_app.getConfiguration();
     config.setBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, enabled);
-    
+
     // Enable/disable the threshold spinbox based on optimization setting
     ui->movementThresholdSpinBox->setEnabled(enabled);
     ui->thresholdLabel->setEnabled(enabled);
