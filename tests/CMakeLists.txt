@@ -25,68 +25,58 @@ set(TEST_SOURCES
     integration/test_MouseMovementOptimization.cpp
 )
 
-# Create test executable
-add_executable(MouseRecorderTests ${TEST_SOURCES})
+# Function to create a test executable with proper linking
+function(create_test_executable target_name sources)
+    add_executable(${target_name} ${sources})
+
+    target_link_libraries(${target_name}
+        PRIVATE
+            MouseRecorderCore
+            MouseRecorderGUI
+            Qt${QT_VERSION_MAJOR}::Test
+            Qt${QT_VERSION_MAJOR}::Widgets
+    )
+
+    # Link GTest
+    if(TARGET GTest::gtest)
+        target_link_libraries(${target_name} PRIVATE GTest::gtest GTest::gtest_main)
+    elseif(TARGET gtest)
+        target_link_libraries(${target_name} PRIVATE gtest gtest_main)
+    elseif(GTest_FOUND)
+        target_link_libraries(${target_name} PRIVATE ${GTest_LIBRARIES})
+        target_include_directories(${target_name} PRIVATE ${GTest_INCLUDE_DIRS})
+        # Find gtest_main
+        find_library(GTEST_MAIN_LIBRARY gtest_main)
+        if(GTEST_MAIN_LIBRARY)
+            target_link_libraries(${target_name} PRIVATE ${GTEST_MAIN_LIBRARY})
+        endif()
+    endif()
+
+    # Set target properties
+    set_target_properties(${target_name} PROPERTIES
+        CXX_STANDARD 23
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+    )
+endfunction()
+
+# Create main test executable
+create_test_executable(MouseRecorderTests "${TEST_SOURCES}")
 
 # Create separate GUI test executables (each has its own main)
-add_executable(TestRecordingWidget gui/test_RecordingWidget.cpp)
-add_executable(TestMainWindow gui/test_MainWindow.cpp)
-add_executable(TestSystemTrayFunctionality gui/test_SystemTrayFunctionality.cpp)
-add_executable(TestGlobalShortcuts gui/test_GlobalShortcuts.cpp)
-# add_executable(TestUIIntegration gui/test_UIIntegration.cpp)  # Disabled due to Qt event loop issues
-
-# Link libraries
-target_link_libraries(MouseRecorderTests
-    MouseRecorderCore
-    MouseRecorderGUI
-    Qt5::Test
-    Qt5::Widgets
-)
-
-target_link_libraries(TestRecordingWidget
-    MouseRecorderCore
-    MouseRecorderGUI
-    Qt5::Test
-    Qt5::Widgets
-)
-
-target_link_libraries(TestMainWindow
-    MouseRecorderCore
-    MouseRecorderGUI
-    Qt5::Test
-    Qt5::Widgets
-)
-
-target_link_libraries(TestSystemTrayFunctionality
-    MouseRecorderCore
-    MouseRecorderGUI
-    Qt5::Test
-    Qt5::Widgets
-)
-
-target_link_libraries(TestGlobalShortcuts
-    MouseRecorderCore
-    MouseRecorderGUI
-    Qt5::Test
-    Qt5::Widgets
-)
-
-# Add TestGlobalShortcuts to CTest
-add_test(NAME TestGlobalShortcuts COMMAND TestGlobalShortcuts)
-
-# Link GTest
-if(TARGET GTest::gtest)
-    target_link_libraries(MouseRecorderTests GTest::gtest GTest::gtest_main)
-elseif(GTest_FOUND)
-    target_link_libraries(MouseRecorderTests ${GTest_LIBRARIES})
-    target_include_directories(MouseRecorderTests PRIVATE ${GTest_INCLUDE_DIRS})
-    # Find gtest_main
-    find_library(GTEST_MAIN_LIBRARY gtest_main)
-    if(GTEST_MAIN_LIBRARY)
-        target_link_libraries(MouseRecorderTests ${GTEST_MAIN_LIBRARY})
-    endif()
+create_test_executable(TestRecordingWidget "gui/test_RecordingWidget.cpp")
+create_test_executable(TestMainWindow "gui/test_MainWindow.cpp")
+create_test_executable(TestSystemTrayFunctionality "gui/test_SystemTrayFunctionality.cpp")
+create_test_executable(TestGlobalShortcuts "gui/test_GlobalShortcuts.cpp")
+# create_test_executable(TestUIIntegration "gui/test_UIIntegration.cpp")  # Disabled due to Qt event loop issues
+# Add tests to CTest
+if(TARGET GTest::gtest OR TARGET gtest)
+    include(GoogleTest)
+    gtest_discover_tests(MouseRecorderTests)
 endif()
 
-# Add tests to CTest
-include(GoogleTest)
-gtest_discover_tests(MouseRecorderTests)
+# Add individual GUI tests to CTest
+add_test(NAME TestGlobalShortcuts COMMAND TestGlobalShortcuts)
+add_test(NAME TestRecordingWidget COMMAND TestRecordingWidget)
+add_test(NAME TestMainWindow COMMAND TestMainWindow)
+add_test(NAME TestSystemTrayFunctionality COMMAND TestSystemTrayFunctionality)
