@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CMAKE_BUILD_TYPE: Release
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }} with ${{ matrix.qt-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Ubuntu builds with different Qt versions
+          - os: ubuntu-20.04
+            qt-version: "5.15.2"
+            docker: ubuntu:20.04
+            deps: |
+              apt-get update && apt-get install -y \
+                build-essential cmake git \
+                qt5-default qttools5-dev \
+                libx11-dev libxtst-dev libxi-dev \
+                libspdlog-dev nlohmann-json3-dev libpugixml-dev \
+                libgtest-dev pkg-config xvfb
+
+          - os: ubuntu-22.04
+            qt-version: "5.15.3"
+            docker: ubuntu:22.04
+            deps: |
+              apt-get update && apt-get install -y \
+                build-essential cmake git \
+                qtbase5-dev qttools5-dev \
+                libx11-dev libxtst-dev libxi-dev \
+                libspdlog-dev nlohmann-json3-dev libpugixml-dev \
+                libgtest-dev pkg-config xvfb
+
+          - os: ubuntu-24.04
+            qt-version: "6.4.2"
+            docker: ubuntu:24.04
+            deps: |
+              apt-get update && apt-get install -y \
+                build-essential cmake git \
+                qt6-base-dev qt6-tools-dev \
+                libx11-dev libxtst-dev libxi-dev \
+                libspdlog-dev nlohmann-json3-dev libpugixml-dev \
+                libgtest-dev pkg-config xvfb
+
+          # Fedora build
+          - os: fedora-39
+            qt-version: "5.15.x"
+            docker: fedora:39
+            deps: |
+              dnf update -y && dnf install -y \
+                gcc-c++ cmake git \
+                qt5-qtbase-devel qt5-qttools-devel \
+                libX11-devel libXtst-devel libXi-devel \
+                spdlog-devel json-devel pugixml-devel \
+                gtest-devel pkgconfig xorg-x11-server-Xvfb
+
+          # Arch Linux build
+          - os: arch-linux
+            qt-version: "5.15.x"
+            docker: archlinux:latest
+            deps: |
+              pacman -Syu --noconfirm && pacman -S --noconfirm \
+                base-devel cmake git \
+                qt5-base qt5-tools \
+                libx11 libxtst libxi \
+                spdlog nlohmann-json pugixml \
+                gtest pkgconf xorg-server-xvfb
+
+    container:
+      image: ${{ matrix.docker }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: ${{ matrix.deps }}
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+          -DBUILD_TESTS=ON \
+          -DUSE_SYSTEM_DEPS=ON
+
+    - name: Build
+      run: cmake --build build --config ${{ env.CMAKE_BUILD_TYPE }} -j$(nproc)
+
+    - name: Run tests
+      run: |
+        cd build
+        xvfb-run -a ctest --output-on-failure --timeout 30 -C ${{ env.CMAKE_BUILD_TYPE }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.os == 'ubuntu-22.04'
+      with:
+        name: mouserecorder-${{ matrix.os }}-${{ github.sha }}
+        path: |
+          build/src/MouseRecorder
+          mouserecorder.desktop
+        retention-days: 30
+
+  build-status:
+    name: Build Status
+    runs-on: ubuntu-latest
+    needs: build
+    if: always()
+    steps:
+    - name: Check build results
+      run: |
+        if [ "${{ needs.build.result }}" == "success" ]; then
+          echo "✅ All builds passed"
+          exit 0
+        else
+          echo "❌ Some builds failed"
+          exit 1
+        fi
+
+  fuzzing:
+    name: OSS-Fuzz Integration
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build fuzzers
+      run: |
+        # Placeholder for OSS-Fuzz integration
+        echo "Fuzzing integration placeholder"
+        # This would typically build fuzz targets for continuous fuzzing

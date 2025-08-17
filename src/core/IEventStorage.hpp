@@ -23,7 +23,7 @@ enum class StorageFormat
  */
 struct StorageMetadata
 {
-    std::string version{"1.0.0"};
+    std::string version{"0.0.1"};
     std::string applicationName{"MouseRecorder"};
     std::string createdBy;
     std::string description;

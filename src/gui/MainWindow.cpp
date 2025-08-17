@@ -1008,7 +1008,7 @@ void MainWindow::onExportEvents()
 
         // Create metadata for the export
         Core::StorageMetadata metadata;
-        metadata.version = "1.0.0";
+        metadata.version = "0.0.1";
         metadata.applicationName = "MouseRecorder";
         metadata.createdBy = QString(qgetenv("USER")).toStdString();
         metadata.description = "Mouse and keyboard event recording";
@@ -1772,7 +1772,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
 
         // Create metadata for the save
         Core::StorageMetadata metadata;
-        metadata.version = "1.0.0";
+        metadata.version = "0.0.1";
         metadata.applicationName = "MouseRecorder";
         metadata.createdBy = QString(qgetenv("USER")).toStdString();
         metadata.description = "Mouse and keyboard event recording";

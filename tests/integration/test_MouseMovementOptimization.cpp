@@ -208,7 +208,7 @@ TEST_F(MouseMovementOptimizationIntegrationTest, SaveAndLoadWithOptimization)
     ASSERT_NE(storage, nullptr);
 
     StorageMetadata metadata;
-    metadata.version = "1.0.0";
+    metadata.version = "0.0.1";
     metadata.totalEvents = eventsToSave.size();
 
     EXPECT_TRUE(storage->saveEvents(eventsToSave, testFile, metadata));
@@ -373,7 +373,7 @@ TEST_F(
         ASSERT_NE(storage, nullptr);
 
         StorageMetadata metadata;
-        metadata.version = "1.0.0";
+        metadata.version = "0.0.1";
         metadata.totalEvents = events.size();
 
         // Save optimized events

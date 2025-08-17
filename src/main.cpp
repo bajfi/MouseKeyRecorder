@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
     // Set application properties
     app.setApplicationName("MouseRecorder");
-    app.setApplicationVersion("1.0.0");
+    app.setApplicationVersion("0.0.1");
     app.setApplicationDisplayName(
       "MouseRecorder - Event Recording and Playback"
     );

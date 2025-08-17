@@ -26,7 +26,7 @@ class EventStorageMetadataTest : public ::testing::Test
         );
 
         // Create test metadata
-        m_testMetadata.version = "1.0.0";
+        m_testMetadata.version = "0.0.1";
         m_testMetadata.applicationName = "MouseRecorder";
         m_testMetadata.createdBy = "TestUser";
         m_testMetadata.description = "Test recording for metadata validation";
@@ -160,7 +160,7 @@ TEST_F(EventStorageMetadataTest, EmptyMetadataHandling)
     ASSERT_TRUE(storage.loadEvents(filename, loadedEvents, loadedMetadata));
 
     // Verify default values
-    EXPECT_EQ(loadedMetadata.version, "1.0.0");
+    EXPECT_EQ(loadedMetadata.version, "0.0.1");
     EXPECT_EQ(loadedMetadata.applicationName, "MouseRecorder");
     EXPECT_EQ(loadedMetadata.createdBy, "");
     EXPECT_EQ(loadedMetadata.description, "");
@@ -195,7 +195,7 @@ TEST_F(EventStorageMetadataTest, XmlMetadataFieldVerification)
     file.close();
 
     // Verify XML contains all metadata fields with correct values
-    EXPECT_NE(content.find("<Version>1.0.0</Version>"), std::string::npos);
+    EXPECT_NE(content.find("<Version>0.0.1</Version>"), std::string::npos);
     EXPECT_NE(
       content.find("<ApplicationName>MouseRecorder</ApplicationName>"),
       std::string::npos
@@ -240,7 +240,7 @@ TEST_F(EventStorageMetadataTest, MetadataWithSpecialCharacters)
 
     // Create metadata with special characters that need XML escaping
     StorageMetadata specialMetadata;
-    specialMetadata.version = "1.0.0";
+    specialMetadata.version = "0.0.1";
     specialMetadata.applicationName = "MouseRecorder";
     specialMetadata.createdBy = "User<>&\"'Test";
     specialMetadata.description = "Test with special chars: <>&\"'";

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(MouseRecorder
-    VERSION 1.0.0
+    VERSION 0.0.1
     DESCRIPTION "Cross-platform Mouse and Keyboard Event Recorder"
     LANGUAGES CXX
 )

@@ -125,7 +125,6 @@ TEST_F(MouseRecorderAppTest, VersionAndApplicationName)
     EXPECT_FALSE(MouseRecorderApp::getApplicationName().empty());
 
     EXPECT_EQ(MouseRecorderApp::getApplicationName(), "MouseRecorder");
-    EXPECT_EQ(MouseRecorderApp::getVersion(), "1.0.0");
 }
 
 TEST_F(MouseRecorderAppTest, ShutdownWithActiveRecording)

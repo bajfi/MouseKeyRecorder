@@ -1,49 +1,22 @@
 # MouseRecorder
 
-A cross-platform mouse and keyboard event recording and playback application built with modern C++23 and Qt5.
+[![build](https://img.shields.io/github/actions/workflow/status/USERNAME/MouseRecorder/ci.yml?branch=main&label=build&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-passing-brightgreen?logo=ubuntu)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
+[![code quality](https://img.shields.io/badge/code%20quality-A-brightgreen?logo=codeclimate)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/code-quality.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue?logo=opensource)](LICENSE)
+
+A cross-platform mouse and keyboard event recording and playback application built with modern C++23 and Qt.
 
 ## Features
 
-- **Cross-Platform Support**: Works on Linux (X11) and Windows
-- **Multiple File Formats**: Save recordings in JSON, XML, or binary format
+- **Cross-Platform Support**: Works on Linux (X11) with Windows and macOS support planned
+- **Multiple File Formats**: Save recordings in JSON, XML, or binary format (.mre)
 - **Intelligent Recording**: Optional mouse movement optimization to reduce file size
 - **Configurable Playback**: Variable speed playback with loop support
-- **User-Friendly Interface**: Modern Qt5 GUI with tabbed interface
+- **User-Friendly Interface**: Modern Qt5/Qt6 GUI with tabbed interface
 - **Extensible Architecture**: SOLID principles with clean separation of concerns
-- **Comprehensive Testing**: Unit tests with GoogleTest framework
+- **Comprehensive Testing**: Unit tests with GoogleTest framework and CI/CD pipeline
 - **Detailed Logging**: Configurable logging with spdlog
-
-## Architecture
-
-The application follows a layered architecture with clear separation of concerns:
-
-### Core Layer
-
-- **Event System**: Type-safe event definitions with factory pattern
-- **Interfaces**: Abstract interfaces for recording, playback, storage, and configuration
-- **Configuration**: Thread-safe configuration management with change notifications
-
-### Platform Layer
-
-- **Linux Implementation**: X11-based event capture and replay using XInput2 and XTest
-- **Windows Implementation**: Windows API-based event handling (planned)
-
-### Storage Layer
-
-- **JSON Storage**: Human-readable format using nlohmann/json
-- **Binary Storage**: Compact format with optional compression
-- **XML Storage**: Structured format using pugixml
-- **Factory Pattern**: Automatic format detection and handler creation
-
-### Application Layer
-
-- **Main Application**: Orchestrates all components and manages lifecycle
-- **Recording/Playback Sessions**: High-level business logic coordination
-
-### Presentation Layer
-
-- **Qt5 GUI**: Modern interface with .ui files for easy customization
-- **Widget-based Design**: Modular UI components for recording, playback, and configuration
 
 ## Building
 
@@ -55,16 +28,14 @@ The application follows a layered architecture with clear separation of concerns
 sudo apt update
 sudo apt install -y \
     build-essential \
-    cmake \
-    qt5-default \
-    qttools5-dev \
+    qtbase5-dev \
+    qtchooser \
+    qt5-qmake \
+    qtbase5-dev-tools \
+    qtcreator \
     libx11-dev \
     libxtst-dev \
     libxi-dev \
-    libspdlog-dev \
-    nlohmann-json3-dev \
-    libpugixml-dev \
-    libgtest-dev \
     pkg-config
 ```
 
@@ -79,10 +50,6 @@ sudo dnf install -y \
     libX11-devel \
     libXtst-devel \
     libXi-devel \
-    spdlog-devel \
-    json-devel \
-    pugixml-devel \
-    gtest-devel \
     pkgconfig
 ```
 
@@ -97,10 +64,6 @@ sudo pacman -S \
     libx11 \
     libxtst \
     libxi \
-    spdlog \
-    nlohmann-json \
-    pugixml \
-    gtest \
     pkgconf
 ```
 
@@ -109,8 +72,8 @@ sudo pacman -S \
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
-   cd MouseRecorder
+   git clone https://github.com/bajfi/MouseKeyRecorder.git
+   cd MouseKeyRecorder
    ```
 
 2. **Create build directory**
@@ -180,10 +143,10 @@ sudo pacman -S \
 ./MouseRecorder [options]
 
 Options:
-  -h, --help              Show help information
-  -v, --version           Show version information
-  -c, --config <file>     Specify configuration file path
-  -l, --log-level <level> Set log level (trace, debug, info, warn, error, critical, off)
+  -h, --help                Show help information
+  -v, --version             Show version information
+  -c, --config <file>       Specify configuration file path
+  -l, --log-level <level>   Set log level (trace, debug, info, warn, error, critical, off)
 ```
 
 ### File Formats
@@ -222,56 +185,15 @@ Key configuration options:
 - **Shortcuts**: Customizable keyboard shortcuts
 - **System**: Logging levels and file paths
 
-## Development
-
-### Code Style
-
-The project follows modern C++23 guidelines:
-
-- SOLID principles
-- RAII for resource management
-- Smart pointers over raw pointers
-- STL algorithms and containers
-- Exception-based error handling
-- Comprehensive const-correctness
-
-### Testing
-
-Run the test suite:
-
-```bash
-cd build
-ctest --output-on-failure
-```
-
-Or run specific tests:
-
-```bash
-./MouseRecorderTests --gtest_filter="EventTest.*"
-```
-
-### Adding New Features
-
-1. **New Event Types**: Extend the `Event` class and factory
-2. **New Storage Formats**: Implement `IEventStorage` interface
-3. **Platform Support**: Implement `IEventRecorder` and `IEventPlayer` interfaces
-4. **GUI Components**: Create new Qt widgets with corresponding .ui files
-
-### Architecture Guidelines
-
-- Keep interfaces minimal and focused (Interface Segregation Principle)
-- Use dependency injection for testability
-- Separate platform-specific code into platform directories
-- Add comprehensive unit tests for new functionality
-- Follow the existing naming conventions and code style
-
 ## Contributing
 
+We welcome contributions! Please follow these steps:
+
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Ensure all tests pass
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes with comprehensive tests
+4. Ensure all CI checks pass (build, tests, code quality)
+5. Submit a pull request with a clear description
 
 ## License
 

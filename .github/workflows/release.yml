@@ -1,0 +1,181 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
+env:
+  CMAKE_BUILD_TYPE: Release
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: MouseRecorder ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+        body: |
+          ## Changes in ${{ steps.get_version.outputs.VERSION }}
+
+          ### Features
+          - Cross-platform mouse and keyboard event recording
+          - Multiple storage formats (JSON, XML, Binary)
+          - Mouse movement optimization
+          - Configurable playback speeds
+
+          ### Build Information
+          - Built with C++23
+          - Qt5/Qt6 support
+          - Tested on Ubuntu, Fedora, and Arch Linux
+
+          ### Installation
+          Download the appropriate binary for your system below.
+
+          For source builds, see the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for build instructions.
+
+  build-release:
+    name: Build Release (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - name: ubuntu-20.04
+            docker: ubuntu:20.04
+            deps: |
+              apt-get update && apt-get install -y \
+                build-essential cmake git \
+                qt5-default qttools5-dev \
+                libx11-dev libxtst-dev libxi-dev \
+                libspdlog-dev nlohmann-json3-dev libpugixml-dev \
+                pkg-config file
+
+          - name: ubuntu-22.04
+            docker: ubuntu:22.04
+            deps: |
+              apt-get update && apt-get install -y \
+                build-essential cmake git \
+                qtbase5-dev qttools5-dev \
+                libx11-dev libxtst-dev libxi-dev \
+                libspdlog-dev nlohmann-json3-dev libpugixml-dev \
+                pkg-config file
+
+          - name: fedora-39
+            docker: fedora:39
+            deps: |
+              dnf update -y && dnf install -y \
+                gcc-c++ cmake git \
+                qt5-qtbase-devel qt5-qttools-devel \
+                libX11-devel libXtst-devel libXi-devel \
+                spdlog-devel json-devel pugixml-devel \
+                pkgconfig file
+
+    container:
+      image: ${{ matrix.docker }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: ${{ matrix.deps }}
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+          -DBUILD_TESTS=OFF \
+          -DUSE_SYSTEM_DEPS=ON \
+          -DCMAKE_INSTALL_PREFIX=/usr
+
+    - name: Build
+      run: cmake --build build --config ${{ env.CMAKE_BUILD_TYPE }} -j$(nproc)
+
+    - name: Create package
+      run: |
+        cd build
+        make install DESTDIR=../package
+        cd ..
+
+        # Create tarball
+        tar -czf mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz \
+          -C package usr/bin/MouseRecorder mouserecorder.desktop
+
+        # Create checksum
+        sha256sum mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz > \
+          mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz.sha256
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz
+        asset_name: mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload Checksum
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz.sha256
+        asset_name: mouserecorder-${{ steps.get_version.outputs.VERSION }}-${{ matrix.name }}.tar.gz.sha256
+        asset_content_type: text/plain
+
+  update-latest-release:
+    name: Update Latest Release Info
+    runs-on: ubuntu-latest
+    needs: [create-release, build-release]
+    if: always() && needs.build-release.result == 'success'
+
+    steps:
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+    - name: Update release notes
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: release } = await github.rest.repos.getReleaseByTag({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag: '${{ steps.get_version.outputs.VERSION }}'
+          });
+
+          await github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: release.id,
+            body: release.body + '\n\n### Downloads\n\nAll binaries are statically linked and should work on compatible distributions.\n\n✅ Release build completed successfully!'
+          });

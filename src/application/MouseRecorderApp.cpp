@@ -219,7 +219,7 @@ std::unique_ptr<Core::IEventStorage> MouseRecorderApp::createStorage(
 
 std::string MouseRecorderApp::getVersion()
 {
-    return "1.0.0";
+    return "0.0.1";
 }
 
 std::string MouseRecorderApp::getApplicationName()

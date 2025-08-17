@@ -111,7 +111,7 @@ class PlaybackIntegrationTest : public ::testing::Test
         metadata.description = "Playback integration test";
         metadata.totalEvents = events.size();
         metadata.applicationName = "MouseRecorder";
-        metadata.version = "1.0.0";
+        metadata.version = "0.0.1";
 
         EXPECT_TRUE(
           storage.saveEvents(events, fileName.toStdString(), metadata)
