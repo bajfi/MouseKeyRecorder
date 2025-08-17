@@ -1,6 +1,7 @@
 #include "PlaybackWidget.hpp"
 #include "ui_PlaybackWidget.h"
 #include "application/MouseRecorderApp.hpp"
+#include "core/IConfiguration.hpp"
 #include "storage/EventStorageFactory.hpp"
 #include "TestUtils.hpp"
 #include <QFileDialog>
@@ -113,7 +114,47 @@ void PlaybackWidget::setupUI()
     );
 
     updateUI();
+    loadConfigurationSettings();
     updateSpeed();
+}
+
+void PlaybackWidget::loadConfigurationSettings()
+{
+    auto& config = m_app.getConfiguration();
+
+    // Load default playback speed from configuration
+    double defaultSpeed =
+      config.getDouble(Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
+
+    // Convert speed to slider value (slider range: 1-50, representing
+    // 0.1x-5.0x)
+    int sliderValue = static_cast<int>(defaultSpeed * 10.0);
+
+    // Ensure the value is within the valid slider range
+    sliderValue = std::clamp(sliderValue, 1, 50);
+
+    // Set the slider value without triggering signals
+    ui->speedSlider->blockSignals(true);
+    ui->speedSlider->setValue(sliderValue);
+    ui->speedSlider->blockSignals(false);
+
+    // Update the event player with the configured speed
+    m_app.getEventPlayer().setPlaybackSpeed(defaultSpeed);
+
+    // Load loop playback setting from configuration
+    bool loopEnabled = config.getBool(Core::ConfigKeys::LOOP_PLAYBACK, false);
+
+    // Set the loop checkbox without triggering signals
+    ui->loopCheckBox->blockSignals(true);
+    ui->loopCheckBox->setChecked(loopEnabled);
+    ui->loopCheckBox->blockSignals(false);
+
+    spdlog::debug(
+      "PlaybackWidget: Loaded default speed from config: {:.1f}x", defaultSpeed
+    );
+    spdlog::debug(
+      "PlaybackWidget: Loaded loop setting from config: {}", loopEnabled
+    );
 }
 
 void PlaybackWidget::onBrowseFile()
@@ -312,7 +353,15 @@ void PlaybackWidget::onSpeedChanged(int value)
 
 void PlaybackWidget::onResetSpeed()
 {
-    ui->speedSlider->setValue(10); // 1.0x speed
+    auto& config = m_app.getConfiguration();
+    double defaultSpeed =
+      config.getDouble(Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
+
+    // Convert speed to slider value and set it
+    int sliderValue = static_cast<int>(defaultSpeed * 10.0);
+    sliderValue = std::clamp(sliderValue, 1, 50);
+
+    ui->speedSlider->setValue(sliderValue);
     updateSpeed();
 }
 

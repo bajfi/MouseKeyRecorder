@@ -56,6 +56,7 @@ class PlaybackWidget : public QWidget
 
   private:
     void setupUI();
+    void loadConfigurationSettings();
     void updateUI();
     void updateSpeed();
     void updatePlaybackStatus();
