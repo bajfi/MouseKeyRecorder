@@ -5,6 +5,7 @@
 #include "ConfigurationWidget.hpp"
 #include "../core/QtConfiguration.hpp"
 #include "../core/IEventStorage.hpp"
+#include "../core/MouseMovementOptimizer.hpp"
 #include "../storage/EventStorageFactory.hpp"
 #include "TestUtils.hpp"
 #include <QApplication>
@@ -159,7 +160,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::setupWidgets()
 {
     // Create and setup custom widgets
-    m_recordingWidget = new RecordingWidget(this);
+    m_recordingWidget = new RecordingWidget(m_app, this);
     m_playbackWidget = new PlaybackWidget(m_app, this);
 
     // Replace the placeholder widgets in the tabs
@@ -990,6 +991,35 @@ void MainWindow::onExportEvents()
             }
         }
 
+        // Apply mouse movement optimization if enabled
+        auto& config = m_app.getConfiguration();
+        if (config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
+        {
+            Core::MouseMovementOptimizer::OptimizationConfig optimizationConfig;
+            optimizationConfig.enabled = true;
+            optimizationConfig.strategy =
+              Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
+            optimizationConfig.distanceThreshold =
+              config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+            optimizationConfig.timeThresholdMs = 16; // ~60fps
+            optimizationConfig.douglasPeuckerEpsilon = 2.0;
+            optimizationConfig.preserveClicks = true;
+            optimizationConfig.preserveFirstLast = true;
+
+            size_t removedCount = Core::MouseMovementOptimizer::optimizeEvents(
+              eventsToExport, optimizationConfig
+            );
+
+            if (removedCount > 0)
+            {
+                spdlog::info(
+                  "MainWindow: Mouse movement optimization removed {} "
+                  "redundant events during export",
+                  removedCount
+                );
+            }
+        }
+
         // Create metadata for the export
         Core::StorageMetadata metadata;
         metadata.version = "1.0.0";
@@ -1665,6 +1695,35 @@ bool MainWindow::saveEventsToFile(const QString& filename)
                       std::make_unique<Core::Event>(*event)
                     );
                 }
+            }
+        }
+
+        // Apply mouse movement optimization if enabled
+        auto& config = m_app.getConfiguration();
+        if (config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
+        {
+            Core::MouseMovementOptimizer::OptimizationConfig optimizationConfig;
+            optimizationConfig.enabled = true;
+            optimizationConfig.strategy =
+              Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
+            optimizationConfig.distanceThreshold =
+              config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+            optimizationConfig.timeThresholdMs = 16; // ~60fps
+            optimizationConfig.douglasPeuckerEpsilon = 2.0;
+            optimizationConfig.preserveClicks = true;
+            optimizationConfig.preserveFirstLast = true;
+
+            size_t removedCount = Core::MouseMovementOptimizer::optimizeEvents(
+              eventsToSave, optimizationConfig
+            );
+
+            if (removedCount > 0)
+            {
+                spdlog::info(
+                  "MainWindow: Mouse movement optimization removed {} "
+                  "redundant events",
+                  removedCount
+                );
             }
         }
 

@@ -6,6 +6,7 @@ set(TEST_SOURCES
     core/test_Event.cpp
     core/test_EventRecording.cpp
     core/test_QtConfiguration.cpp
+    core/test_MouseMovementOptimizer.cpp
     application/test_MouseRecorderApp.cpp
     application/test_ShutdownBehavior.cpp
     platform/test_LinuxEventCapture.cpp
@@ -21,6 +22,7 @@ set(TEST_SOURCES
     integration/test_PlaybackIntegration.cpp
     integration/test_E2EPlayback.cpp
     integration/test_SystemTrayAndShortcuts.cpp
+    integration/test_MouseMovementOptimization.cpp
 )
 
 # Create test executable

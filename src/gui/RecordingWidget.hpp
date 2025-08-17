@@ -14,6 +14,11 @@ namespace Ui
 class RecordingWidget;
 }
 
+namespace MouseRecorder::Application
+{
+class MouseRecorderApp;
+}
+
 namespace MouseRecorder::GUI
 {
 
@@ -25,7 +30,9 @@ class RecordingWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit RecordingWidget(QWidget* parent = nullptr);
+    explicit RecordingWidget(
+        Application::MouseRecorderApp& app, QWidget* parent = nullptr
+    );
     ~RecordingWidget();
 
   public slots:
@@ -59,9 +66,16 @@ class RecordingWidget : public QWidget
   private:
     void setupUI();
     void updateRecordingTime();
+    void loadConfigurationSettings();
+    void saveConfigurationSettings();
+
+  private slots:
+    void onOptimizeMovementChanged(bool enabled);
+    void onMovementThresholdChanged(int value);
 
   private:
     Ui::RecordingWidget* ui;
+    Application::MouseRecorderApp& m_app;
     QTimer* m_recordingTimer;
     int m_recordingSeconds{0};
 

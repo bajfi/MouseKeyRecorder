@@ -5,6 +5,7 @@ set(CORE_SOURCES
     core/Event.cpp
     core/Configuration.cpp
     core/QtConfiguration.cpp
+    core/MouseMovementOptimizer.cpp
 )
 
 set(CORE_HEADERS
@@ -15,6 +16,7 @@ set(CORE_HEADERS
     core/IConfiguration.hpp
     core/Configuration.hpp
     core/QtConfiguration.hpp
+    core/MouseMovementOptimizer.hpp
 )
 
 # Platform-specific sources

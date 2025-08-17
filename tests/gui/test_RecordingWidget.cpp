@@ -4,9 +4,11 @@
 #include <QSignalSpy>
 #include <QTableWidget>
 #include "gui/RecordingWidget.hpp"
+#include "application/MouseRecorderApp.hpp"
 #include "core/Event.hpp"
 
 using namespace MouseRecorder::GUI;
+using namespace MouseRecorder::Application;
 
 class TestRecordingWidget : public QObject
 {
@@ -30,6 +32,7 @@ class TestRecordingWidget : public QObject
   private:
     QApplication* m_app{nullptr};
     RecordingWidget* m_widget{nullptr};
+    std::unique_ptr<MouseRecorderApp> m_mouseApp;
 };
 
 void TestRecordingWidget::initTestCase()
@@ -54,13 +57,25 @@ void TestRecordingWidget::cleanupTestCase()
 
 void TestRecordingWidget::init()
 {
-    m_widget = new RecordingWidget();
+    m_mouseApp = std::make_unique<MouseRecorderApp>();
+    
+    // Initialize the application
+    if (m_mouseApp->initialize())
+    {
+        m_widget = new RecordingWidget(*m_mouseApp);
+    }
 }
 
 void TestRecordingWidget::cleanup()
 {
     delete m_widget;
     m_widget = nullptr;
+    
+    if (m_mouseApp)
+    {
+        m_mouseApp->shutdown();
+        m_mouseApp.reset();
+    }
 }
 
 void TestRecordingWidget::testInitialState()
