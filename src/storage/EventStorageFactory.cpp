@@ -81,7 +81,8 @@ std::string EventStorageFactory::getFileExtension(Core::StorageFormat format)
     return "";
 }
 
-std::string EventStorageFactory::getFormatDescription(Core::StorageFormat format
+std::string EventStorageFactory::getFormatDescription(
+  Core::StorageFormat format
 )
 {
     auto storage = createStorage(format);
@@ -119,11 +120,11 @@ std::optional<Core::StorageFormat> EventStorageFactory::getFormatFromExtension(
     {
         return Core::StorageFormat::Json;
     }
-    else if (ext == "mre")
+    if (ext == "mre")
     {
         return Core::StorageFormat::Binary;
     }
-    else if (ext == "xml")
+    if (ext == "xml")
     {
         return Core::StorageFormat::Xml;
     }

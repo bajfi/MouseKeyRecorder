@@ -133,6 +133,16 @@ constexpr const char* OPTIMIZE_MOUSE_MOVEMENTS =
   "recording.optimize_mouse_movements";
 constexpr const char* MOUSE_MOVEMENT_THRESHOLD =
   "recording.mouse_movement_threshold";
+constexpr const char* MOUSE_OPTIMIZATION_TIME_THRESHOLD =
+  "recording.mouse_optimization_time_threshold";
+constexpr const char* MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON =
+  "recording.mouse_optimization_douglas_peucker_epsilon";
+constexpr const char* MOUSE_OPTIMIZATION_PRESERVE_CLICKS =
+  "recording.mouse_optimization_preserve_clicks";
+constexpr const char* MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST =
+  "recording.mouse_optimization_preserve_first_last";
+constexpr const char* MOUSE_OPTIMIZATION_STRATEGY =
+  "recording.mouse_optimization_strategy";
 constexpr const char* DEFAULT_STORAGE_FORMAT =
   "recording.default_storage_format";
 

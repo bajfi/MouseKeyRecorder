@@ -87,6 +87,130 @@
                                 </widget>
                             </item>
                             <item>
+                                <widget class="QGroupBox" name="optimizationGroupBox">
+                                    <property name="title">
+                                        <string>Mouse Movement Optimization</string>
+                                    </property>
+                                    <layout class="QGridLayout" name="optimizationLayout">
+                                        <item row="0" column="0">
+                                            <widget class="QLabel" name="optimizationStrategyLabel">
+                                                <property name="text">
+                                                    <string>Optimization Strategy:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="0" column="1">
+                                            <widget class="QComboBox" name="optimizationStrategyComboBox">
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Combined (Recommended)</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Distance Threshold Only</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Douglas-Peucker Only</string>
+                                                    </property>
+                                                </item>
+                                                <item>
+                                                    <property name="text">
+                                                        <string>Time-based Only</string>
+                                                    </property>
+                                                </item>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="0">
+                                            <widget class="QLabel" name="timeThresholdLabel">
+                                                <property name="text">
+                                                    <string>Time Threshold:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="1" column="1">
+                                            <widget class="QSpinBox" name="timeThresholdSpinBox">
+                                                <property name="suffix">
+                                                    <string> ms</string>
+                                                </property>
+                                                <property name="minimum">
+                                                    <number>1</number>
+                                                </property>
+                                                <property name="maximum">
+                                                    <number>100</number>
+                                                </property>
+                                                <property name="value">
+                                                    <number>16</number>
+                                                </property>
+                                                <property name="toolTip">
+                                                    <string>Minimum time between mouse events (lower = smoother, higher = smaller file)</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="0">
+                                            <widget class="QLabel" name="douglasPeuckerEpsilonLabel">
+                                                <property name="text">
+                                                    <string>Line Simplification Tolerance:</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="2" column="1">
+                                            <widget class="QDoubleSpinBox" name="douglasPeuckerEpsilonSpinBox">
+                                                <property name="suffix">
+                                                    <string> pixels</string>
+                                                </property>
+                                                <property name="decimals">
+                                                    <number>1</number>
+                                                </property>
+                                                <property name="minimum">
+                                                    <double>0.1</double>
+                                                </property>
+                                                <property name="maximum">
+                                                    <double>10.0</double>
+                                                </property>
+                                                <property name="singleStep">
+                                                    <double>0.1</double>
+                                                </property>
+                                                <property name="value">
+                                                    <double>2.0</double>
+                                                </property>
+                                                <property name="toolTip">
+                                                    <string>Tolerance for line simplification algorithm (lower = more accurate, higher = more compression)</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="3" column="0">
+                                            <widget class="QCheckBox" name="preserveClicksCheckBox">
+                                                <property name="text">
+                                                    <string>Preserve Click Positions</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <property name="toolTip">
+                                                    <string>Always preserve mouse movements at click positions</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                        <item row="3" column="1">
+                                            <widget class="QCheckBox" name="preserveFirstLastCheckBox">
+                                                <property name="text">
+                                                    <string>Preserve First/Last Positions</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                                <property name="toolTip">
+                                                    <string>Always preserve the first and last mouse positions</string>
+                                                </property>
+                                            </widget>
+                                        </item>
+                                    </layout>
+                                </widget>
+                            </item>
+                            <item>
                                 <widget class="QGroupBox" name="storageGroupBox">
                                     <property name="title">
                                         <string>File Storage</string>

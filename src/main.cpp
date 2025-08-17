@@ -82,10 +82,10 @@ int main(int argc, char* argv[])
 
     // Apply theme if specified in configuration
     auto& config = mouseRecorderApp.getConfiguration();
-    QString theme =
-      QString::fromStdString(config.getString("ui.theme", "system"));
 
-    if (theme != "system")
+    if (auto theme =
+          QString::fromStdString(config.getString("ui.theme", "system"));
+        theme != "system")
     {
         QStringList availableStyles = QStyleFactory::keys();
         if (availableStyles.contains(theme, Qt::CaseInsensitive))

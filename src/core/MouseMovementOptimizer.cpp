@@ -97,11 +97,11 @@ size_t MouseMovementOptimizer::optimizeEvents(
               applyDouglasPeucker(filteredMoves, config.douglasPeuckerEpsilon);
             std::set<size_t> keepSet(toKeep.begin(), toKeep.end());
 
-            for (const auto& move : filteredMoves)
+            for (const auto& [index, move] : filteredMoves)
             {
-                if (keepSet.find(move.first) == keepSet.end())
+                if (keepSet.find(index) == keepSet.end())
                 {
-                    indicesToRemove.push_back(move.first);
+                    indicesToRemove.push_back(index);
                 }
             }
         }
@@ -153,7 +153,7 @@ size_t MouseMovementOptimizer::optimizeEvents(
     }
 
     // Sort indices in descending order for safe removal
-    std::ranges::sort(indicesToRemove);
+    std::ranges::stable_sort(indicesToRemove);
 
     // Remove duplicates
     indicesToRemove.erase(
@@ -244,9 +244,9 @@ std::vector<size_t> MouseMovementOptimizer::applyDouglasPeucker(
     if (mouseMoves.size() < 3)
     {
         std::vector<size_t> result;
-        for (const auto& move : mouseMoves)
+        for (const auto& [index, move] : mouseMoves)
         {
-            result.push_back(move.first);
+            result.push_back(index);
         }
         return result;
     }
@@ -339,11 +339,12 @@ double MouseMovementOptimizer::perpendicularDistance(
     double t = ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) /
                (dx * dx + dy * dy);
 
-    t = std::max(0.0, std::min(1.0, t));
+    t = std::clamp(t, 0.0, 1.0); // Clamp t to [0, 1]
 
-    Point projection;
-    projection.x = static_cast<int>(lineStart.x + t * dx);
-    projection.y = static_cast<int>(lineStart.y + t * dy);
+    Point projection{
+      static_cast<int>(lineStart.x + t * dx),
+      static_cast<int>(lineStart.y + t * dy)
+    };
 
     return calculateDistance(point, projection);
 }

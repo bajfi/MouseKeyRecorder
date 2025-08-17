@@ -83,8 +83,6 @@ TEST_F(MouseMovementOptimizationIntegrationTest, ConfigurationIntegration)
 
     // Test default configuration values (check if they exist, don't assume
     // specific values since they might be persisted from previous tests)
-    bool hasOptimizationSetting =
-      config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false);
     int thresholdValue = config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 0);
 
     // The settings should exist (not use default values)

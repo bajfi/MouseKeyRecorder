@@ -47,6 +47,12 @@ void ConfigurationWidget::setupUI()
       this,
       &ConfigurationWidget::onBrowseLogFile
     );
+    connect(
+      ui->optimizeMouseMovementsCheckBox,
+      &QCheckBox::toggled,
+      this,
+      &ConfigurationWidget::updateUI
+    );
 
     // Setup default values
     ui->captureMouseEventsCheckBox->setChecked(true);
@@ -93,10 +99,44 @@ void ConfigurationWidget::loadConfiguration()
       config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5)
     );
 
+    // Load optimization settings
+
+    if (auto strategyStr =
+          config.getString(ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, "combined");
+        strategyStr == "distance")
+    {
+        ui->optimizationStrategyComboBox->setCurrentIndex(1);
+    }
+    else if (strategyStr == "douglas_peucker")
+    {
+        ui->optimizationStrategyComboBox->setCurrentIndex(2);
+    }
+    else if (strategyStr == "time")
+    {
+        ui->optimizationStrategyComboBox->setCurrentIndex(3);
+    }
+    else // combined
+    {
+        ui->optimizationStrategyComboBox->setCurrentIndex(0);
+    }
+
+    ui->timeThresholdSpinBox->setValue(
+      config.getInt(ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD, 16)
+    );
+    ui->douglasPeuckerEpsilonSpinBox->setValue(config.getDouble(
+      ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON, 2.0
+    ));
+    ui->preserveClicksCheckBox->setChecked(
+      config.getBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS, true)
+    );
+    ui->preserveFirstLastCheckBox->setChecked(
+      config.getBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST, true)
+    );
+
     // Load default format (map string to combobox index)
-    std::string defaultFormat =
-      config.getString(ConfigKeys::DEFAULT_STORAGE_FORMAT, "json");
-    if (defaultFormat == "json")
+    if (std::string defaultFormat =
+          config.getString(ConfigKeys::DEFAULT_STORAGE_FORMAT, "json");
+        defaultFormat == "json")
     {
         ui->defaultFormatComboBox->setCurrentIndex(0);
     }
@@ -143,9 +183,9 @@ void ConfigurationWidget::loadConfiguration()
     ));
 
     // Load logging settings
-    std::string logLevel = config.getString(ConfigKeys::LOG_LEVEL, "info");
     int logLevelIndex = 4; // Default to "info"
-    if (logLevel == "trace")
+    if (auto logLevel = config.getString(ConfigKeys::LOG_LEVEL, "info");
+        logLevel == "trace")
         logLevelIndex = 0;
     else if (logLevel == "debug")
         logLevelIndex = 1;
@@ -197,15 +237,62 @@ void ConfigurationWidget::saveConfiguration()
       ui->movementThresholdSpinBox->value()
     );
 
+    // Save optimization settings
+    std::string strategyString = "combined";
+    switch (ui->optimizationStrategyComboBox->currentIndex())
+    {
+    case 0:
+        strategyString = "combined";
+        break;
+    case 1:
+        strategyString = "distance";
+        break;
+    case 2:
+        strategyString = "douglas_peucker";
+        break;
+    case 3:
+        strategyString = "time";
+        break;
+    default:
+        strategyString = "combined";
+        break;
+    }
+    config.setString(ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, strategyString);
+
+    config.setInt(
+      ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD,
+      ui->timeThresholdSpinBox->value()
+    );
+    config.setDouble(
+      ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON,
+      ui->douglasPeuckerEpsilonSpinBox->value()
+    );
+    config.setBool(
+      ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS,
+      ui->preserveClicksCheckBox->isChecked()
+    );
+    config.setBool(
+      ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST,
+      ui->preserveFirstLastCheckBox->isChecked()
+    );
+
     // Save default format (map combobox index to string)
     std::string formatString = "json";
-    int formatIndex = ui->defaultFormatComboBox->currentIndex();
-    if (formatIndex == 0)
+    switch (ui->defaultFormatComboBox->currentIndex())
+    {
+    case 0:
         formatString = "json";
-    else if (formatIndex == 1)
+        break;
+    case 1:
         formatString = "xml";
-    else if (formatIndex == 2)
+        break;
+    case 2:
         formatString = "binary";
+        break;
+    default:
+        formatString = "json";
+        break;
+    }
     config.setString(ConfigKeys::DEFAULT_STORAGE_FORMAT, formatString);
 
     // Save playback settings
@@ -242,8 +329,9 @@ void ConfigurationWidget::saveConfiguration()
     const QStringList logLevels = {
       "trace", "debug", "info", "warn", "error", "critical"
     };
-    int logLevelIndex = ui->logLevelComboBox->currentIndex();
-    if (logLevelIndex >= 0 && logLevelIndex < logLevels.size())
+
+    if (auto logLevelIndex = ui->logLevelComboBox->currentIndex();
+        logLevelIndex >= 0 && logLevelIndex < logLevels.size())
     {
         config.setString(
           ConfigKeys::LOG_LEVEL, logLevels[logLevelIndex].toStdString()
@@ -256,18 +344,16 @@ void ConfigurationWidget::saveConfiguration()
     );
 
     // Force save to file immediately
-    bool success = config.saveToFile("");
-    if (success)
+    if (config.saveToFile(""))
     {
         spdlog::info("ConfigurationWidget: Configuration saved successfully");
+        return;
     }
-    else
-    {
-        spdlog::error(
-          "ConfigurationWidget: Failed to save configuration: {}",
-          config.getLastError()
-        );
-    }
+
+    spdlog::error(
+      "ConfigurationWidget: Failed to save configuration: {}",
+      config.getLastError()
+    );
 }
 
 void ConfigurationWidget::onRestoreDefaults()
@@ -276,6 +362,13 @@ void ConfigurationWidget::onRestoreDefaults()
     ui->captureKeyboardEventsCheckBox->setChecked(true);
     ui->optimizeMouseMovementsCheckBox->setChecked(true);
     ui->movementThresholdSpinBox->setValue(5);
+
+    // Restore optimization defaults
+    ui->optimizationStrategyComboBox->setCurrentIndex(0); // Combined
+    ui->timeThresholdSpinBox->setValue(16);
+    ui->douglasPeuckerEpsilonSpinBox->setValue(2.0);
+    ui->preserveClicksCheckBox->setChecked(true);
+    ui->preserveFirstLastCheckBox->setChecked(true);
     ui->defaultFormatComboBox->setCurrentIndex(0);
 
     ui->defaultSpeedSpinBox->setValue(1.0);
@@ -331,9 +424,17 @@ void ConfigurationWidget::onBrowseLogFile()
 void ConfigurationWidget::updateUI()
 {
     // Enable/disable controls based on settings
-    ui->movementThresholdSpinBox->setEnabled(
-      ui->optimizeMouseMovementsCheckBox->isChecked()
-    );
+    bool optimizationEnabled = ui->optimizeMouseMovementsCheckBox->isChecked();
+    ui->movementThresholdSpinBox->setEnabled(optimizationEnabled);
+
+    // Enable/disable optimization controls
+    ui->optimizationGroupBox->setEnabled(optimizationEnabled);
+    ui->optimizationStrategyComboBox->setEnabled(optimizationEnabled);
+    ui->timeThresholdSpinBox->setEnabled(optimizationEnabled);
+    ui->douglasPeuckerEpsilonSpinBox->setEnabled(optimizationEnabled);
+    ui->preserveClicksCheckBox->setEnabled(optimizationEnabled);
+    ui->preserveFirstLastCheckBox->setEnabled(optimizationEnabled);
+
     ui->logFilePathLineEdit->setEnabled(ui->logToFileCheckBox->isChecked());
     ui->browseLogFileButton->setEnabled(ui->logToFileCheckBox->isChecked());
 }

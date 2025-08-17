@@ -992,33 +992,7 @@ void MainWindow::onExportEvents()
         }
 
         // Apply mouse movement optimization if enabled
-        auto& config = m_app.getConfiguration();
-        if (config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
-        {
-            Core::MouseMovementOptimizer::OptimizationConfig optimizationConfig;
-            optimizationConfig.enabled = true;
-            optimizationConfig.strategy =
-              Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
-            optimizationConfig.distanceThreshold =
-              config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
-            optimizationConfig.timeThresholdMs = 16; // ~60fps
-            optimizationConfig.douglasPeuckerEpsilon = 2.0;
-            optimizationConfig.preserveClicks = true;
-            optimizationConfig.preserveFirstLast = true;
-
-            size_t removedCount = Core::MouseMovementOptimizer::optimizeEvents(
-              eventsToExport, optimizationConfig
-            );
-
-            if (removedCount > 0)
-            {
-                spdlog::info(
-                  "MainWindow: Mouse movement optimization removed {} "
-                  "redundant events during export",
-                  removedCount
-                );
-            }
-        }
+        applyMouseMovementOptimization(eventsToExport);
 
         // Create metadata for the export
         Core::StorageMetadata metadata;
@@ -1485,6 +1459,83 @@ bool MainWindow::shouldAutoMinimize() const
     return m_app.getConfiguration().getBool("ui.auto_minimize_on_record", true);
 }
 
+Core::MouseMovementOptimizer::OptimizationConfig MainWindow::
+  getOptimizationConfigFromSettings() const
+{
+    const auto& config = m_app.getConfiguration();
+
+    Core::MouseMovementOptimizer::OptimizationConfig optimizationConfig;
+    optimizationConfig.enabled =
+      config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
+
+    // Parse strategy from string
+    std::string strategyStr = config.getString(
+      Core::ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, "combined"
+    );
+    if (strategyStr == "distance")
+    {
+        optimizationConfig.strategy =
+          Core::MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+    }
+    else if (strategyStr == "douglas_peucker")
+    {
+        optimizationConfig.strategy =
+          Core::MouseMovementOptimizer::OptimizationStrategy::DouglasPeucker;
+    }
+    else if (strategyStr == "time")
+    {
+        optimizationConfig.strategy =
+          Core::MouseMovementOptimizer::OptimizationStrategy::TimeBased;
+    }
+    else // default to combined
+    {
+        optimizationConfig.strategy =
+          Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
+    }
+
+    optimizationConfig.distanceThreshold =
+      config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+    optimizationConfig.timeThresholdMs =
+      config.getInt(Core::ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD, 16);
+    optimizationConfig.douglasPeuckerEpsilon = config.getDouble(
+      Core::ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON, 2.0
+    );
+    optimizationConfig.preserveClicks = config.getBool(
+      Core::ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS, true
+    );
+    optimizationConfig.preserveFirstLast = config.getBool(
+      Core::ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST, true
+    );
+
+    return optimizationConfig;
+}
+
+size_t MainWindow::applyMouseMovementOptimization(
+  std::vector<std::unique_ptr<Core::Event>>& events
+) const
+{
+    const auto& config = m_app.getConfiguration();
+    if (!config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
+    {
+        return 0; // No optimization if disabled
+    }
+
+    auto optimizationConfig = getOptimizationConfigFromSettings();
+
+    size_t removedCount =
+      Core::MouseMovementOptimizer::optimizeEvents(events, optimizationConfig);
+
+    if (removedCount > 0)
+    {
+        spdlog::info(
+          "MainWindow: Mouse movement optimization removed {} redundant events",
+          removedCount
+        );
+    }
+
+    return removedCount;
+}
+
 void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason)
@@ -1699,33 +1750,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
         }
 
         // Apply mouse movement optimization if enabled
-        auto& config = m_app.getConfiguration();
-        if (config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
-        {
-            Core::MouseMovementOptimizer::OptimizationConfig optimizationConfig;
-            optimizationConfig.enabled = true;
-            optimizationConfig.strategy =
-              Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
-            optimizationConfig.distanceThreshold =
-              config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
-            optimizationConfig.timeThresholdMs = 16; // ~60fps
-            optimizationConfig.douglasPeuckerEpsilon = 2.0;
-            optimizationConfig.preserveClicks = true;
-            optimizationConfig.preserveFirstLast = true;
-
-            size_t removedCount = Core::MouseMovementOptimizer::optimizeEvents(
-              eventsToSave, optimizationConfig
-            );
-
-            if (removedCount > 0)
-            {
-                spdlog::info(
-                  "MainWindow: Mouse movement optimization removed {} "
-                  "redundant events",
-                  removedCount
-                );
-            }
-        }
+        applyMouseMovementOptimization(eventsToSave);
 
         // Create metadata for the save
         Core::StorageMetadata metadata;

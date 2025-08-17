@@ -356,9 +356,9 @@ std::unique_ptr<Core::Event> BinaryEventStorage::deserializeEvent(
             Core::MouseEventData mouseData;
             mouseData.position.x = readBinary<int32_t>(buffer, offset);
             mouseData.position.y = readBinary<int32_t>(buffer, offset);
-            mouseData.button =
-              static_cast<Core::MouseButton>(readBinary<uint8_t>(buffer, offset)
-              );
+            mouseData.button = static_cast<Core::MouseButton>(
+              readBinary<uint8_t>(buffer, offset)
+            );
             mouseData.wheelDelta = readBinary<int32_t>(buffer, offset);
             mouseData.modifiers = static_cast<Core::KeyModifier>(
               readBinary<uint32_t>(buffer, offset)

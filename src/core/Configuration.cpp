@@ -129,6 +129,11 @@ void Configuration::loadDefaults()
     m_values[ConfigKeys::CAPTURE_KEYBOARD_EVENTS] = true;
     m_values[ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS] = true;
     m_values[ConfigKeys::MOUSE_MOVEMENT_THRESHOLD] = 5;
+    m_values[ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD] = 16; // ~60fps
+    m_values[ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON] = 2.0;
+    m_values[ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS] = true;
+    m_values[ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST] = true;
+    m_values[ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY] = std::string("combined");
     m_values[ConfigKeys::DEFAULT_STORAGE_FORMAT] = std::string("json");
 
     // Playback settings
@@ -273,8 +278,8 @@ size_t Configuration::registerChangeCallback(ConfigChangeCallback callback)
 void Configuration::unregisterChangeCallback(size_t callbackId)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    auto it = m_callbacks.find(callbackId);
-    if (it != m_callbacks.end())
+
+    if (auto it = m_callbacks.find(callbackId); it != m_callbacks.end())
     {
         m_callbacks.erase(it);
         spdlog::debug(
@@ -298,8 +303,7 @@ void Configuration::setValue(const std::string& key, const T& value)
         std::lock_guard<std::mutex> lock(m_mutex);
 
         // Get old value for comparison
-        auto it = m_values.find(key);
-        if (it != m_values.end())
+        if (auto it = m_values.find(key); it != m_values.end())
         {
             oldValueStr = valueToString(it->second);
         }
@@ -322,8 +326,7 @@ T Configuration::getValue(const std::string& key, const T& defaultValue) const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    auto it = m_values.find(key);
-    if (it != m_values.end())
+    if (auto it = m_values.find(key); it != m_values.end())
     {
         try
         {

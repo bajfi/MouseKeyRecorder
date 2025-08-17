@@ -5,6 +5,7 @@
 #include <QShortcut>
 #include "application/MouseRecorderApp.hpp"
 #include "core/Event.hpp"
+#include "core/MouseMovementOptimizer.hpp"
 #include <vector>
 #include <memory>
 #include <mutex>
@@ -105,6 +106,13 @@ class MainWindow : public QMainWindow
     bool saveEventsToFile(const QString& filename);
 
     bool shouldAutoMinimize() const;
+
+    // Helper method for mouse movement optimization
+    Core::MouseMovementOptimizer::OptimizationConfig
+    getOptimizationConfigFromSettings() const;
+    size_t applyMouseMovementOptimization(
+      std::vector<std::unique_ptr<Core::Event>>& events
+    ) const;
 
     // Helper methods to suppress message boxes in test environments
     void showErrorMessage(const QString& title, const QString& message);

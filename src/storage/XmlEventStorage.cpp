@@ -47,14 +47,13 @@ bool XmlEventStorage::saveEvents(
         }
 
         // Save to file
-        bool result = doc.save_file(
-          filename.c_str(),
-          m_prettyPrint ? "  " : "",
-          pugi::format_default | pugi::format_write_bom,
-          pugi::encoding_utf8
-        );
-
-        if (!result)
+        if (auto result = doc.save_file(
+              filename.c_str(),
+              m_prettyPrint ? "  " : "",
+              pugi::format_default | pugi::format_write_bom,
+              pugi::encoding_utf8
+            );
+            !result)
         {
             setLastError("Failed to save XML file: " + filename);
             return false;
@@ -83,9 +82,8 @@ bool XmlEventStorage::loadEvents(
     try
     {
         pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_file(filename.c_str());
 
-        if (!result)
+        if (auto result = doc.load_file(filename.c_str()); !result)
         {
             setLastError(
               "Failed to parse XML file: " + std::string(result.description())
@@ -101,16 +99,14 @@ bool XmlEventStorage::loadEvents(
         }
 
         // Load metadata
-        auto metadataNode = root.child("Metadata");
-        if (metadataNode)
+        if (auto metadataNode = root.child("Metadata"); metadataNode)
         {
             metadata = xmlToMetadata(metadataNode);
         }
 
         // Load events
         events.clear();
-        auto eventsNode = root.child("Events");
-        if (eventsNode)
+        if (auto eventsNode = root.child("Events"); eventsNode)
         {
             for (auto eventNode : eventsNode.children("Event"))
             {
@@ -154,9 +150,8 @@ bool XmlEventStorage::validateFile(const std::string& filename) const
     try
     {
         pugi::xml_document doc;
-        pugi::xml_parse_result result = doc.load_file(filename.c_str());
 
-        if (!result)
+        if (auto result = doc.load_file(filename.c_str()); !result)
         {
             return false;
         }
@@ -190,8 +185,7 @@ bool XmlEventStorage::getFileMetadata(
             return false;
         }
 
-        auto metadataNode = root.child("Metadata");
-        if (metadataNode)
+        if (auto metadataNode = root.child("Metadata"); metadataNode)
         {
             metadata = xmlToMetadata(metadataNode);
             return true;
@@ -403,15 +397,15 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
               Core::EventType::MouseMove, data, timePoint
             );
         }
-        else if (typeStr == "mouse_click")
+        if (typeStr == "mouse_click")
         {
             Core::MouseEventData data;
             auto pos = node.child("Position");
             data.position.x = pos.attribute("x").as_int();
             data.position.y = pos.attribute("y").as_int();
 
-            std::string buttonStr = node.attribute("button").value();
-            if (buttonStr == "left")
+            if (std::string_view buttonStr = node.attribute("button").value();
+                buttonStr == "left")
                 data.button = Core::MouseButton::Left;
             else if (buttonStr == "right")
                 data.button = Core::MouseButton::Right;
@@ -430,15 +424,15 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
               Core::EventType::MouseClick, data, timePoint
             );
         }
-        else if (typeStr == "mouse_double_click")
+        if (typeStr == "mouse_double_click")
         {
             Core::MouseEventData data;
             auto pos = node.child("Position");
             data.position.x = pos.attribute("x").as_int();
             data.position.y = pos.attribute("y").as_int();
 
-            std::string buttonStr = node.attribute("button").value();
-            if (buttonStr == "left")
+            if (std::string_view buttonStr = node.attribute("button").value();
+                buttonStr == "left")
                 data.button = Core::MouseButton::Left;
             else if (buttonStr == "right")
                 data.button = Core::MouseButton::Right;
@@ -457,7 +451,7 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
               Core::EventType::MouseDoubleClick, data, timePoint
             );
         }
-        else if (typeStr == "mouse_wheel")
+        if (typeStr == "mouse_wheel")
         {
             Core::MouseEventData data;
             auto pos = node.child("Position");
@@ -472,7 +466,7 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
               Core::EventType::MouseWheel, data, timePoint
             );
         }
-        else if (typeStr == "key_press")
+        if (typeStr == "key_press")
         {
             Core::KeyboardEventData data;
             data.keyCode = node.attribute("key_code").as_uint();
@@ -486,7 +480,7 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
               Core::EventType::KeyPress, data, timePoint
             );
         }
-        else if (typeStr == "key_release")
+        if (typeStr == "key_release")
         {
             Core::KeyboardEventData data;
             data.keyCode = node.attribute("key_code").as_uint();
@@ -499,7 +493,7 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
               Core::EventType::KeyRelease, data, timePoint
             );
         }
-        else if (typeStr == "key_combination")
+        if (typeStr == "key_combination")
         {
             Core::KeyboardEventData data;
             data.keyCode = node.attribute("key_code").as_uint();

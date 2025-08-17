@@ -264,8 +264,7 @@ std::unique_ptr<Core::Event> JsonEventStorage::jsonToEvent(
         {
             return nullptr;
         }
-
-        std::string typeStr = eventJson["type"];
+        auto typeStr = eventJson["type"];
         uint64_t timestamp = eventJson["timestamp"];
 
         auto timePoint = Core::Event::timestampFromMs(timestamp);
@@ -277,42 +276,42 @@ std::unique_ptr<Core::Event> JsonEventStorage::jsonToEvent(
               Core::EventType::MouseMove, mouseData, timePoint
             );
         }
-        else if (typeStr == "mouse_click")
+        if (typeStr == "mouse_click")
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
               Core::EventType::MouseClick, mouseData, timePoint
             );
         }
-        else if (typeStr == "mouse_double_click")
+        if (typeStr == "mouse_double_click")
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
               Core::EventType::MouseDoubleClick, mouseData, timePoint
             );
         }
-        else if (typeStr == "mouse_wheel")
+        if (typeStr == "mouse_wheel")
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
               Core::EventType::MouseWheel, mouseData, timePoint
             );
         }
-        else if (typeStr == "key_press")
+        if (typeStr == "key_press")
         {
             auto keyData = jsonToKeyboardEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
               Core::EventType::KeyPress, keyData, timePoint
             );
         }
-        else if (typeStr == "key_release")
+        if (typeStr == "key_release")
         {
             auto keyData = jsonToKeyboardEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
               Core::EventType::KeyRelease, keyData, timePoint
             );
         }
-        else if (typeStr == "key_combination")
+        if (typeStr == "key_combination")
         {
             auto keyData = jsonToKeyboardEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
@@ -428,8 +427,7 @@ Core::MouseEventData JsonEventStorage::jsonToMouseEventData(
 
     if (dataJson.contains("button"))
     {
-        std::string buttonStr = dataJson["button"];
-        if (buttonStr == "left")
+        if (auto buttonStr = dataJson["button"]; buttonStr == "left")
             data.button = Core::MouseButton::Left;
         else if (buttonStr == "right")
             data.button = Core::MouseButton::Right;
