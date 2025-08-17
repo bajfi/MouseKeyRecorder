@@ -43,6 +43,15 @@ bool MouseRecorderApp::initialize(const std::string& configFile)
 
 bool MouseRecorderApp::initialize(const std::string& configFile, bool headless)
 {
+    return initialize(configFile, headless, "");
+}
+
+bool MouseRecorderApp::initialize(
+  const std::string& configFile,
+  bool headless,
+  const std::string& logLevelOverride
+)
+{
     spdlog::info(
       "MouseRecorderApp: Initializing application (headless: {})", headless
     );
@@ -61,7 +70,18 @@ bool MouseRecorderApp::initialize(const std::string& configFile, bool headless)
         return false;
     }
 
-    // Initialize logging with configuration
+    // Override log level if provided
+    if (!logLevelOverride.empty())
+    {
+        m_configuration->setString(
+          Core::ConfigKeys::LOG_LEVEL, logLevelOverride
+        );
+        spdlog::info(
+          "MouseRecorderApp: Overriding log level to '{}'", logLevelOverride
+        );
+    }
+
+    // Initialize logging with configuration (including any overrides)
     if (!initializeLogging(*m_configuration))
     {
         setLastError("Failed to initialize logging system");

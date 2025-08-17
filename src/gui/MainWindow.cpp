@@ -851,9 +851,15 @@ void MainWindow::onStartRecording()
 
         // Call the handler that updates all UI components
         onRecordingStarted();
+
+        spdlog::info("MainWindow: Recording started successfully from GUI");
     }
     else
     {
+        spdlog::error(
+          "MainWindow: Failed to start recording: {}",
+          m_app.getEventRecorder().getLastError()
+        );
         QMessageBox::critical(
           this,
           "Recording Error",
@@ -886,6 +892,12 @@ void MainWindow::onStopRecording()
 
             // Call the handler that updates all UI components
             onRecordingStopped();
+
+            spdlog::info(
+              "MainWindow: Recording stopped successfully from GUI - {} events "
+              "recorded",
+              m_recordedEvents.size()
+            );
         }
         else
         {
@@ -1711,10 +1723,16 @@ void MainWindow::saveRecentFiles()
 
 bool MainWindow::saveEventsToFile(const QString& filename)
 {
+    spdlog::info(
+      "MainWindow: Attempting to save events to file '{}'",
+      filename.toStdString()
+    );
+
     try
     {
         if (m_recordedEvents.empty())
         {
+            spdlog::warn("MainWindow: No events to save");
             showWarningMessage(
               "Save File", "No events to save. Please record some events first."
             );

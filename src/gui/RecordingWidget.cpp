@@ -7,6 +7,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QDateTime>
+#include <spdlog/spdlog.h>
 
 namespace MouseRecorder::GUI
 {
@@ -126,6 +127,7 @@ void RecordingWidget::updateStatistics(
 
 void RecordingWidget::onStartRecording()
 {
+    spdlog::info("RecordingWidget: Starting recording from widget");
     ui->startRecordingButton->setEnabled(false);
     ui->stopRecordingButton->setEnabled(true);
 
@@ -133,18 +135,19 @@ void RecordingWidget::onStartRecording()
     m_recordingTimer->start();
 
     emit recordingStarted();
+    spdlog::info("RecordingWidget: Recording widget UI updated for start");
 }
 
 void RecordingWidget::onStopRecording()
 {
+    spdlog::info("RecordingWidget: Stopping recording from widget");
     ui->startRecordingButton->setEnabled(true);
     ui->stopRecordingButton->setEnabled(false);
 
     m_recordingTimer->stop();
 
     emit recordingStopped();
-
-    // TODO: Stop actual recording
+    spdlog::info("RecordingWidget: Recording widget UI updated for stop");
 }
 
 void RecordingWidget::setRecordingState(bool isRecording)
@@ -185,8 +188,6 @@ void RecordingWidget::onClearEvents()
     ui->recordingDurationValue->setText("00:00:00");
 
     m_displayedEvents.clear();
-
-    // TODO: Clear actual event data
 }
 
 void RecordingWidget::onExportEvents()

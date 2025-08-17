@@ -383,6 +383,7 @@ void PlaybackWidget::onLoopCountChanged(int count)
 
 void PlaybackWidget::loadFile(const QString& fileName)
 {
+    spdlog::info("PlaybackWidget: Loading file '{}'", fileName.toStdString());
     m_currentFile = fileName;
     ui->filePathLineEdit->setText(fileName);
 

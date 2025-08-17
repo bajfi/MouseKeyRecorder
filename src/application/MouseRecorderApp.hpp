@@ -40,6 +40,19 @@ class MouseRecorderApp
     bool initialize(const std::string& configFile, bool headless);
 
     /**
+     * @brief Initialize the application with log level override
+     * @param configFile Configuration file path (optional)
+     * @param headless Skip platform components initialization (for testing)
+     * @param logLevelOverride Optional log level to override config
+     * @return true if initialization successful
+     */
+    bool initialize(
+      const std::string& configFile,
+      bool headless,
+      const std::string& logLevelOverride
+    );
+
+    /**
      * @brief Shutdown the application gracefully
      */
     void shutdown();

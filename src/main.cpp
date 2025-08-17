@@ -66,7 +66,12 @@ int main(int argc, char* argv[])
     // Initialize the application core
     MouseRecorder::Application::MouseRecorderApp mouseRecorderApp;
 
-    if (!mouseRecorderApp.initialize(configFile.toStdString()))
+    // Get log level from command line
+    QString logLevel = parser.value(logLevelOption);
+
+    if (!mouseRecorderApp.initialize(
+          configFile.toStdString(), false, logLevel.toStdString()
+        ))
     {
         QMessageBox::critical(
           nullptr,
