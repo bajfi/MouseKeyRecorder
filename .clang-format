@@ -74,7 +74,6 @@ BraceWrapping:
   AfterClass: true # After class
   AfterFunction: true # After function
   AfterNamespace: true # After namespace
-  AfterInterface: true # After interface
   AfterModule: true # After module
   AfterUnion: true # After union
   BeforeLambdaBody: true # Before lambda body
