@@ -50,15 +50,12 @@ class MouseMovementOptimizationIntegrationTest : public ::testing::Test
         {
             MouseEventData mouseData;
             mouseData.position =
-              Point(i, i / 10); // Mostly horizontal with some vertical
+                Point(i, i / 10); // Mostly horizontal with some vertical
 
             auto timestamp =
-              baseTime + std::chrono::milliseconds(i * 10); // 10ms intervals
-            events.push_back(
-              std::make_unique<Event>(
-                EventType::MouseMove, mouseData, timestamp
-              )
-            );
+                baseTime + std::chrono::milliseconds(i * 10); // 10ms intervals
+            events.push_back(std::make_unique<Event>(
+                EventType::MouseMove, mouseData, timestamp));
         }
 
         // Add a click in the middle
@@ -66,9 +63,8 @@ class MouseMovementOptimizationIntegrationTest : public ::testing::Test
         clickData.position = Point(50, 5);
         clickData.button = MouseButton::Left;
         auto clickTime = baseTime + std::chrono::milliseconds(50 * 10);
-        events.push_back(
-          std::make_unique<Event>(EventType::MouseClick, clickData, clickTime)
-        );
+        events.push_back(std::make_unique<Event>(
+            EventType::MouseClick, clickData, clickTime));
 
         return events;
     }
@@ -86,10 +82,9 @@ TEST_F(MouseMovementOptimizationIntegrationTest, ConfigurationIntegration)
     int thresholdValue = config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 0);
 
     // The settings should exist (not use default values)
-    EXPECT_TRUE(
-      config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false) ||
-      !config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true)
-    );                            // Either true or false, not default
+    EXPECT_TRUE(config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, false) ||
+                !config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
+                                true)); // Either true or false, not default
     EXPECT_GT(thresholdValue, 0); // Should have a positive threshold value
 
     // Test changing configuration values
@@ -119,16 +114,16 @@ TEST_F(MouseMovementOptimizationIntegrationTest, OptimizationAppliedDuringSave)
     MouseMovementOptimizer::OptimizationConfig optimizationConfig;
     optimizationConfig.enabled = true;
     optimizationConfig.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::Combined;
+        MouseMovementOptimizer::OptimizationStrategy::Combined;
     optimizationConfig.distanceThreshold =
-      config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+        config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
     optimizationConfig.timeThresholdMs = 16;
     optimizationConfig.douglasPeuckerEpsilon = 2.0;
     optimizationConfig.preserveClicks = true;
     optimizationConfig.preserveFirstLast = true;
 
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, optimizationConfig);
+        MouseMovementOptimizer::optimizeEvents(events, optimizationConfig);
 
     EXPECT_GT(removedCount, 0);
     EXPECT_LT(events.size(), originalEventCount);
@@ -159,10 +154,10 @@ TEST_F(MouseMovementOptimizationIntegrationTest, OptimizationDisabled)
     // Apply optimization configuration (should not optimize when disabled)
     MouseMovementOptimizer::OptimizationConfig optimizationConfig;
     optimizationConfig.enabled =
-      config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
+        config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
 
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, optimizationConfig);
+        MouseMovementOptimizer::optimizeEvents(events, optimizationConfig);
 
     EXPECT_EQ(removedCount, 0);
     EXPECT_EQ(events.size(), originalEventCount);
@@ -190,9 +185,9 @@ TEST_F(MouseMovementOptimizationIntegrationTest, SaveAndLoadWithOptimization)
     MouseMovementOptimizer::OptimizationConfig optimizationConfig;
     optimizationConfig.enabled = true;
     optimizationConfig.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::Combined;
+        MouseMovementOptimizer::OptimizationStrategy::Combined;
     optimizationConfig.distanceThreshold =
-      config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+        config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
     optimizationConfig.timeThresholdMs = 16;
     optimizationConfig.douglasPeuckerEpsilon = 2.0;
     optimizationConfig.preserveClicks = true;
@@ -236,13 +231,13 @@ TEST_F(MouseMovementOptimizationIntegrationTest, DifferentThresholdValues)
     MouseMovementOptimizer::OptimizationConfig config1;
     config1.enabled = true;
     config1.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+        MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
     config1.distanceThreshold = 5;
 
     MouseMovementOptimizer::OptimizationConfig config2;
     config2.enabled = true;
     config2.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+        MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
     config2.distanceThreshold = 20;
 
     size_t removed1 = MouseMovementOptimizer::optimizeEvents(events1, config1);
@@ -262,65 +257,49 @@ TEST_F(MouseMovementOptimizationIntegrationTest, PreserveImportantEvents)
     MouseEventData moveData1;
     moveData1.position = Point(0, 0);
     events.push_back(
-      std::make_unique<Event>(EventType::MouseMove, moveData1, baseTime)
-    );
+        std::make_unique<Event>(EventType::MouseMove, moveData1, baseTime));
 
     MouseEventData moveData2;
     moveData2.position = Point(1, 0);
     events.push_back(
-      std::make_unique<Event>(
-        EventType::MouseMove,
-        moveData2,
-        baseTime + std::chrono::milliseconds(10)
-      )
-    );
+        std::make_unique<Event>(EventType::MouseMove,
+                                moveData2,
+                                baseTime + std::chrono::milliseconds(10)));
 
     MouseEventData clickData;
     clickData.position = Point(2, 0);
     clickData.button = MouseButton::Left;
     events.push_back(
-      std::make_unique<Event>(
-        EventType::MouseClick,
-        clickData,
-        baseTime + std::chrono::milliseconds(20)
-      )
-    );
+        std::make_unique<Event>(EventType::MouseClick,
+                                clickData,
+                                baseTime + std::chrono::milliseconds(20)));
 
     MouseEventData moveData3;
     moveData3.position = Point(3, 0);
     events.push_back(
-      std::make_unique<Event>(
-        EventType::MouseMove,
-        moveData3,
-        baseTime + std::chrono::milliseconds(30)
-      )
-    );
+        std::make_unique<Event>(EventType::MouseMove,
+                                moveData3,
+                                baseTime + std::chrono::milliseconds(30)));
 
     MouseEventData doubleClickData;
     doubleClickData.position = Point(4, 0);
     doubleClickData.button = MouseButton::Left;
     events.push_back(
-      std::make_unique<Event>(
-        EventType::MouseDoubleClick,
-        doubleClickData,
-        baseTime + std::chrono::milliseconds(40)
-      )
-    );
+        std::make_unique<Event>(EventType::MouseDoubleClick,
+                                doubleClickData,
+                                baseTime + std::chrono::milliseconds(40)));
 
     MouseEventData moveData4;
     moveData4.position = Point(5, 0);
     events.push_back(
-      std::make_unique<Event>(
-        EventType::MouseMove,
-        moveData4,
-        baseTime + std::chrono::milliseconds(50)
-      )
-    );
+        std::make_unique<Event>(EventType::MouseMove,
+                                moveData4,
+                                baseTime + std::chrono::milliseconds(50)));
 
     MouseMovementOptimizer::OptimizationConfig config;
     config.enabled = true;
     config.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+        MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
     config.distanceThreshold = 2;
     config.preserveClicks = true;
 
@@ -345,9 +324,8 @@ TEST_F(MouseMovementOptimizationIntegrationTest, PreserveImportantEvents)
 }
 
 // Test to verify the optimization works with different file formats
-TEST_F(
-  MouseMovementOptimizationIntegrationTest, OptimizationWithDifferentFormats
-)
+TEST_F(MouseMovementOptimizationIntegrationTest,
+       OptimizationWithDifferentFormats)
 {
     auto events = createTestEventSequence();
     size_t originalCount = events.size();
@@ -368,7 +346,7 @@ TEST_F(
     for (const auto& format : formats)
     {
         std::string testFile =
-          (m_testDir / ("test_optimized" + format)).string();
+            (m_testDir / ("test_optimized" + format)).string();
         auto storage = EventStorageFactory::createStorageFromFilename(testFile);
         ASSERT_NE(storage, nullptr);
 
@@ -387,8 +365,7 @@ TEST_F(
         std::vector<std::unique_ptr<Event>> loadedEvents;
         StorageMetadata loadedMetadata;
         EXPECT_TRUE(
-          storage->loadEvents(testFile, loadedEvents, loadedMetadata)
-        );
+            storage->loadEvents(testFile, loadedEvents, loadedMetadata));
         EXPECT_EQ(loadedEvents.size(), optimizedCount);
     }
 }

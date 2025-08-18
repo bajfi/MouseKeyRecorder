@@ -18,7 +18,7 @@ class SystemTrayAndShortcutTest : public ::testing::Test
 
         // Initialize in headless mode
         ASSERT_TRUE(m_app->initialize("", true))
-          << "Failed to initialize MouseRecorderApp";
+            << "Failed to initialize MouseRecorderApp";
 
         // Create main window
         m_window = std::make_unique<GUI::MainWindow>(*m_app);
@@ -44,8 +44,7 @@ TEST_F(SystemTrayAndShortcutTest, BasicFunctionality)
 
     // Start recording programmatically
     bool started = m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    );
+        [](std::unique_ptr<Core::Event>) {});
     EXPECT_TRUE(started);
     EXPECT_TRUE(m_app->getEventRecorder().isRecording());
 
@@ -81,15 +80,13 @@ TEST_F(SystemTrayAndShortcutTest, RecordingStateValidation)
 
     // Start recording
     EXPECT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
     EXPECT_TRUE(m_app->getEventRecorder().isRecording());
 
     // Try to start recording again (should be handled gracefully)
     // This should not cause errors or crashes
     EXPECT_FALSE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
     EXPECT_TRUE(m_app->getEventRecorder().isRecording()); // Still recording
 
     // Stop recording

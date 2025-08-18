@@ -44,9 +44,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
   public:
-    explicit MainWindow(
-      Application::MouseRecorderApp& app, QWidget* parent = nullptr
-    );
+    explicit MainWindow(Application::MouseRecorderApp& app,
+                        QWidget* parent = nullptr);
     ~MainWindow();
 
   protected:
@@ -111,8 +110,7 @@ class MainWindow : public QMainWindow
     Core::MouseMovementOptimizer::OptimizationConfig
     getOptimizationConfigFromSettings() const;
     size_t applyMouseMovementOptimization(
-      std::vector<std::unique_ptr<Core::Event>>& events
-    ) const;
+        std::vector<std::unique_ptr<Core::Event>>& events) const;
 
     // Helper methods to suppress message boxes in test environments
     void showErrorMessage(const QString& title, const QString& message);

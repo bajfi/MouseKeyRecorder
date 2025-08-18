@@ -34,8 +34,7 @@ class PlaybackIntegrationTest : public ::testing::Test
         // Initialize MouseRecorderApp (NOT headless for testing)
         mouseRecorderApp = std::make_unique<Application::MouseRecorderApp>();
         ASSERT_TRUE(
-          mouseRecorderApp->initialize("", false)
-        ); // headless = false
+            mouseRecorderApp->initialize("", false)); // headless = false
     }
 
     void TearDown() override
@@ -56,49 +55,37 @@ class PlaybackIntegrationTest : public ::testing::Test
         for (int i = 0; i < 5; ++i)
         {
             auto event = Core::EventFactory::createMouseMoveEvent(
-              {100 + i * 10, 200 + i * 5}
-            );
+                {100 + i * 10, 200 + i * 5});
             events.push_back(std::move(event));
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         // Mouse click
-        events.push_back(
-          Core::EventFactory::createMouseClickEvent(
-            {150, 225}, Core::MouseButton::Left
-          )
-        );
+        events.push_back(Core::EventFactory::createMouseClickEvent(
+            {150, 225}, Core::MouseButton::Left));
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
         // Key sequence: "hello"
         std::vector<std::string> keys = {"h", "e", "l", "l", "o"};
         for (const auto& key : keys)
         {
-            events.push_back(
-              Core::EventFactory::createKeyPressEvent(
-                static_cast<uint32_t>(key[0]), key, Core::KeyModifier::None
-              )
-            );
+            events.push_back(Core::EventFactory::createKeyPressEvent(
+                static_cast<uint32_t>(key[0]), key, Core::KeyModifier::None));
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
-            events.push_back(
-              Core::EventFactory::createKeyReleaseEvent(
-                static_cast<uint32_t>(key[0]), key, Core::KeyModifier::None
-              )
-            );
+            events.push_back(Core::EventFactory::createKeyReleaseEvent(
+                static_cast<uint32_t>(key[0]), key, Core::KeyModifier::None));
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
         // Mouse wheel event
         events.push_back(
-          Core::EventFactory::createMouseWheelEvent({200, 250}, 120)
-        );
+            Core::EventFactory::createMouseWheelEvent({200, 250}, 120));
 
         return events;
     }
 
     QString saveTestEvents(
-      const std::vector<std::unique_ptr<Core::Event>>& events
-    )
+        const std::vector<std::unique_ptr<Core::Event>>& events)
     {
         auto tempFile = std::make_unique<QTemporaryFile>();
         tempFile->setFileTemplate("playback_test_XXXXXX.json");
@@ -114,8 +101,7 @@ class PlaybackIntegrationTest : public ::testing::Test
         metadata.version = "0.0.1";
 
         EXPECT_TRUE(
-          storage.saveEvents(events, fileName.toStdString(), metadata)
-        );
+            storage.saveEvents(events, fileName.toStdString(), metadata));
 
         // Keep the file alive
         tempFiles.push_back(std::move(tempFile));
@@ -145,8 +131,7 @@ TEST_F(PlaybackIntegrationTest, EndToEndPlaybackFlow)
     Core::StorageMetadata metadata;
 
     EXPECT_TRUE(
-      storage->loadEvents(testFile.toStdString(), loadedEvents, metadata)
-    );
+        storage->loadEvents(testFile.toStdString(), loadedEvents, metadata));
     EXPECT_EQ(loadedEvents.size(), originalEventCount);
     EXPECT_EQ(metadata.totalEvents, originalEventCount);
 
@@ -212,10 +197,8 @@ TEST_F(PlaybackIntegrationTest, PlaybackStateTransitions)
     // Check if playback is Playing or has already Completed (due to fast
     // execution)
     auto state = player.getState();
-    EXPECT_TRUE(
-      state == Core::PlaybackState::Playing ||
-      state == Core::PlaybackState::Completed
-    );
+    EXPECT_TRUE(state == Core::PlaybackState::Playing ||
+                state == Core::PlaybackState::Completed);
 
     // Test stop
     player.stopPlayback();
@@ -247,8 +230,9 @@ TEST_F(PlaybackIntegrationTest, PlaybackWithCallback)
     size_t lastPosition = 0;
     Core::PlaybackState lastState = Core::PlaybackState::Stopped;
 
-    auto progressCallback =
-      [&, totalEvents](Core::PlaybackState state, size_t current, size_t total)
+    auto progressCallback = [&, totalEvents](Core::PlaybackState state,
+                                             size_t current,
+                                             size_t total)
     {
         callbackCount++;
         lastPosition = current;
@@ -278,11 +262,9 @@ TEST_F(PlaybackIntegrationTest, PlaybackWithCallback)
 
     // Final state should be completed or stopped
     Core::PlaybackState finalState = player.getState();
-    EXPECT_TRUE(
-      finalState == Core::PlaybackState::Completed ||
-      finalState == Core::PlaybackState::Stopped ||
-      finalState == Core::PlaybackState::Error
-    );
+    EXPECT_TRUE(finalState == Core::PlaybackState::Completed ||
+                finalState == Core::PlaybackState::Stopped ||
+                finalState == Core::PlaybackState::Error);
 }
 
 TEST_F(PlaybackIntegrationTest, SeekFunctionality)
@@ -373,9 +355,8 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
     // Start first playback
     bool firstPlaybackStarted = false;
     bool playbackCompleted = false;
-    auto callback =
-      [&firstPlaybackStarted,
-       &playbackCompleted](Core::PlaybackState state, size_t, size_t)
+    auto callback = [&firstPlaybackStarted, &playbackCompleted](
+                        Core::PlaybackState state, size_t, size_t)
     {
         if (state == Core::PlaybackState::Playing && !firstPlaybackStarted)
         {
@@ -405,7 +386,7 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
     // Now test restarting playback - THIS IS THE BUG WE FIXED
     bool secondPlaybackStarted = false;
     auto secondCallback =
-      [&secondPlaybackStarted](Core::PlaybackState state, size_t, size_t)
+        [&secondPlaybackStarted](Core::PlaybackState state, size_t, size_t)
     {
         if (state == Core::PlaybackState::Playing)
         {

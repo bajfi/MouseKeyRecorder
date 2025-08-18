@@ -19,11 +19,9 @@ class EventStorageMetadataTest : public ::testing::Test
         // Create test events
         m_testEvents.push_back(EventFactory::createMouseMoveEvent({100, 200}));
         m_testEvents.push_back(
-          EventFactory::createMouseClickEvent({150, 250}, MouseButton::Left)
-        );
+            EventFactory::createMouseClickEvent({150, 250}, MouseButton::Left));
         m_testEvents.push_back(
-          EventFactory::createKeyPressEvent(65, "A", KeyModifier::Ctrl)
-        );
+            EventFactory::createKeyPressEvent(65, "A", KeyModifier::Ctrl));
 
         // Create test metadata
         m_testMetadata.version = "0.0.1";
@@ -31,7 +29,7 @@ class EventStorageMetadataTest : public ::testing::Test
         m_testMetadata.createdBy = "TestUser";
         m_testMetadata.description = "Test recording for metadata validation";
         m_testMetadata.creationTimestamp =
-          1692201600000; // Fixed timestamp for testing
+            1692201600000; // Fixed timestamp for testing
         m_testMetadata.totalDurationMs = 5000;
         m_testMetadata.totalEvents = m_testEvents.size();
         m_testMetadata.platform = "Linux Test Platform";
@@ -47,8 +45,7 @@ class EventStorageMetadataTest : public ::testing::Test
     void cleanupTestFiles()
     {
         std::vector<std::string> testFiles = {
-          "test_metadata.json", "test_metadata.xml", "test_metadata.mre"
-        };
+            "test_metadata.json", "test_metadata.xml", "test_metadata.mre"};
 
         for (const auto& file : testFiles)
         {
@@ -59,9 +56,8 @@ class EventStorageMetadataTest : public ::testing::Test
         }
     }
 
-    void verifyMetadata(
-      const StorageMetadata& original, const StorageMetadata& loaded
-    )
+    void verifyMetadata(const StorageMetadata& original,
+                        const StorageMetadata& loaded)
     {
         EXPECT_EQ(original.version, loaded.version);
         EXPECT_EQ(original.applicationName, loaded.applicationName);
@@ -189,42 +185,29 @@ TEST_F(EventStorageMetadataTest, XmlMetadataFieldVerification)
     std::ifstream file(filename);
     ASSERT_TRUE(file.is_open());
 
-    std::string content(
-      (std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>()
-    );
+    std::string content((std::istreambuf_iterator<char>(file)),
+                        std::istreambuf_iterator<char>());
     file.close();
 
     // Verify XML contains all metadata fields with correct values
     EXPECT_NE(content.find("<Version>0.0.1</Version>"), std::string::npos);
+    EXPECT_NE(content.find("<ApplicationName>MouseRecorder</ApplicationName>"),
+              std::string::npos);
+    EXPECT_NE(content.find("<CreatedBy>TestUser</CreatedBy>"),
+              std::string::npos);
+    EXPECT_NE(content.find("<Description>Test recording for metadata "
+                           "validation</Description>"),
+              std::string::npos);
     EXPECT_NE(
-      content.find("<ApplicationName>MouseRecorder</ApplicationName>"),
-      std::string::npos
-    );
-    EXPECT_NE(
-      content.find("<CreatedBy>TestUser</CreatedBy>"), std::string::npos
-    );
-    EXPECT_NE(
-      content.find(
-        "<Description>Test recording for metadata validation</Description>"
-      ),
-      std::string::npos
-    );
-    EXPECT_NE(
-      content.find("<CreationTimestamp>1692201600000</CreationTimestamp>"),
-      std::string::npos
-    );
-    EXPECT_NE(
-      content.find("<TotalDurationMs>5000</TotalDurationMs>"), std::string::npos
-    );
+        content.find("<CreationTimestamp>1692201600000</CreationTimestamp>"),
+        std::string::npos);
+    EXPECT_NE(content.find("<TotalDurationMs>5000</TotalDurationMs>"),
+              std::string::npos);
     EXPECT_NE(content.find("<TotalEvents>3</TotalEvents>"), std::string::npos);
-    EXPECT_NE(
-      content.find("<Platform>Linux Test Platform</Platform>"),
-      std::string::npos
-    );
-    EXPECT_NE(
-      content.find("<ScreenResolution>1920x1080</ScreenResolution>"),
-      std::string::npos
-    );
+    EXPECT_NE(content.find("<Platform>Linux Test Platform</Platform>"),
+              std::string::npos);
+    EXPECT_NE(content.find("<ScreenResolution>1920x1080</ScreenResolution>"),
+              std::string::npos);
 
     // Clean up
     if (std::filesystem::exists(filename))

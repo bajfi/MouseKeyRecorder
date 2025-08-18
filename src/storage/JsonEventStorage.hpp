@@ -19,25 +19,20 @@ class JsonEventStorage : public Core::IEventStorage
     ~JsonEventStorage() override = default;
 
     // IEventStorage interface
-    bool saveEvents(
-      const std::vector<std::unique_ptr<Core::Event>>& events,
-      const std::string& filename,
-      const Core::StorageMetadata& metadata = {}
-    ) override;
+    bool saveEvents(const std::vector<std::unique_ptr<Core::Event>>& events,
+                    const std::string& filename,
+                    const Core::StorageMetadata& metadata = {}) override;
 
-    bool loadEvents(
-      const std::string& filename,
-      std::vector<std::unique_ptr<Core::Event>>& events,
-      Core::StorageMetadata& metadata
-    ) override;
+    bool loadEvents(const std::string& filename,
+                    std::vector<std::unique_ptr<Core::Event>>& events,
+                    Core::StorageMetadata& metadata) override;
 
     Core::StorageFormat getSupportedFormat() const noexcept override;
     std::string getFileExtension() const noexcept override;
     std::string getFormatDescription() const noexcept override;
     bool validateFile(const std::string& filename) const override;
-    bool getFileMetadata(
-      const std::string& filename, Core::StorageMetadata& metadata
-    ) const override;
+    bool getFileMetadata(const std::string& filename,
+                         Core::StorageMetadata& metadata) const override;
     std::string getLastError() const override;
     void setCompressionLevel(int level) override;
     bool supportsCompression() const noexcept override;
@@ -90,16 +85,16 @@ class JsonEventStorage : public Core::IEventStorage
      * @param data Keyboard event data
      * @return JSON representation
      */
-    nlohmann::json keyboardEventDataToJson(const Core::KeyboardEventData& data
-    ) const;
+    nlohmann::json keyboardEventDataToJson(
+        const Core::KeyboardEventData& data) const;
 
     /**
      * @brief Convert JSON to KeyboardEventData
      * @param json JSON object
      * @return KeyboardEventData
      */
-    Core::KeyboardEventData jsonToKeyboardEventData(const nlohmann::json& json
-    ) const;
+    Core::KeyboardEventData jsonToKeyboardEventData(
+        const nlohmann::json& json) const;
 
     /**
      * @brief Set last error message

@@ -22,8 +22,7 @@ class EventStorageFactory
      * @return unique_ptr to storage handler or nullptr if format not supported
      */
     static std::unique_ptr<Core::IEventStorage> createStorage(
-      Core::StorageFormat format
-    );
+        Core::StorageFormat format);
 
     /**
      * @brief Create storage handler based on file extension
@@ -32,8 +31,7 @@ class EventStorageFactory
      * recognized
      */
     static std::unique_ptr<Core::IEventStorage> createStorageFromFilename(
-      const std::string& filename
-    );
+        const std::string& filename);
 
     /**
      * @brief Get all supported storage formats
@@ -69,8 +67,7 @@ class EventStorageFactory
      * @return Storage format or std::nullopt if not recognized
      */
     static std::optional<Core::StorageFormat> getFormatFromExtension(
-      const std::string& extension
-    );
+        const std::string& extension);
 
     /**
      * @brief Get file filter string for Qt file dialogs

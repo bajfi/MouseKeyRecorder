@@ -33,32 +33,24 @@ class ExportFunctionalityTest : public ::testing::Test
         // Create a variety of test events
         m_testEvents.push_back(EventFactory::createMouseMoveEvent({100, 200}));
         m_testEvents.push_back(
-          EventFactory::createMouseClickEvent({150, 250}, MouseButton::Left)
-        );
-        m_testEvents.push_back(
-          EventFactory::createMouseDoubleClickEvent(
-            {200, 300}, MouseButton::Right
-          )
-        );
+            EventFactory::createMouseClickEvent({150, 250}, MouseButton::Left));
+        m_testEvents.push_back(EventFactory::createMouseDoubleClickEvent(
+            {200, 300}, MouseButton::Right));
         // Use actual key codes with key names
         m_testEvents.push_back(
-          EventFactory::createKeyPressEvent(65, "A", KeyModifier::Ctrl)
-        );
+            EventFactory::createKeyPressEvent(65, "A", KeyModifier::Ctrl));
         m_testEvents.push_back(
-          EventFactory::createKeyReleaseEvent(65, "A", KeyModifier::Ctrl)
-        );
+            EventFactory::createKeyReleaseEvent(65, "A", KeyModifier::Ctrl));
     }
 
     void cleanupTestFiles()
     {
-        std::vector<std::string> testFiles = {
-          "test_export.json",
-          "test_export.xml",
-          "test_export.mre",
-          "format_test.json",
-          "format_test.xml",
-          "format_test.mre"
-        };
+        std::vector<std::string> testFiles = {"test_export.json",
+                                              "test_export.xml",
+                                              "test_export.mre",
+                                              "format_test.json",
+                                              "format_test.xml",
+                                              "format_test.mre"};
 
         for (const auto& file : testFiles)
         {
@@ -69,68 +61,65 @@ class ExportFunctionalityTest : public ::testing::Test
         }
     }
 
-    void verifyFileFormat(
-      const std::string& filename, const std::string& expectedFormat
-    )
+    void verifyFileFormat(const std::string& filename,
+                          const std::string& expectedFormat)
     {
         EXPECT_TRUE(std::filesystem::exists(filename));
 
         std::ifstream file(filename);
         ASSERT_TRUE(file.is_open()) << "Could not open file: " << filename;
 
-        std::string content(
-          (std::istreambuf_iterator<char>(file)),
-          std::istreambuf_iterator<char>()
-        );
+        std::string content((std::istreambuf_iterator<char>(file)),
+                            std::istreambuf_iterator<char>());
         file.close();
 
         if (expectedFormat == "json")
         {
             // JSON should contain these markers
             EXPECT_NE(content.find("{"), std::string::npos)
-              << "JSON should contain opening brace";
+                << "JSON should contain opening brace";
             EXPECT_NE(content.find("\"metadata\""), std::string::npos)
-              << "JSON should contain metadata field";
+                << "JSON should contain metadata field";
             EXPECT_NE(content.find("\"events\""), std::string::npos)
-              << "JSON should contain events field";
+                << "JSON should contain events field";
 
             // Should NOT contain XML markers
             EXPECT_EQ(content.find("<?xml"), std::string::npos)
-              << "JSON should not contain XML declaration";
+                << "JSON should not contain XML declaration";
             EXPECT_EQ(content.find("MouseRecorderEvents"), std::string::npos)
-              << "JSON should not contain XML root element";
+                << "JSON should not contain XML root element";
         }
         else if (expectedFormat == "xml")
         {
             // XML should contain these markers
             EXPECT_NE(content.find("<?xml"), std::string::npos)
-              << "XML should contain XML declaration";
+                << "XML should contain XML declaration";
             EXPECT_NE(content.find("MouseRecorderEvents"), std::string::npos)
-              << "XML should contain root element";
+                << "XML should contain root element";
             EXPECT_NE(content.find("<Events"), std::string::npos)
-              << "XML should contain Events element";
+                << "XML should contain Events element";
 
             // Should NOT contain JSON markers
             EXPECT_EQ(content.find("\"metadata\""), std::string::npos)
-              << "XML should not contain JSON metadata field";
+                << "XML should not contain JSON metadata field";
             EXPECT_EQ(content.find("\"events\""), std::string::npos)
-              << "XML should not contain JSON events field";
+                << "XML should not contain JSON events field";
         }
         else if (expectedFormat == "binary")
         {
             // Binary should not contain JSON or XML markers
             EXPECT_EQ(content.find("{"), std::string::npos)
-              << "Binary should not contain JSON markers";
+                << "Binary should not contain JSON markers";
             EXPECT_EQ(content.find("<?xml"), std::string::npos)
-              << "Binary should not contain XML markers";
+                << "Binary should not contain XML markers";
             EXPECT_EQ(content.find("\"metadata\""), std::string::npos)
-              << "Binary should not contain JSON metadata";
+                << "Binary should not contain JSON metadata";
             EXPECT_EQ(content.find("MouseRecorderEvents"), std::string::npos)
-              << "Binary should not contain XML root element";
+                << "Binary should not contain XML root element";
 
             // Binary files should have specific binary header (magic number)
             EXPECT_GE(content.size(), 4)
-              << "Binary file should have at least header";
+                << "Binary file should have at least header";
         }
     }
 
@@ -187,7 +176,7 @@ TEST_F(ExportFunctionalityTest, DirectStorageFormatExport)
     // Test Binary export
     {
         auto storage =
-          EventStorageFactory::createStorage(StorageFormat::Binary);
+            EventStorageFactory::createStorage(StorageFormat::Binary);
         ASSERT_NE(storage, nullptr);
 
         std::string filename = "format_test.mre";
@@ -209,7 +198,7 @@ TEST_F(ExportFunctionalityTest, FileExtensionBasedFormatDetection)
     // JSON extension
     {
         auto storage =
-          EventStorageFactory::createStorageFromFilename("test.json");
+            EventStorageFactory::createStorageFromFilename("test.json");
         ASSERT_NE(storage, nullptr);
         EXPECT_EQ(storage->getSupportedFormat(), StorageFormat::Json);
         EXPECT_EQ(storage->getFileExtension(), ".json");
@@ -218,7 +207,7 @@ TEST_F(ExportFunctionalityTest, FileExtensionBasedFormatDetection)
     // XML extension
     {
         auto storage =
-          EventStorageFactory::createStorageFromFilename("test.xml");
+            EventStorageFactory::createStorageFromFilename("test.xml");
         ASSERT_NE(storage, nullptr);
         EXPECT_EQ(storage->getSupportedFormat(), StorageFormat::Xml);
         EXPECT_EQ(storage->getFileExtension(), ".xml");
@@ -227,7 +216,7 @@ TEST_F(ExportFunctionalityTest, FileExtensionBasedFormatDetection)
     // Binary extension
     {
         auto storage =
-          EventStorageFactory::createStorageFromFilename("test.mre");
+            EventStorageFactory::createStorageFromFilename("test.mre");
         ASSERT_NE(storage, nullptr);
         EXPECT_EQ(storage->getSupportedFormat(), StorageFormat::Binary);
         EXPECT_EQ(storage->getFileExtension(), ".mre");
@@ -239,10 +228,9 @@ TEST_F(ExportFunctionalityTest, FilterBasedFormatSelection)
     // Test that format can be correctly determined from dialog filter strings
 
     std::vector<std::pair<std::string, StorageFormat>> filterTests = {
-      {"JSON Event Recording (*.json)", StorageFormat::Json},
-      {"XML Event Recording (*.xml)", StorageFormat::Xml},
-      {"Binary Event Recording (*.mre)", StorageFormat::Binary}
-    };
+        {"JSON Event Recording (*.json)", StorageFormat::Json},
+        {"XML Event Recording (*.xml)", StorageFormat::Xml},
+        {"Binary Event Recording (*.mre)", StorageFormat::Binary}};
 
     for (const auto& [filterString, expectedFormat] : filterTests)
     {
@@ -264,7 +252,7 @@ TEST_F(ExportFunctionalityTest, FilterBasedFormatSelection)
 
         ASSERT_NE(storage, nullptr);
         EXPECT_EQ(storage->getSupportedFormat(), expectedFormat)
-          << "Filter: " << filterString;
+            << "Filter: " << filterString;
     }
 }
 
@@ -304,7 +292,7 @@ TEST_F(ExportFunctionalityTest, ExportWithoutExtensionUsesCorrectFormat)
     // Test Binary format
     {
         auto storage =
-          EventStorageFactory::createStorage(StorageFormat::Binary);
+            EventStorageFactory::createStorage(StorageFormat::Binary);
         ASSERT_NE(storage, nullptr);
 
         std::string filename = "test_export";
@@ -340,7 +328,7 @@ TEST_F(ExportFunctionalityTest, ErrorHandlingForInvalidFormat)
 
     // Test with unsupported extension
     auto storage =
-      EventStorageFactory::createStorageFromFilename("test.unsupported");
+        EventStorageFactory::createStorageFromFilename("test.unsupported");
 
     // Should fallback to JSON
     ASSERT_NE(storage, nullptr);

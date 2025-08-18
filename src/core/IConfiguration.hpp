@@ -12,7 +12,7 @@ namespace MouseRecorder::Core
  * @brief Configuration change callback type
  */
 using ConfigChangeCallback =
-  std::function<void(const std::string& key, const std::string& value)>;
+    std::function<void(const std::string& key, const std::string& value)>;
 
 /**
  * @brief Interface for application configuration management
@@ -45,12 +45,10 @@ class IConfiguration
     virtual void loadDefaults() = 0;
 
     // String values
-    virtual void setString(
-      const std::string& key, const std::string& value
-    ) = 0;
+    virtual void setString(const std::string& key,
+                           const std::string& value) = 0;
     virtual std::string getString(
-      const std::string& key, const std::string& defaultValue = ""
-    ) const = 0;
+        const std::string& key, const std::string& defaultValue = "") const = 0;
 
     // Integer values
     virtual void setInt(const std::string& key, int value) = 0;
@@ -58,23 +56,20 @@ class IConfiguration
 
     // Double values
     virtual void setDouble(const std::string& key, double value) = 0;
-    virtual double getDouble(
-      const std::string& key, double defaultValue = 0.0
-    ) const = 0;
+    virtual double getDouble(const std::string& key,
+                             double defaultValue = 0.0) const = 0;
 
     // Boolean values
     virtual void setBool(const std::string& key, bool value) = 0;
-    virtual bool getBool(
-      const std::string& key, bool defaultValue = false
-    ) const = 0;
+    virtual bool getBool(const std::string& key,
+                         bool defaultValue = false) const = 0;
 
     // Array values
-    virtual void setStringArray(
-      const std::string& key, const std::vector<std::string>& value
-    ) = 0;
+    virtual void setStringArray(const std::string& key,
+                                const std::vector<std::string>& value) = 0;
     virtual std::vector<std::string> getStringArray(
-      const std::string& key, const std::vector<std::string>& defaultValue = {}
-    ) const = 0;
+        const std::string& key,
+        const std::vector<std::string>& defaultValue = {}) const = 0;
 
     /**
      * @brief Check if a key exists
@@ -128,23 +123,23 @@ namespace ConfigKeys
 // Recording settings
 constexpr const char* CAPTURE_MOUSE_EVENTS = "recording.capture_mouse_events";
 constexpr const char* CAPTURE_KEYBOARD_EVENTS =
-  "recording.capture_keyboard_events";
+    "recording.capture_keyboard_events";
 constexpr const char* OPTIMIZE_MOUSE_MOVEMENTS =
-  "recording.optimize_mouse_movements";
+    "recording.optimize_mouse_movements";
 constexpr const char* MOUSE_MOVEMENT_THRESHOLD =
-  "recording.mouse_movement_threshold";
+    "recording.mouse_movement_threshold";
 constexpr const char* MOUSE_OPTIMIZATION_TIME_THRESHOLD =
-  "recording.mouse_optimization_time_threshold";
+    "recording.mouse_optimization_time_threshold";
 constexpr const char* MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON =
-  "recording.mouse_optimization_douglas_peucker_epsilon";
+    "recording.mouse_optimization_douglas_peucker_epsilon";
 constexpr const char* MOUSE_OPTIMIZATION_PRESERVE_CLICKS =
-  "recording.mouse_optimization_preserve_clicks";
+    "recording.mouse_optimization_preserve_clicks";
 constexpr const char* MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST =
-  "recording.mouse_optimization_preserve_first_last";
+    "recording.mouse_optimization_preserve_first_last";
 constexpr const char* MOUSE_OPTIMIZATION_STRATEGY =
-  "recording.mouse_optimization_strategy";
+    "recording.mouse_optimization_strategy";
 constexpr const char* DEFAULT_STORAGE_FORMAT =
-  "recording.default_storage_format";
+    "recording.default_storage_format";
 
 // Playback settings
 constexpr const char* DEFAULT_PLAYBACK_SPEED = "playback.default_speed";

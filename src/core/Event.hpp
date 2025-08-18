@@ -48,16 +48,14 @@ enum class KeyModifier : uint32_t
 
 inline KeyModifier operator|(KeyModifier a, KeyModifier b)
 {
-    return static_cast<KeyModifier>(
-      static_cast<uint32_t>(a) | static_cast<uint32_t>(b)
-    );
+    return static_cast<KeyModifier>(static_cast<uint32_t>(a) |
+                                    static_cast<uint32_t>(b));
 }
 
 inline KeyModifier operator&(KeyModifier a, KeyModifier b)
 {
-    return static_cast<KeyModifier>(
-      static_cast<uint32_t>(a) & static_cast<uint32_t>(b)
-    );
+    return static_cast<KeyModifier>(static_cast<uint32_t>(a) &
+                                    static_cast<uint32_t>(b));
 }
 
 /**
@@ -109,11 +107,9 @@ class Event
     using TimePoint = std::chrono::steady_clock::time_point;
     using EventData = std::variant<MouseEventData, KeyboardEventData>;
 
-    Event(
-      EventType type,
-      EventData data,
-      TimePoint timestamp = std::chrono::steady_clock::now()
-    );
+    Event(EventType type,
+          EventData data,
+          TimePoint timestamp = std::chrono::steady_clock::now());
     virtual ~Event() = default;
 
     // Getters
@@ -162,37 +158,30 @@ class EventFactory
 {
   public:
     static std::unique_ptr<Event> createMouseMoveEvent(
-      const Point& position, KeyModifier modifiers = KeyModifier::None
-    );
+        const Point& position, KeyModifier modifiers = KeyModifier::None);
     static std::unique_ptr<Event> createMouseClickEvent(
-      const Point& position,
-      MouseButton button,
-      KeyModifier modifiers = KeyModifier::None
-    );
+        const Point& position,
+        MouseButton button,
+        KeyModifier modifiers = KeyModifier::None);
     static std::unique_ptr<Event> createMouseDoubleClickEvent(
-      const Point& position,
-      MouseButton button,
-      KeyModifier modifiers = KeyModifier::None
-    );
+        const Point& position,
+        MouseButton button,
+        KeyModifier modifiers = KeyModifier::None);
     static std::unique_ptr<Event> createMouseWheelEvent(
-      const Point& position,
-      int wheelDelta,
-      KeyModifier modifiers = KeyModifier::None
-    );
+        const Point& position,
+        int wheelDelta,
+        KeyModifier modifiers = KeyModifier::None);
     static std::unique_ptr<Event> createKeyPressEvent(
-      uint32_t keyCode,
-      const std::string& keyName,
-      KeyModifier modifiers = KeyModifier::None
-    );
+        uint32_t keyCode,
+        const std::string& keyName,
+        KeyModifier modifiers = KeyModifier::None);
     static std::unique_ptr<Event> createKeyReleaseEvent(
-      uint32_t keyCode,
-      const std::string& keyName,
-      KeyModifier modifiers = KeyModifier::None
-    );
+        uint32_t keyCode,
+        const std::string& keyName,
+        KeyModifier modifiers = KeyModifier::None);
     static std::unique_ptr<Event> createKeyCombinationEvent(
-      const std::vector<uint32_t>& keyCodes,
-      const std::vector<std::string>& keyNames
-    );
+        const std::vector<uint32_t>& keyCodes,
+        const std::vector<std::string>& keyNames);
 };
 
 } // namespace MouseRecorder::Core

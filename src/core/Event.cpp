@@ -6,14 +6,14 @@ namespace MouseRecorder::Core
 {
 
 Event::Event(EventType type, EventData data, TimePoint timestamp)
-  : m_type(type), m_data(std::move(data)), m_timestamp(timestamp)
+    : m_type(type), m_data(std::move(data)), m_timestamp(timestamp)
 {}
 
 uint64_t Event::getTimestampMs() const noexcept
 {
     auto duration = m_timestamp.time_since_epoch();
     return std::chrono::duration_cast<std::chrono::milliseconds>(duration)
-      .count();
+        .count();
 }
 
 Event::TimePoint Event::timestampFromMs(uint64_t timestampMs)
@@ -122,9 +122,8 @@ std::string Event::toString() const
 }
 
 // EventFactory implementations
-std::unique_ptr<Event> EventFactory::createMouseMoveEvent(
-  const Point& position, KeyModifier modifiers
-)
+std::unique_ptr<Event> EventFactory::createMouseMoveEvent(const Point& position,
+                                                          KeyModifier modifiers)
 {
     MouseEventData data;
     data.position = position;
@@ -133,8 +132,7 @@ std::unique_ptr<Event> EventFactory::createMouseMoveEvent(
 }
 
 std::unique_ptr<Event> EventFactory::createMouseClickEvent(
-  const Point& position, MouseButton button, KeyModifier modifiers
-)
+    const Point& position, MouseButton button, KeyModifier modifiers)
 {
     MouseEventData data;
     data.position = position;
@@ -144,8 +142,7 @@ std::unique_ptr<Event> EventFactory::createMouseClickEvent(
 }
 
 std::unique_ptr<Event> EventFactory::createMouseDoubleClickEvent(
-  const Point& position, MouseButton button, KeyModifier modifiers
-)
+    const Point& position, MouseButton button, KeyModifier modifiers)
 {
     MouseEventData data;
     data.position = position;
@@ -155,8 +152,7 @@ std::unique_ptr<Event> EventFactory::createMouseDoubleClickEvent(
 }
 
 std::unique_ptr<Event> EventFactory::createMouseWheelEvent(
-  const Point& position, int wheelDelta, KeyModifier modifiers
-)
+    const Point& position, int wheelDelta, KeyModifier modifiers)
 {
     MouseEventData data;
     data.position = position;
@@ -166,8 +162,7 @@ std::unique_ptr<Event> EventFactory::createMouseWheelEvent(
 }
 
 std::unique_ptr<Event> EventFactory::createKeyPressEvent(
-  uint32_t keyCode, const std::string& keyName, KeyModifier modifiers
-)
+    uint32_t keyCode, const std::string& keyName, KeyModifier modifiers)
 {
     KeyboardEventData data;
     data.keyCode = keyCode;
@@ -177,8 +172,7 @@ std::unique_ptr<Event> EventFactory::createKeyPressEvent(
 }
 
 std::unique_ptr<Event> EventFactory::createKeyReleaseEvent(
-  uint32_t keyCode, const std::string& keyName, KeyModifier modifiers
-)
+    uint32_t keyCode, const std::string& keyName, KeyModifier modifiers)
 {
     KeyboardEventData data;
     data.keyCode = keyCode;
@@ -188,9 +182,8 @@ std::unique_ptr<Event> EventFactory::createKeyReleaseEvent(
 }
 
 std::unique_ptr<Event> EventFactory::createKeyCombinationEvent(
-  const std::vector<uint32_t>& keyCodes,
-  const std::vector<std::string>& keyNames
-)
+    const std::vector<uint32_t>& keyCodes,
+    const std::vector<std::string>& keyNames)
 {
     KeyboardEventData data;
     if (!keyCodes.empty())

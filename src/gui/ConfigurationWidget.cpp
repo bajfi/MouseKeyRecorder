@@ -11,10 +11,9 @@
 namespace MouseRecorder::GUI
 {
 
-ConfigurationWidget::ConfigurationWidget(
-  Application::MouseRecorderApp& app, QWidget* parent
-)
-  : QWidget(parent), ui(new Ui::ConfigurationWidget), m_app(app)
+ConfigurationWidget::ConfigurationWidget(Application::MouseRecorderApp& app,
+                                         QWidget* parent)
+    : QWidget(parent), ui(new Ui::ConfigurationWidget), m_app(app)
 {
     ui->setupUi(this);
     setupUI();
@@ -29,30 +28,22 @@ ConfigurationWidget::~ConfigurationWidget()
 void ConfigurationWidget::setupUI()
 {
     // Connect signals
-    connect(
-      ui->restoreDefaultsButton,
-      &QPushButton::clicked,
-      this,
-      &ConfigurationWidget::onRestoreDefaults
-    );
-    connect(
-      ui->applyButton,
-      &QPushButton::clicked,
-      this,
-      &ConfigurationWidget::onApply
-    );
-    connect(
-      ui->browseLogFileButton,
-      &QPushButton::clicked,
-      this,
-      &ConfigurationWidget::onBrowseLogFile
-    );
-    connect(
-      ui->optimizeMouseMovementsCheckBox,
-      &QCheckBox::toggled,
-      this,
-      &ConfigurationWidget::updateUI
-    );
+    connect(ui->restoreDefaultsButton,
+            &QPushButton::clicked,
+            this,
+            &ConfigurationWidget::onRestoreDefaults);
+    connect(ui->applyButton,
+            &QPushButton::clicked,
+            this,
+            &ConfigurationWidget::onApply);
+    connect(ui->browseLogFileButton,
+            &QPushButton::clicked,
+            this,
+            &ConfigurationWidget::onBrowseLogFile);
+    connect(ui->optimizeMouseMovementsCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &ConfigurationWidget::updateUI);
 
     // Setup default values
     ui->captureMouseEventsCheckBox->setChecked(true);
@@ -87,22 +78,18 @@ void ConfigurationWidget::loadConfiguration()
 
     // Load capture settings
     ui->captureMouseEventsCheckBox->setChecked(
-      config.getBool(ConfigKeys::CAPTURE_MOUSE_EVENTS, true)
-    );
+        config.getBool(ConfigKeys::CAPTURE_MOUSE_EVENTS, true));
     ui->captureKeyboardEventsCheckBox->setChecked(
-      config.getBool(ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true)
-    );
+        config.getBool(ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true));
     ui->optimizeMouseMovementsCheckBox->setChecked(
-      config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true)
-    );
+        config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true));
     ui->movementThresholdSpinBox->setValue(
-      config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5)
-    );
+        config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5));
 
     // Load optimization settings
 
-    if (auto strategyStr =
-          config.getString(ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, "combined");
+    if (auto strategyStr = config.getString(
+            ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, "combined");
         strategyStr == "distance")
     {
         ui->optimizationStrategyComboBox->setCurrentIndex(1);
@@ -121,21 +108,17 @@ void ConfigurationWidget::loadConfiguration()
     }
 
     ui->timeThresholdSpinBox->setValue(
-      config.getInt(ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD, 16)
-    );
+        config.getInt(ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD, 16));
     ui->douglasPeuckerEpsilonSpinBox->setValue(config.getDouble(
-      ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON, 2.0
-    ));
+        ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON, 2.0));
     ui->preserveClicksCheckBox->setChecked(
-      config.getBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS, true)
-    );
-    ui->preserveFirstLastCheckBox->setChecked(
-      config.getBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST, true)
-    );
+        config.getBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS, true));
+    ui->preserveFirstLastCheckBox->setChecked(config.getBool(
+        ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST, true));
 
     // Load default format (map string to combobox index)
     if (std::string defaultFormat =
-          config.getString(ConfigKeys::DEFAULT_STORAGE_FORMAT, "json");
+            config.getString(ConfigKeys::DEFAULT_STORAGE_FORMAT, "json");
         defaultFormat == "json")
     {
         ui->defaultFormatComboBox->setCurrentIndex(0);
@@ -151,36 +134,25 @@ void ConfigurationWidget::loadConfiguration()
 
     // Load playback settings
     ui->defaultSpeedSpinBox->setValue(
-      config.getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0)
-    );
+        config.getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0));
     ui->loopPlaybackCheckBox->setChecked(
-      config.getBool(ConfigKeys::LOOP_PLAYBACK, false)
-    );
+        config.getBool(ConfigKeys::LOOP_PLAYBACK, false));
     ui->showPlaybackCursorCheckBox->setChecked(
-      config.getBool(ConfigKeys::SHOW_PLAYBACK_CURSOR, true)
-    );
+        config.getBool(ConfigKeys::SHOW_PLAYBACK_CURSOR, true));
 
     // Load keyboard shortcuts
-    ui->startRecordingShortcutEdit->setKeySequence(QKeySequence(
-      QString::fromStdString(
-        config.getString(ConfigKeys::SHORTCUT_START_RECORDING, "Ctrl+R")
-      )
-    ));
-    ui->stopRecordingShortcutEdit->setKeySequence(QKeySequence(
-      QString::fromStdString(
-        config.getString(ConfigKeys::SHORTCUT_STOP_RECORDING, "Ctrl+Shift+R")
-      )
-    ));
-    ui->startPlaybackShortcutEdit->setKeySequence(QKeySequence(
-      QString::fromStdString(
-        config.getString(ConfigKeys::SHORTCUT_START_PLAYBACK, "Ctrl+P")
-      )
-    ));
-    ui->stopPlaybackShortcutEdit->setKeySequence(QKeySequence(
-      QString::fromStdString(
-        config.getString(ConfigKeys::SHORTCUT_STOP_PLAYBACK, "Ctrl+Shift+P")
-      )
-    ));
+    ui->startRecordingShortcutEdit->setKeySequence(
+        QKeySequence(QString::fromStdString(
+            config.getString(ConfigKeys::SHORTCUT_START_RECORDING, "Ctrl+R"))));
+    ui->stopRecordingShortcutEdit->setKeySequence(
+        QKeySequence(QString::fromStdString(config.getString(
+            ConfigKeys::SHORTCUT_STOP_RECORDING, "Ctrl+Shift+R"))));
+    ui->startPlaybackShortcutEdit->setKeySequence(
+        QKeySequence(QString::fromStdString(
+            config.getString(ConfigKeys::SHORTCUT_START_PLAYBACK, "Ctrl+P"))));
+    ui->stopPlaybackShortcutEdit->setKeySequence(
+        QKeySequence(QString::fromStdString(config.getString(
+            ConfigKeys::SHORTCUT_STOP_PLAYBACK, "Ctrl+Shift+P"))));
 
     // Load logging settings
     int logLevelIndex = 4; // Default to "info"
@@ -200,13 +172,9 @@ void ConfigurationWidget::loadConfiguration()
     ui->logLevelComboBox->setCurrentIndex(logLevelIndex);
 
     ui->logToFileCheckBox->setChecked(
-      config.getBool(ConfigKeys::LOG_TO_FILE, false)
-    );
-    ui->logFilePathLineEdit->setText(
-      QString::fromStdString(
-        config.getString(ConfigKeys::LOG_FILE_PATH, "mouserecorder.log")
-      )
-    );
+        config.getBool(ConfigKeys::LOG_TO_FILE, false));
+    ui->logFilePathLineEdit->setText(QString::fromStdString(
+        config.getString(ConfigKeys::LOG_FILE_PATH, "mouserecorder.log")));
 
     updateUI();
     spdlog::debug("ConfigurationWidget: Configuration loaded successfully");
@@ -220,22 +188,14 @@ void ConfigurationWidget::saveConfiguration()
     spdlog::info("ConfigurationWidget: Saving configuration to backend");
 
     // Save capture settings
-    config.setBool(
-      ConfigKeys::CAPTURE_MOUSE_EVENTS,
-      ui->captureMouseEventsCheckBox->isChecked()
-    );
-    config.setBool(
-      ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
-      ui->captureKeyboardEventsCheckBox->isChecked()
-    );
-    config.setBool(
-      ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
-      ui->optimizeMouseMovementsCheckBox->isChecked()
-    );
-    config.setInt(
-      ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
-      ui->movementThresholdSpinBox->value()
-    );
+    config.setBool(ConfigKeys::CAPTURE_MOUSE_EVENTS,
+                   ui->captureMouseEventsCheckBox->isChecked());
+    config.setBool(ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
+                   ui->captureKeyboardEventsCheckBox->isChecked());
+    config.setBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
+                   ui->optimizeMouseMovementsCheckBox->isChecked());
+    config.setInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
+                  ui->movementThresholdSpinBox->value());
 
     // Save optimization settings
     std::string strategyString = "combined";
@@ -259,22 +219,14 @@ void ConfigurationWidget::saveConfiguration()
     }
     config.setString(ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, strategyString);
 
-    config.setInt(
-      ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD,
-      ui->timeThresholdSpinBox->value()
-    );
-    config.setDouble(
-      ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON,
-      ui->douglasPeuckerEpsilonSpinBox->value()
-    );
-    config.setBool(
-      ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS,
-      ui->preserveClicksCheckBox->isChecked()
-    );
-    config.setBool(
-      ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST,
-      ui->preserveFirstLastCheckBox->isChecked()
-    );
+    config.setInt(ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD,
+                  ui->timeThresholdSpinBox->value());
+    config.setDouble(ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON,
+                     ui->douglasPeuckerEpsilonSpinBox->value());
+    config.setBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS,
+                   ui->preserveClicksCheckBox->isChecked());
+    config.setBool(ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST,
+                   ui->preserveFirstLastCheckBox->isChecked());
 
     // Save default format (map combobox index to string)
     std::string formatString = "json";
@@ -296,52 +248,41 @@ void ConfigurationWidget::saveConfiguration()
     config.setString(ConfigKeys::DEFAULT_STORAGE_FORMAT, formatString);
 
     // Save playback settings
-    config.setDouble(
-      ConfigKeys::DEFAULT_PLAYBACK_SPEED, ui->defaultSpeedSpinBox->value()
-    );
-    config.setBool(
-      ConfigKeys::LOOP_PLAYBACK, ui->loopPlaybackCheckBox->isChecked()
-    );
-    config.setBool(
-      ConfigKeys::SHOW_PLAYBACK_CURSOR,
-      ui->showPlaybackCursorCheckBox->isChecked()
-    );
+    config.setDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED,
+                     ui->defaultSpeedSpinBox->value());
+    config.setBool(ConfigKeys::LOOP_PLAYBACK,
+                   ui->loopPlaybackCheckBox->isChecked());
+    config.setBool(ConfigKeys::SHOW_PLAYBACK_CURSOR,
+                   ui->showPlaybackCursorCheckBox->isChecked());
 
     // Save keyboard shortcuts
     config.setString(
-      ConfigKeys::SHORTCUT_START_RECORDING,
-      ui->startRecordingShortcutEdit->keySequence().toString().toStdString()
-    );
+        ConfigKeys::SHORTCUT_START_RECORDING,
+        ui->startRecordingShortcutEdit->keySequence().toString().toStdString());
     config.setString(
-      ConfigKeys::SHORTCUT_STOP_RECORDING,
-      ui->stopRecordingShortcutEdit->keySequence().toString().toStdString()
-    );
+        ConfigKeys::SHORTCUT_STOP_RECORDING,
+        ui->stopRecordingShortcutEdit->keySequence().toString().toStdString());
     config.setString(
-      ConfigKeys::SHORTCUT_START_PLAYBACK,
-      ui->startPlaybackShortcutEdit->keySequence().toString().toStdString()
-    );
+        ConfigKeys::SHORTCUT_START_PLAYBACK,
+        ui->startPlaybackShortcutEdit->keySequence().toString().toStdString());
     config.setString(
-      ConfigKeys::SHORTCUT_STOP_PLAYBACK,
-      ui->stopPlaybackShortcutEdit->keySequence().toString().toStdString()
-    );
+        ConfigKeys::SHORTCUT_STOP_PLAYBACK,
+        ui->stopPlaybackShortcutEdit->keySequence().toString().toStdString());
 
     // Save logging settings
     const QStringList logLevels = {
-      "trace", "debug", "info", "warn", "error", "critical"
-    };
+        "trace", "debug", "info", "warn", "error", "critical"};
 
     if (auto logLevelIndex = ui->logLevelComboBox->currentIndex();
         logLevelIndex >= 0 && logLevelIndex < logLevels.size())
     {
-        config.setString(
-          ConfigKeys::LOG_LEVEL, logLevels[logLevelIndex].toStdString()
-        );
+        config.setString(ConfigKeys::LOG_LEVEL,
+                         logLevels[logLevelIndex].toStdString());
     }
 
     config.setBool(ConfigKeys::LOG_TO_FILE, ui->logToFileCheckBox->isChecked());
-    config.setString(
-      ConfigKeys::LOG_FILE_PATH, ui->logFilePathLineEdit->text().toStdString()
-    );
+    config.setString(ConfigKeys::LOG_FILE_PATH,
+                     ui->logFilePathLineEdit->text().toStdString());
 
     // Force save to file immediately
     if (config.saveToFile(""))
@@ -350,10 +291,8 @@ void ConfigurationWidget::saveConfiguration()
         return;
     }
 
-    spdlog::error(
-      "ConfigurationWidget: Failed to save configuration: {}",
-      config.getLastError()
-    );
+    spdlog::error("ConfigurationWidget: Failed to save configuration: {}",
+                  config.getLastError());
 }
 
 void ConfigurationWidget::onRestoreDefaults()
@@ -401,18 +340,16 @@ void ConfigurationWidget::onBrowseLogFile()
     {
         fileName = QDir::temp().absoluteFilePath("test_log.log");
         spdlog::info(
-          "ConfigurationWidget: Test environment - using temp log file: {}",
-          fileName.toStdString()
-        );
+            "ConfigurationWidget: Test environment - using temp log file: {}",
+            fileName.toStdString());
     }
     else
     {
         fileName = QFileDialog::getSaveFileName(
-          this,
-          "Select Log File",
-          ui->logFilePathLineEdit->text(),
-          "Log Files (*.log);;Text Files (*.txt);;All Files (*)"
-        );
+            this,
+            "Select Log File",
+            ui->logFilePathLineEdit->text(),
+            "Log Files (*.log);;Text Files (*.txt);;All Files (*)");
     }
 
     if (!fileName.isEmpty())
@@ -440,4 +377,3 @@ void ConfigurationWidget::updateUI()
 }
 
 } // namespace MouseRecorder::GUI
-

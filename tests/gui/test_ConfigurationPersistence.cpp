@@ -47,9 +47,8 @@ TEST_F(ConfigurationPersistenceTest, BasicConfigurationLoad)
     // Verify the values are stored correctly
     EXPECT_FALSE(m_config->getBool(ConfigKeys::CAPTURE_MOUSE_EVENTS));
     EXPECT_EQ(10, m_config->getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD));
-    EXPECT_DOUBLE_EQ(
-      2.5, m_config->getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED)
-    );
+    EXPECT_DOUBLE_EQ(2.5,
+                     m_config->getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED));
     EXPECT_STREQ("debug", m_config->getString(ConfigKeys::LOG_LEVEL).c_str());
 }
 
@@ -82,27 +81,19 @@ TEST_F(ConfigurationPersistenceTest, ConfigurationSaveAndReload)
     ASSERT_TRUE(newConfig->loadFromFile(m_configPath.toStdString()));
 
     // Verify values were persisted
-    EXPECT_EQ(
-      testMouseCapture, newConfig->getBool(ConfigKeys::CAPTURE_MOUSE_EVENTS)
-    );
-    EXPECT_EQ(
-      testKeyboardCapture,
-      newConfig->getBool(ConfigKeys::CAPTURE_KEYBOARD_EVENTS)
-    );
-    EXPECT_EQ(
-      testThreshold, newConfig->getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD)
-    );
-    EXPECT_DOUBLE_EQ(
-      testSpeed, newConfig->getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED)
-    );
-    EXPECT_STREQ(
-      testLogLevel.c_str(), newConfig->getString(ConfigKeys::LOG_LEVEL).c_str()
-    );
+    EXPECT_EQ(testMouseCapture,
+              newConfig->getBool(ConfigKeys::CAPTURE_MOUSE_EVENTS));
+    EXPECT_EQ(testKeyboardCapture,
+              newConfig->getBool(ConfigKeys::CAPTURE_KEYBOARD_EVENTS));
+    EXPECT_EQ(testThreshold,
+              newConfig->getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD));
+    EXPECT_DOUBLE_EQ(testSpeed,
+                     newConfig->getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED));
+    EXPECT_STREQ(testLogLevel.c_str(),
+                 newConfig->getString(ConfigKeys::LOG_LEVEL).c_str());
     EXPECT_EQ(testLogToFile, newConfig->getBool(ConfigKeys::LOG_TO_FILE));
-    EXPECT_STREQ(
-      testLogPath.c_str(),
-      newConfig->getString(ConfigKeys::LOG_FILE_PATH).c_str()
-    );
+    EXPECT_STREQ(testLogPath.c_str(),
+                 newConfig->getString(ConfigKeys::LOG_FILE_PATH).c_str());
 }
 
 TEST_F(ConfigurationPersistenceTest, ConfigurationKeysExist)

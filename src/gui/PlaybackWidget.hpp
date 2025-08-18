@@ -25,9 +25,8 @@ class PlaybackWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit PlaybackWidget(
-      Application::MouseRecorderApp& app, QWidget* parent = nullptr
-    );
+    explicit PlaybackWidget(Application::MouseRecorderApp& app,
+                            QWidget* parent = nullptr);
     ~PlaybackWidget();
 
     // Public method for testing
@@ -60,9 +59,9 @@ class PlaybackWidget : public QWidget
     void updateUI();
     void updateSpeed();
     void updatePlaybackStatus();
-    void onPlaybackProgress(
-      Core::PlaybackState state, size_t current, size_t total
-    );
+    void onPlaybackProgress(Core::PlaybackState state,
+                            size_t current,
+                            size_t total);
     void onEventPlayed(const Core::Event& event);
 
     // Helper methods for time display

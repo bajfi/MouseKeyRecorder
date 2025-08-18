@@ -84,20 +84,19 @@ void TestMainWindow::testInitialState()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QVERIFY(m_mainWindow != nullptr);
 
     // Check that actions exist
     QAction* startRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStartRecording");
+        m_mainWindow->findChild<QAction*>("actionStartRecording");
     QAction* stopRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStopRecording");
+        m_mainWindow->findChild<QAction*>("actionStopRecording");
     QAction* startPlaybackAction =
-      m_mainWindow->findChild<QAction*>("actionStartPlayback");
+        m_mainWindow->findChild<QAction*>("actionStartPlayback");
 
     QVERIFY(startRecordingAction != nullptr);
     QVERIFY(stopRecordingAction != nullptr);
@@ -108,17 +107,16 @@ void TestMainWindow::testActionStates()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* startRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStartRecording");
+        m_mainWindow->findChild<QAction*>("actionStartRecording");
     QAction* stopRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStopRecording");
+        m_mainWindow->findChild<QAction*>("actionStopRecording");
     QAction* startPlaybackAction =
-      m_mainWindow->findChild<QAction*>("actionStartPlayback");
+        m_mainWindow->findChild<QAction*>("actionStartPlayback");
 
     // Initially, start recording should be enabled, stop recording disabled
     QVERIFY(startRecordingAction->isEnabled());
@@ -132,15 +130,14 @@ void TestMainWindow::testRecordingActions()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* startRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStartRecording");
+        m_mainWindow->findChild<QAction*>("actionStartRecording");
     QAction* stopRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStopRecording");
+        m_mainWindow->findChild<QAction*>("actionStopRecording");
 
     if (!startRecordingAction || !stopRecordingAction)
     {
@@ -169,15 +166,14 @@ void TestMainWindow::testPlaybackActions()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* startPlaybackAction =
-      m_mainWindow->findChild<QAction*>("actionStartPlayback");
+        m_mainWindow->findChild<QAction*>("actionStartPlayback");
     QAction* stopPlaybackAction =
-      m_mainWindow->findChild<QAction*>("actionStopPlayback");
+        m_mainWindow->findChild<QAction*>("actionStopPlayback");
 
     if (!startPlaybackAction || !stopPlaybackAction)
     {
@@ -193,18 +189,17 @@ void TestMainWindow::testUIStateUpdates()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     // Test that UI state updates work when recording state changes
     QAction* startRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStartRecording");
+        m_mainWindow->findChild<QAction*>("actionStartRecording");
     QAction* stopRecordingAction =
-      m_mainWindow->findChild<QAction*>("actionStopRecording");
+        m_mainWindow->findChild<QAction*>("actionStopRecording");
     QAction* startPlaybackAction =
-      m_mainWindow->findChild<QAction*>("actionStartPlayback");
+        m_mainWindow->findChild<QAction*>("actionStartPlayback");
 
     // Record initial states (commented out to avoid unused variable warnings)
     // bool initialStartEnabled = startRecordingAction->isEnabled();
@@ -218,9 +213,8 @@ void TestMainWindow::testUIStateUpdates()
         // UI should update to reflect recording state
         QVERIFY(!startRecordingAction->isEnabled());
         QVERIFY(stopRecordingAction->isEnabled());
-        QVERIFY(
-          !startPlaybackAction->isEnabled()
-        ); // Should be disabled during recording
+        QVERIFY(!startPlaybackAction
+                     ->isEnabled()); // Should be disabled during recording
 
         // Stop recording
         stopRecordingAction->trigger();
@@ -235,9 +229,8 @@ void TestMainWindow::testFileActions()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* newAction = m_mainWindow->findChild<QAction*>("actionNew");
@@ -265,13 +258,12 @@ void TestMainWindow::testRecentFiles()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* recentFilesAction =
-      m_mainWindow->findChild<QAction*>("actionRecentFiles");
+        m_mainWindow->findChild<QAction*>("actionRecentFiles");
     QVERIFY(recentFilesAction != nullptr);
 
     // Recent files action should exist and be enabled
@@ -298,9 +290,8 @@ void TestMainWindow::testClearEvents()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* clearAction = m_mainWindow->findChild<QAction*>("actionClear");
@@ -318,13 +309,12 @@ void TestMainWindow::testPreferences()
 {
     if (!m_mainWindow)
     {
-        QSKIP(
-          "MainWindow could not be created - application initialization failed"
-        );
+        QSKIP("MainWindow could not be created - application initialization "
+              "failed");
     }
 
     QAction* preferencesAction =
-      m_mainWindow->findChild<QAction*>("actionPreferences");
+        m_mainWindow->findChild<QAction*>("actionPreferences");
     QVERIFY(preferencesAction != nullptr);
 
     // Preferences action should exist and be enabled

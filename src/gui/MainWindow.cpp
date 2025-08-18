@@ -44,7 +44,7 @@ namespace MouseRecorder::GUI
 {
 
 MainWindow::MainWindow(Application::MouseRecorderApp& app, QWidget* parent)
-  : QMainWindow(parent), ui(new Ui::MainWindow), m_app(app)
+    : QMainWindow(parent), ui(new Ui::MainWindow), m_app(app)
 {
     ui->setupUi(this);
     ui->actionAbout->setIcon(QIcon::fromTheme("help-faq"));
@@ -89,18 +89,16 @@ void MainWindow::closeEvent(QCloseEvent* event)
         if (TestUtils::isTestEnvironment())
         {
             spdlog::info(
-              "MainWindow: Test environment - discarding unsaved changes"
-            );
+                "MainWindow: Test environment - discarding unsaved changes");
             // Continue with closing, no user interaction needed
         }
         else
         {
             QMessageBox::StandardButton reply = QMessageBox::question(
-              this,
-              "Unsaved Changes",
-              "You have unsaved changes. Do you want to save before closing?",
-              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
-            );
+                this,
+                "Unsaved Changes",
+                "You have unsaved changes. Do you want to save before closing?",
+                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
             if (reply == QMessageBox::Save)
             {
@@ -132,18 +130,16 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     catch (const std::exception& e)
     {
-        spdlog::warn(
-          "MainWindow: Error stopping operations during close: {}", e.what()
-        );
+        spdlog::warn("MainWindow: Error stopping operations during close: {}",
+                     e.what());
     }
 
     // Note: Window geometry saving in closeEvent was causing hangs due to
     // configuration callbacks during shutdown. The geometry will be saved
     // periodically by the main application or on normal configuration saves.
     spdlog::info(
-      "MainWindow: Skipping window geometry save during close to avoid "
-      "shutdown hang"
-    );
+        "MainWindow: Skipping window geometry save during close to avoid "
+        "shutdown hang");
 
     spdlog::info("MainWindow: About to call application shutdown");
 
@@ -168,52 +164,38 @@ void MainWindow::setupWidgets()
     ui->playbackLayout->addWidget(m_playbackWidget);
 
     // Connect recording widget signals to actual recording functionality
-    connect(
-      m_recordingWidget,
-      &RecordingWidget::recordingStarted,
-      this,
-      &MainWindow::onStartRecording
-    );
-    connect(
-      m_recordingWidget,
-      &RecordingWidget::recordingStopped,
-      this,
-      &MainWindow::onStopRecording
-    );
-    connect(
-      m_recordingWidget,
-      &RecordingWidget::exportEventsRequested,
-      this,
-      &MainWindow::onExportEvents
-    );
+    connect(m_recordingWidget,
+            &RecordingWidget::recordingStarted,
+            this,
+            &MainWindow::onStartRecording);
+    connect(m_recordingWidget,
+            &RecordingWidget::recordingStopped,
+            this,
+            &MainWindow::onStopRecording);
+    connect(m_recordingWidget,
+            &RecordingWidget::exportEventsRequested,
+            this,
+            &MainWindow::onExportEvents);
 
     // Connect playback widget signals
-    connect(
-      m_playbackWidget,
-      &PlaybackWidget::playbackStarted,
-      this,
-      &MainWindow::onPlaybackStarted
-    );
-    connect(
-      m_playbackWidget,
-      &PlaybackWidget::playbackStopped,
-      this,
-      &MainWindow::onPlaybackStopped
-    );
+    connect(m_playbackWidget,
+            &PlaybackWidget::playbackStarted,
+            this,
+            &MainWindow::onPlaybackStarted);
+    connect(m_playbackWidget,
+            &PlaybackWidget::playbackStopped,
+            this,
+            &MainWindow::onPlaybackStopped);
 
     // Connect file loading signals
-    connect(
-      this,
-      &MainWindow::fileLoadRequested,
-      m_playbackWidget,
-      &PlaybackWidget::loadFileRequested
-    );
-    connect(
-      m_playbackWidget,
-      &PlaybackWidget::fileLoaded,
-      this,
-      &MainWindow::onFileLoaded
-    );
+    connect(this,
+            &MainWindow::fileLoadRequested,
+            m_playbackWidget,
+            &PlaybackWidget::loadFileRequested);
+    connect(m_playbackWidget,
+            &PlaybackWidget::fileLoaded,
+            this,
+            &MainWindow::onFileLoaded);
 }
 
 void MainWindow::setupActions()
@@ -222,58 +204,44 @@ void MainWindow::setupActions()
     connect(ui->actionNew, &QAction::triggered, this, &MainWindow::onNewFile);
     connect(ui->actionSave, &QAction::triggered, this, &MainWindow::onSaveFile);
     connect(
-      ui->actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsFile
-    );
-    connect(
-      ui->actionRecentFiles,
-      &QAction::triggered,
-      this,
-      &MainWindow::onRecentFiles
-    );
+        ui->actionSaveAs, &QAction::triggered, this, &MainWindow::onSaveAsFile);
+    connect(ui->actionRecentFiles,
+            &QAction::triggered,
+            this,
+            &MainWindow::onRecentFiles);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onExit);
 
     // Edit menu
     connect(ui->actionClear, &QAction::triggered, this, &MainWindow::onClear);
-    connect(
-      ui->actionPreferences,
-      &QAction::triggered,
-      this,
-      &MainWindow::onPreferences
-    );
+    connect(ui->actionPreferences,
+            &QAction::triggered,
+            this,
+            &MainWindow::onPreferences);
 
     // Help menu
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::onAbout);
     connect(
-      ui->actionAboutQt, &QAction::triggered, this, &MainWindow::onAboutQt
-    );
+        ui->actionAboutQt, &QAction::triggered, this, &MainWindow::onAboutQt);
 
     // Recording actions
-    connect(
-      ui->actionStartRecording,
-      &QAction::triggered,
-      this,
-      &MainWindow::onStartRecording
-    );
-    connect(
-      ui->actionStopRecording,
-      &QAction::triggered,
-      this,
-      &MainWindow::onStopRecording
-    );
+    connect(ui->actionStartRecording,
+            &QAction::triggered,
+            this,
+            &MainWindow::onStartRecording);
+    connect(ui->actionStopRecording,
+            &QAction::triggered,
+            this,
+            &MainWindow::onStopRecording);
 
     // Playback actions
-    connect(
-      ui->actionStartPlayback,
-      &QAction::triggered,
-      this,
-      &MainWindow::onStartPlayback
-    );
-    connect(
-      ui->actionStopPlayback,
-      &QAction::triggered,
-      this,
-      &MainWindow::onStopPlayback
-    );
+    connect(ui->actionStartPlayback,
+            &QAction::triggered,
+            this,
+            &MainWindow::onStartPlayback);
+    connect(ui->actionStopPlayback,
+            &QAction::triggered,
+            this,
+            &MainWindow::onStopPlayback);
 
     // Set up global keyboard shortcuts
     setupKeyboardShortcuts();
@@ -285,54 +253,42 @@ void MainWindow::setupKeyboardShortcuts()
 
     // Start Recording shortcut
     QString startRecordingKey = QString::fromStdString(
-      config.getString("shortcuts.start_recording", "Ctrl+R")
-    );
+        config.getString("shortcuts.start_recording", "Ctrl+R"));
     m_startRecordingShortcut =
-      new QShortcut(QKeySequence(startRecordingKey), this);
-    connect(
-      m_startRecordingShortcut,
-      &QShortcut::activated,
-      this,
-      &MainWindow::onStartRecording
-    );
+        new QShortcut(QKeySequence(startRecordingKey), this);
+    connect(m_startRecordingShortcut,
+            &QShortcut::activated,
+            this,
+            &MainWindow::onStartRecording);
 
     // Stop Recording shortcut
     QString stopRecordingKey = QString::fromStdString(
-      config.getString("shortcuts.stop_recording", "Ctrl+Shift+R")
-    );
+        config.getString("shortcuts.stop_recording", "Ctrl+Shift+R"));
     m_stopRecordingShortcut =
-      new QShortcut(QKeySequence(stopRecordingKey), this);
-    connect(
-      m_stopRecordingShortcut,
-      &QShortcut::activated,
-      this,
-      &MainWindow::onStopRecording
-    );
+        new QShortcut(QKeySequence(stopRecordingKey), this);
+    connect(m_stopRecordingShortcut,
+            &QShortcut::activated,
+            this,
+            &MainWindow::onStopRecording);
 
     // Start Playback shortcut
     QString startPlaybackKey = QString::fromStdString(
-      config.getString("shortcuts.start_playback", "Ctrl+P")
-    );
+        config.getString("shortcuts.start_playback", "Ctrl+P"));
     m_startPlaybackShortcut =
-      new QShortcut(QKeySequence(startPlaybackKey), this);
-    connect(
-      m_startPlaybackShortcut,
-      &QShortcut::activated,
-      this,
-      &MainWindow::onStartPlayback
-    );
+        new QShortcut(QKeySequence(startPlaybackKey), this);
+    connect(m_startPlaybackShortcut,
+            &QShortcut::activated,
+            this,
+            &MainWindow::onStartPlayback);
 
     // Stop Playback shortcut
     QString stopPlaybackKey = QString::fromStdString(
-      config.getString("shortcuts.stop_playback", "Ctrl+Shift+P")
-    );
+        config.getString("shortcuts.stop_playback", "Ctrl+Shift+P"));
     m_stopPlaybackShortcut = new QShortcut(QKeySequence(stopPlaybackKey), this);
-    connect(
-      m_stopPlaybackShortcut,
-      &QShortcut::activated,
-      this,
-      &MainWindow::onStopPlayback
-    );
+    connect(m_stopPlaybackShortcut,
+            &QShortcut::activated,
+            this,
+            &MainWindow::onStopPlayback);
 
     spdlog::info("MainWindow: Global keyboard shortcuts initialized");
 }
@@ -341,15 +297,12 @@ void MainWindow::setupGlobalShortcuts()
 {
     // Set up global shortcut monitoring timer
     m_globalShortcutTimer = new QTimer(this);
-    connect(
-      m_globalShortcutTimer,
-      &QTimer::timeout,
-      this,
-      &MainWindow::checkGlobalShortcuts
-    );
+    connect(m_globalShortcutTimer,
+            &QTimer::timeout,
+            this,
+            &MainWindow::checkGlobalShortcuts);
     m_globalShortcutTimer->start(
-      50
-    ); // Check every 50ms for responsive shortcuts
+        50); // Check every 50ms for responsive shortcuts
 
     spdlog::info("MainWindow: Global shortcut monitoring started");
 }
@@ -372,12 +325,11 @@ void MainWindow::checkGlobalShortcuts()
             // Only start if not already recording and not playing back
             if (!m_app.getEventRecorder().isRecording() &&
                 m_app.getEventPlayer().getState() !=
-                  Core::PlaybackState::Playing)
+                    Core::PlaybackState::Playing)
             {
                 QTimer::singleShot(0, this, &MainWindow::onStartRecording);
                 spdlog::info(
-                  "MainWindow: Global shortcut triggered - Start Recording"
-                );
+                    "MainWindow: Global shortcut triggered - Start Recording");
             }
         }
     }
@@ -398,8 +350,7 @@ void MainWindow::checkGlobalShortcuts()
             {
                 QTimer::singleShot(0, this, &MainWindow::onStopRecording);
                 spdlog::info(
-                  "MainWindow: Global shortcut triggered - Stop Recording"
-                );
+                    "MainWindow: Global shortcut triggered - Stop Recording");
 
                 // Also restore window if minimized to tray
                 if (!isVisible())
@@ -451,16 +402,15 @@ void MainWindow::updateUI()
 {
     bool isRecording = m_app.getEventRecorder().isRecording();
     bool isPlayingBack =
-      (m_app.getEventPlayer().getState() == Core::PlaybackState::Playing);
+        (m_app.getEventPlayer().getState() == Core::PlaybackState::Playing);
 
     // Update recording actions
     ui->actionStartRecording->setEnabled(!isRecording && !isPlayingBack);
     ui->actionStopRecording->setEnabled(isRecording);
 
     // Update playback actions
-    ui->actionStartPlayback->setEnabled(
-      !isRecording && !isPlayingBack && !m_currentFile.isEmpty()
-    );
+    ui->actionStartPlayback->setEnabled(!isRecording && !isPlayingBack &&
+                                        !m_currentFile.isEmpty());
     ui->actionStopPlayback->setEnabled(isPlayingBack);
 
     // Update status
@@ -504,21 +454,20 @@ void MainWindow::onNewFile()
         if (TestUtils::isTestEnvironment())
         {
             spdlog::info(
-              "MainWindow: Test environment - discarding unsaved changes for "
-              "new file"
-            );
+                "MainWindow: Test environment - discarding unsaved changes for "
+                "new file");
             // Continue with creating new file, no user interaction needed
         }
         else
         {
             QMessageBox::StandardButton reply = QMessageBox::question(
-              this,
-              "Unsaved Changes",
-              "You have unsaved changes. Do you want to save before creating a "
-              "new "
-              "file?",
-              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
-            );
+                this,
+                "Unsaved Changes",
+                "You have unsaved changes. Do you want to save before creating "
+                "a "
+                "new "
+                "file?",
+                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
 
             if (reply == QMessageBox::Save)
             {
@@ -565,9 +514,8 @@ void MainWindow::onSaveFile()
         }
         else
         {
-            showErrorMessage(
-              "Save Error", "Failed to save file: " + m_currentFile
-            );
+            showErrorMessage("Save Error",
+                             "Failed to save file: " + m_currentFile);
         }
     }
 }
@@ -581,26 +529,21 @@ void MainWindow::onSaveAsFile()
     if (TestUtils::isTestEnvironment())
     {
         fileName = QDir::temp().absoluteFilePath(
-          "test_recording_" +
-          QString::number(QCoreApplication::applicationPid()) + ".json"
-        );
+            "test_recording_" +
+            QString::number(QCoreApplication::applicationPid()) + ".json");
         selectedFilter = "JSON Files (*.json)";
-        spdlog::info(
-          "MainWindow: Test environment - using temp file: {}",
-          fileName.toStdString()
-        );
+        spdlog::info("MainWindow: Test environment - using temp file: {}",
+                     fileName.toStdString());
     }
     else
     {
         fileName = QFileDialog::getSaveFileName(
-          this,
-          "Save Recording File",
-          m_currentFile.isEmpty() ? "" : m_currentFile,
-          QString::fromStdString(
-            Storage::EventStorageFactory::getFileDialogFilter()
-          ),
-          &selectedFilter
-        );
+            this,
+            "Save Recording File",
+            m_currentFile.isEmpty() ? "" : m_currentFile,
+            QString::fromStdString(
+                Storage::EventStorageFactory::getFileDialogFilter()),
+            &selectedFilter);
     }
 
     if (!fileName.isEmpty())
@@ -611,9 +554,8 @@ void MainWindow::onSaveAsFile()
             addToRecentFiles(fileName);
             m_modified = false;
             updateWindowTitle();
-            ui->statusLabel->setText(
-              "File saved: " + QFileInfo(fileName).fileName()
-            );
+            ui->statusLabel->setText("File saved: " +
+                                     QFileInfo(fileName).fileName());
         }
         else
         {
@@ -637,14 +579,12 @@ void MainWindow::onAbout()
     }
 
     QString aboutText =
-      QString(
-        "<h3>%1 v%2</h3>"
-        "<p>Cross-platform Mouse and Keyboard Event Recorder</p>"
-        "<p>Built with modern C++23 and Qt5</p>"
-        "<p>Copyright © 2024 MouseRecorder Team</p>"
-      )
-        .arg(Application::MouseRecorderApp::getApplicationName().c_str())
-        .arg(Application::MouseRecorderApp::getVersion().c_str());
+        QString("<h3>%1 v%2</h3>"
+                "<p>Cross-platform Mouse and Keyboard Event Recorder</p>"
+                "<p>Built with modern C++23 and Qt5</p>"
+                "<p>Copyright © 2024 MouseRecorder Team</p>")
+            .arg(Application::MouseRecorderApp::getApplicationName().c_str())
+            .arg(Application::MouseRecorderApp::getVersion().c_str());
 
     QMessageBox::about(this, "About MouseRecorder", aboutText);
 }
@@ -655,8 +595,7 @@ void MainWindow::onAboutQt()
     if (TestUtils::isTestEnvironment())
     {
         spdlog::info(
-          "MainWindow: Skipping About Qt dialog in test environment"
-        );
+            "MainWindow: Skipping About Qt dialog in test environment");
         return;
     }
 
@@ -676,8 +615,8 @@ void MainWindow::onClear()
     if (m_app.getEventRecorder().isRecording())
     {
         showWarningMessage(
-          "Clear Events", "Cannot clear events while recording is in progress."
-        );
+            "Clear Events",
+            "Cannot clear events while recording is in progress.");
         return;
     }
 
@@ -692,14 +631,13 @@ void MainWindow::onClear()
     if (!TestUtils::isTestEnvironment())
     {
         QMessageBox::StandardButton reply = QMessageBox::question(
-          this,
-          "Clear Events",
-          "Are you sure you want to clear all recorded events? This action "
-          "cannot "
-          "be undone.",
-          QMessageBox::Yes | QMessageBox::No,
-          QMessageBox::No
-        );
+            this,
+            "Clear Events",
+            "Are you sure you want to clear all recorded events? This action "
+            "cannot "
+            "be undone.",
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No);
         shouldClear = (reply == QMessageBox::Yes);
     }
 
@@ -747,8 +685,7 @@ void MainWindow::onPreferences()
     if (inTestMode)
     {
         ui->statusLabel->setText(
-          "Preferences dialog would open here (test mode)"
-        );
+            "Preferences dialog would open here (test mode)");
         return;
     }
 
@@ -763,29 +700,24 @@ void MainWindow::onPreferences()
 
     // Create configuration widget instance for the dialog
     ConfigurationWidget* configWidget =
-      new ConfigurationWidget(m_app, &preferencesDialog);
+        new ConfigurationWidget(m_app, &preferencesDialog);
     dialogLayout->addWidget(configWidget);
 
     // Add buttons
-    QDialogButtonBox* buttonBox = new QDialogButtonBox(
-      QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
-      Qt::Horizontal,
-      &preferencesDialog
-    );
+    QDialogButtonBox* buttonBox =
+        new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                             Qt::Horizontal,
+                             &preferencesDialog);
     dialogLayout->addWidget(buttonBox);
 
-    connect(
-      buttonBox,
-      &QDialogButtonBox::accepted,
-      &preferencesDialog,
-      &QDialog::accept
-    );
-    connect(
-      buttonBox,
-      &QDialogButtonBox::rejected,
-      &preferencesDialog,
-      &QDialog::reject
-    );
+    connect(buttonBox,
+            &QDialogButtonBox::accepted,
+            &preferencesDialog,
+            &QDialog::accept);
+    connect(buttonBox,
+            &QDialogButtonBox::rejected,
+            &preferencesDialog,
+            &QDialog::reject);
 
     // Show the dialog
     if (preferencesDialog.exec() == QDialog::Accepted)
@@ -800,8 +732,7 @@ void MainWindow::onStartRecording()
     if (m_app.getEventRecorder().isRecording())
     {
         spdlog::info(
-          "MainWindow: Recording is already active, ignoring start request"
-        );
+            "MainWindow: Recording is already active, ignoring start request");
         return;
     }
 
@@ -814,13 +745,12 @@ void MainWindow::onStartRecording()
             if (m_recordingWidget && event)
             {
                 QMetaObject::invokeMethod(
-                  m_recordingWidget,
-                  [this, rawEvent = event.get()]()
-                  {
-                      m_recordingWidget->addEvent(rawEvent);
-                  },
-                  Qt::QueuedConnection
-                );
+                    m_recordingWidget,
+                    [this, rawEvent = event.get()]()
+                    {
+                        m_recordingWidget->addEvent(rawEvent);
+                    },
+                    Qt::QueuedConnection);
             }
 
             m_recordedEvents.push_back(std::move(event));
@@ -828,13 +758,12 @@ void MainWindow::onStartRecording()
 
         // Update UI on the main thread
         QMetaObject::invokeMethod(
-          this,
-          [this]()
-          {
-              updateRecordingStatistics();
-          },
-          Qt::QueuedConnection
-        );
+            this,
+            [this]()
+            {
+                updateRecordingStatistics();
+            },
+            Qt::QueuedConnection);
     };
 
     if (m_app.getEventRecorder().startRecording(eventCallback))
@@ -856,18 +785,14 @@ void MainWindow::onStartRecording()
     }
     else
     {
-        spdlog::error(
-          "MainWindow: Failed to start recording: {}",
-          m_app.getEventRecorder().getLastError()
-        );
+        spdlog::error("MainWindow: Failed to start recording: {}",
+                      m_app.getEventRecorder().getLastError());
         QMessageBox::critical(
-          this,
-          "Recording Error",
-          QString("Failed to start recording: %1")
-            .arg(
-              QString::fromStdString(m_app.getEventRecorder().getLastError())
-            )
-        );
+            this,
+            "Recording Error",
+            QString("Failed to start recording: %1")
+                .arg(QString::fromStdString(
+                    m_app.getEventRecorder().getLastError())));
     }
 }
 
@@ -893,27 +818,24 @@ void MainWindow::onStopRecording()
             // Call the handler that updates all UI components
             onRecordingStopped();
 
-            spdlog::info(
-              "MainWindow: Recording stopped successfully from GUI - {} events "
-              "recorded",
-              m_recordedEvents.size()
-            );
+            spdlog::info("MainWindow: Recording stopped successfully from GUI "
+                         "- {} events "
+                         "recorded",
+                         m_recordedEvents.size());
         }
         else
         {
             spdlog::info(
-              "MainWindow: Recording is not active, ignoring stop request"
-            );
+                "MainWindow: Recording is not active, ignoring stop request");
             ui->statusLabel->setText("Recording was not active");
         }
     }
     catch (const std::exception& e)
     {
         QMessageBox::critical(
-          this,
-          "Recording Error",
-          QString("Failed to stop recording: %1").arg(e.what())
-        );
+            this,
+            "Recording Error",
+            QString("Failed to stop recording: %1").arg(e.what()));
     }
 }
 
@@ -922,23 +844,20 @@ void MainWindow::onExportEvents()
     if (m_recordedEvents.empty())
     {
         QMessageBox::information(
-          this,
-          "Export Events",
-          "No events to export. Please record some events first."
-        );
+            this,
+            "Export Events",
+            "No events to export. Please record some events first.");
         return;
     }
 
     QString selectedFilter;
     QString fileName = QFileDialog::getSaveFileName(
-      this,
-      "Export Events",
-      QString(),
-      QString::fromStdString(
-        Storage::EventStorageFactory::getFileDialogFilter()
-      ),
-      &selectedFilter
-    );
+        this,
+        "Export Events",
+        QString(),
+        QString::fromStdString(
+            Storage::EventStorageFactory::getFileDialogFilter()),
+        &selectedFilter);
 
     if (fileName.isEmpty())
         return;
@@ -952,36 +871,31 @@ void MainWindow::onExportEvents()
         if (selectedFilter.contains("JSON"))
         {
             storage = Storage::EventStorageFactory::createStorage(
-              Core::StorageFormat::Json
-            );
+                Core::StorageFormat::Json);
         }
         else if (selectedFilter.contains("XML"))
         {
             storage = Storage::EventStorageFactory::createStorage(
-              Core::StorageFormat::Xml
-            );
+                Core::StorageFormat::Xml);
         }
         else if (selectedFilter.contains("Binary"))
         {
             storage = Storage::EventStorageFactory::createStorage(
-              Core::StorageFormat::Binary
-            );
+                Core::StorageFormat::Binary);
         }
         else
         {
             // Fallback to file extension-based detection
             storage = Storage::EventStorageFactory::createStorageFromFilename(
-              fileName.toStdString()
-            );
+                fileName.toStdString());
         }
         if (!storage)
         {
             QMessageBox::critical(
-              this,
-              "Export Error",
-              "Unsupported file format. Please use .json, .xml, or .mre "
-              "extension."
-            );
+                this,
+                "Export Error",
+                "Unsupported file format. Please use .json, .xml, or .mre "
+                "extension.");
             return;
         }
 
@@ -997,8 +911,7 @@ void MainWindow::onExportEvents()
                     // This is a simplification - in practice you might want to
                     // implement a proper clone method for Event
                     eventsToExport.emplace_back(
-                      std::make_unique<Core::Event>(*event)
-                    );
+                        std::make_unique<Core::Event>(*event));
                 }
             }
         }
@@ -1013,7 +926,7 @@ void MainWindow::onExportEvents()
         metadata.createdBy = QString(qgetenv("USER")).toStdString();
         metadata.description = "Mouse and keyboard event recording";
         metadata.creationTimestamp =
-          static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
+            static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
         metadata.totalEvents = eventsToExport.size();
         metadata.platform = QSysInfo::prettyProductName().toStdString();
 
@@ -1023,9 +936,9 @@ void MainWindow::onExportEvents()
         {
             QRect screenGeometry = primaryScreen->geometry();
             metadata.screenResolution = QString("%1x%2")
-                                          .arg(screenGeometry.width())
-                                          .arg(screenGeometry.height())
-                                          .toStdString();
+                                            .arg(screenGeometry.width())
+                                            .arg(screenGeometry.height())
+                                            .toStdString();
         }
 
         // Calculate total duration from first to last event
@@ -1045,30 +958,27 @@ void MainWindow::onExportEvents()
         if (storage->saveEvents(eventsToExport, file_with_suffix, metadata))
         {
             QMessageBox::information(
-              this,
-              "Export Complete",
-              QString("Successfully exported %1 events to %2")
-                .arg(eventsToExport.size())
-                .arg(QFileInfo(file_with_suffix.c_str()).fileName())
-            );
+                this,
+                "Export Complete",
+                QString("Successfully exported %1 events to %2")
+                    .arg(eventsToExport.size())
+                    .arg(QFileInfo(file_with_suffix.c_str()).fileName()));
         }
         else
         {
             QMessageBox::critical(
-              this,
-              "Export Error",
-              QString("Failed to export events: %1")
-                .arg(QString::fromStdString(storage->getLastError()))
-            );
+                this,
+                "Export Error",
+                QString("Failed to export events: %1")
+                    .arg(QString::fromStdString(storage->getLastError())));
         }
     }
     catch (const std::exception& e)
     {
         QMessageBox::critical(
-          this,
-          "Export Error",
-          QString("Failed to export events: %1").arg(e.what())
-        );
+            this,
+            "Export Error",
+            QString("Failed to export events: %1").arg(e.what()));
     }
 }
 
@@ -1078,42 +988,39 @@ void MainWindow::onStartPlayback()
     {
         if (m_recordedEvents.empty() && m_currentFile.isEmpty())
         {
-            QMessageBox::information(
-              this,
-              "No Events",
-              "No events available for playback. Please record some events or "
-              "load a file first."
-            );
+            QMessageBox::information(this,
+                                     "No Events",
+                                     "No events available for playback. Please "
+                                     "record some events or "
+                                     "load a file first.");
             return;
         }
 
         // Create playback callback
-        auto playbackCallback =
-          [this](
-            Core::PlaybackState state, size_t currentIndex, size_t totalEvents
-          )
+        auto playbackCallback = [this](Core::PlaybackState state,
+                                       size_t currentIndex,
+                                       size_t totalEvents)
         {
             QMetaObject::invokeMethod(
-              this,
-              [this, state, currentIndex, totalEvents]()
-              {
-                  if (m_playbackWidget)
-                  {
-                      // Update playback progress in the widget
-                      // For now just update the status
-                      QString status = QString("Playing: %1/%2")
-                                         .arg(currentIndex)
-                                         .arg(totalEvents);
-                      ui->statusLabel->setText(status);
-                  }
+                this,
+                [this, state, currentIndex, totalEvents]()
+                {
+                    if (m_playbackWidget)
+                    {
+                        // Update playback progress in the widget
+                        // For now just update the status
+                        QString status = QString("Playing: %1/%2")
+                                             .arg(currentIndex)
+                                             .arg(totalEvents);
+                        ui->statusLabel->setText(status);
+                    }
 
-                  if (state == Core::PlaybackState::Completed ||
-                      state == Core::PlaybackState::Error)
-                  {
-                      updateUI();
-                  }
-              }
-            );
+                    if (state == Core::PlaybackState::Completed ||
+                        state == Core::PlaybackState::Error)
+                    {
+                        updateUI();
+                    }
+                });
         };
 
         // Load events into player
@@ -1134,12 +1041,11 @@ void MainWindow::onStartPlayback()
         {
             // Load events from file (placeholder - would need actual file
             // loading)
-            QMessageBox::information(
-              this,
-              "File Playback",
-              "File playback will be implemented when storage functionality is "
-              "complete."
-            );
+            QMessageBox::information(this,
+                                     "File Playback",
+                                     "File playback will be implemented when "
+                                     "storage functionality is "
+                                     "complete.");
             return;
         }
 
@@ -1153,36 +1059,29 @@ void MainWindow::onStartPlayback()
             else
             {
                 QMessageBox::critical(
-                  this,
-                  "Playback Error",
-                  QString("Failed to start playback: %1")
-                    .arg(
-                      QString::fromStdString(
-                        m_app.getEventPlayer().getLastError()
-                      )
-                    )
-                );
+                    this,
+                    "Playback Error",
+                    QString("Failed to start playback: %1")
+                        .arg(QString::fromStdString(
+                            m_app.getEventPlayer().getLastError())));
             }
         }
         else
         {
             QMessageBox::critical(
-              this,
-              "Playback Error",
-              QString("Failed to load events for playback: %1")
-                .arg(
-                  QString::fromStdString(m_app.getEventPlayer().getLastError())
-                )
-            );
+                this,
+                "Playback Error",
+                QString("Failed to load events for playback: %1")
+                    .arg(QString::fromStdString(
+                        m_app.getEventPlayer().getLastError())));
         }
     }
     catch (const std::exception& e)
     {
         QMessageBox::critical(
-          this,
-          "Playback Error",
-          QString("Failed to start playback: %1").arg(e.what())
-        );
+            this,
+            "Playback Error",
+            QString("Failed to start playback: %1").arg(e.what()));
     }
 }
 
@@ -1197,10 +1096,9 @@ void MainWindow::onStopPlayback()
     catch (const std::exception& e)
     {
         QMessageBox::critical(
-          this,
-          "Playback Error",
-          QString("Failed to stop playback: %1").arg(e.what())
-        );
+            this,
+            "Playback Error",
+            QString("Failed to stop playback: %1").arg(e.what()));
     }
 }
 
@@ -1229,8 +1127,9 @@ void MainWindow::onRecordingStarted()
     {
         spdlog::info("MainWindow: Auto-minimizing to tray on recording start");
         QTimer::singleShot(
-          500, this, &MainWindow::minimizeToTray
-        ); // Small delay for UI update
+            500,
+            this,
+            &MainWindow::minimizeToTray); // Small delay for UI update
     }
 }
 
@@ -1255,16 +1154,14 @@ void MainWindow::onRecordingStopped()
     if (!isVisible())
     {
         bool shouldRestore =
-          shouldAutoMinimize() ||
-          (m_trayIcon && m_trayIcon->isVisible() && m_wasVisibleBeforeMinimize);
+            shouldAutoMinimize() || (m_trayIcon && m_trayIcon->isVisible() &&
+                                     m_wasVisibleBeforeMinimize);
         if (shouldRestore)
         {
             spdlog::info(
-              "MainWindow: Auto-restoring from tray on recording stop"
-            );
+                "MainWindow: Auto-restoring from tray on recording stop");
             QTimer::singleShot(
-              200, this, &MainWindow::restoreFromTray
-            ); // Small delay
+                200, this, &MainWindow::restoreFromTray); // Small delay
         }
     }
 }
@@ -1299,10 +1196,9 @@ void MainWindow::updateRecordingStatistics()
 {
     if (!m_recordingWidget)
     {
-        spdlog::warn(
-          "MainWindow: updateRecordingStatistics called but m_recordingWidget "
-          "is null"
-        );
+        spdlog::warn("MainWindow: updateRecordingStatistics called but "
+                     "m_recordingWidget "
+                     "is null");
         return;
     }
 
@@ -1325,15 +1221,13 @@ void MainWindow::updateRecordingStatistics()
     }
 
     spdlog::debug(
-      "MainWindow: Updating statistics - Total: {}, Mouse: {}, Keyboard: {}",
-      totalEvents,
-      mouseEvents,
-      keyboardEvents
-    );
+        "MainWindow: Updating statistics - Total: {}, Mouse: {}, Keyboard: {}",
+        totalEvents,
+        mouseEvents,
+        keyboardEvents);
 
     m_recordingWidget->updateStatistics(
-      totalEvents, mouseEvents, keyboardEvents
-    );
+        totalEvents, mouseEvents, keyboardEvents);
 }
 
 void MainWindow::showErrorMessage(const QString& title, const QString& message)
@@ -1344,9 +1238,8 @@ void MainWindow::showErrorMessage(const QString& title, const QString& message)
     }
 }
 
-void MainWindow::showWarningMessage(
-  const QString& title, const QString& message
-)
+void MainWindow::showWarningMessage(const QString& title,
+                                    const QString& message)
 {
     if (!TestUtils::isTestEnvironment())
     {
@@ -1380,26 +1273,24 @@ void MainWindow::setupSystemTray()
     m_trayMenu = new QMenu(this);
 
     m_showHideAction = m_trayMenu->addAction("Show/Hide");
-    connect(
-      m_showHideAction, &QAction::triggered, this, &MainWindow::onShowHideAction
-    );
+    connect(m_showHideAction,
+            &QAction::triggered,
+            this,
+            &MainWindow::onShowHideAction);
 
     m_trayMenu->addSeparator();
 
     m_exitAction = m_trayMenu->addAction("Exit");
     connect(
-      m_exitAction, &QAction::triggered, this, &MainWindow::onTrayExitAction
-    );
+        m_exitAction, &QAction::triggered, this, &MainWindow::onTrayExitAction);
 
     m_trayIcon->setContextMenu(m_trayMenu);
 
     // Connect tray icon activation
-    connect(
-      m_trayIcon,
-      &QSystemTrayIcon::activated,
-      this,
-      &MainWindow::onTrayIconActivated
-    );
+    connect(m_trayIcon,
+            &QSystemTrayIcon::activated,
+            this,
+            &MainWindow::onTrayIconActivated);
 
     // Show the tray icon
     m_trayIcon->show();
@@ -1420,11 +1311,10 @@ void MainWindow::minimizeToTray()
         if (firstTimeMinimized && m_app.getEventRecorder().isRecording())
         {
             m_trayIcon->showMessage(
-              "MouseRecorder",
-              "Recording in background. Double-click tray icon to restore.",
-              QSystemTrayIcon::Information,
-              3000
-            );
+                "MouseRecorder",
+                "Recording in background. Double-click tray icon to restore.",
+                QSystemTrayIcon::Information,
+                3000);
             firstTimeMinimized = false;
         }
     }
@@ -1432,8 +1322,7 @@ void MainWindow::minimizeToTray()
     {
         showMinimized();
         spdlog::debug(
-          "MainWindow: System tray not available, minimized to taskbar"
-        );
+            "MainWindow: System tray not available, minimized to taskbar");
     }
 }
 
@@ -1445,9 +1334,8 @@ void MainWindow::restoreFromTray()
         show();
         raise();
         activateWindow();
-        setWindowState(
-          (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive
-        );
+        setWindowState((windowState() & ~Qt::WindowMinimized) |
+                       Qt::WindowActive);
         spdlog::info("MainWindow: Restored from system tray");
     }
     else if (m_wasVisibleBeforeMinimize)
@@ -1461,8 +1349,7 @@ void MainWindow::restoreFromTray()
     else
     {
         spdlog::debug(
-          "MainWindow: Window already visible or tray not available"
-        );
+            "MainWindow: Window already visible or tray not available");
     }
 }
 
@@ -1472,59 +1359,54 @@ bool MainWindow::shouldAutoMinimize() const
 }
 
 Core::MouseMovementOptimizer::OptimizationConfig MainWindow::
-  getOptimizationConfigFromSettings() const
+    getOptimizationConfigFromSettings() const
 {
     const auto& config = m_app.getConfiguration();
 
     Core::MouseMovementOptimizer::OptimizationConfig optimizationConfig;
     optimizationConfig.enabled =
-      config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
+        config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
 
     // Parse strategy from string
     std::string strategyStr = config.getString(
-      Core::ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, "combined"
-    );
+        Core::ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY, "combined");
     if (strategyStr == "distance")
     {
-        optimizationConfig.strategy =
-          Core::MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+        optimizationConfig.strategy = Core::MouseMovementOptimizer::
+            OptimizationStrategy::DistanceThreshold;
     }
     else if (strategyStr == "douglas_peucker")
     {
         optimizationConfig.strategy =
-          Core::MouseMovementOptimizer::OptimizationStrategy::DouglasPeucker;
+            Core::MouseMovementOptimizer::OptimizationStrategy::DouglasPeucker;
     }
     else if (strategyStr == "time")
     {
         optimizationConfig.strategy =
-          Core::MouseMovementOptimizer::OptimizationStrategy::TimeBased;
+            Core::MouseMovementOptimizer::OptimizationStrategy::TimeBased;
     }
     else // default to combined
     {
         optimizationConfig.strategy =
-          Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
+            Core::MouseMovementOptimizer::OptimizationStrategy::Combined;
     }
 
     optimizationConfig.distanceThreshold =
-      config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+        config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
     optimizationConfig.timeThresholdMs =
-      config.getInt(Core::ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD, 16);
+        config.getInt(Core::ConfigKeys::MOUSE_OPTIMIZATION_TIME_THRESHOLD, 16);
     optimizationConfig.douglasPeuckerEpsilon = config.getDouble(
-      Core::ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON, 2.0
-    );
+        Core::ConfigKeys::MOUSE_OPTIMIZATION_DOUGLAS_PEUCKER_EPSILON, 2.0);
     optimizationConfig.preserveClicks = config.getBool(
-      Core::ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS, true
-    );
+        Core::ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_CLICKS, true);
     optimizationConfig.preserveFirstLast = config.getBool(
-      Core::ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST, true
-    );
+        Core::ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST, true);
 
     return optimizationConfig;
 }
 
 size_t MainWindow::applyMouseMovementOptimization(
-  std::vector<std::unique_ptr<Core::Event>>& events
-) const
+    std::vector<std::unique_ptr<Core::Event>>& events) const
 {
     const auto& config = m_app.getConfiguration();
     if (!config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
@@ -1534,15 +1416,14 @@ size_t MainWindow::applyMouseMovementOptimization(
 
     auto optimizationConfig = getOptimizationConfigFromSettings();
 
-    size_t removedCount =
-      Core::MouseMovementOptimizer::optimizeEvents(events, optimizationConfig);
+    size_t removedCount = Core::MouseMovementOptimizer::optimizeEvents(
+        events, optimizationConfig);
 
     if (removedCount > 0)
     {
-        spdlog::info(
-          "MainWindow: Mouse movement optimization removed {} redundant events",
-          removedCount
-        );
+        spdlog::info("MainWindow: Mouse movement optimization removed {} "
+                     "redundant events",
+                     removedCount);
     }
 
     return removedCount;
@@ -1610,63 +1491,58 @@ void MainWindow::updateRecentFilesMenu()
     {
         const QString& filePath = m_recentFiles.at(i);
         QString displayName =
-          QString("&%1 %2").arg(i + 1).arg(QFileInfo(filePath).fileName());
+            QString("&%1 %2").arg(i + 1).arg(QFileInfo(filePath).fileName());
 
         QAction* action = m_recentFilesMenu->addAction(displayName);
         action->setToolTip(filePath);
 
         // Connect the action to emit the fileLoadRequested signal
-        connect(
-          action,
-          &QAction::triggered,
-          this,
-          [this, filePath]()
-          {
-              // Check if file exists before attempting to load
-              QFileInfo fileInfo(filePath);
-              if (!fileInfo.exists())
-              {
-                  // Remove file from recent files if it doesn't exist
-                  m_recentFiles.removeAll(filePath);
-                  updateRecentFilesMenu();
-                  saveRecentFiles();
-                  showErrorMessage(
-                    "Load Error",
-                    "File not found: " + filePath +
-                      "\n\nFile has been removed from recent files."
-                  );
-                  return;
-              }
+        connect(action,
+                &QAction::triggered,
+                this,
+                [this, filePath]()
+                {
+                    // Check if file exists before attempting to load
+                    QFileInfo fileInfo(filePath);
+                    if (!fileInfo.exists())
+                    {
+                        // Remove file from recent files if it doesn't exist
+                        m_recentFiles.removeAll(filePath);
+                        updateRecentFilesMenu();
+                        saveRecentFiles();
+                        showErrorMessage(
+                            "Load Error",
+                            "File not found: " + filePath +
+                                "\n\nFile has been removed from recent files.");
+                        return;
+                    }
 
-              // Emit signal to request file loading - this will be handled
-              // by PlaybackWidget asynchronously
-              emit fileLoadRequested(filePath);
-          }
-        );
+                    // Emit signal to request file loading - this will be
+                    // handled by PlaybackWidget asynchronously
+                    emit fileLoadRequested(filePath);
+                });
     }
 
     if (m_recentFiles.isEmpty())
     {
         QAction* noRecentAction =
-          m_recentFilesMenu->addAction("No recent files");
+            m_recentFilesMenu->addAction("No recent files");
         noRecentAction->setEnabled(false);
     }
     else
     {
         m_recentFilesMenu->addSeparator();
         QAction* clearAction =
-          m_recentFilesMenu->addAction("Clear Recent Files");
-        connect(
-          clearAction,
-          &QAction::triggered,
-          this,
-          [this]()
-          {
-              m_recentFiles.clear();
-              updateRecentFilesMenu();
-              saveRecentFiles();
-          }
-        );
+            m_recentFilesMenu->addAction("Clear Recent Files");
+        connect(clearAction,
+                &QAction::triggered,
+                this,
+                [this]()
+                {
+                    m_recentFiles.clear();
+                    updateRecentFilesMenu();
+                    saveRecentFiles();
+                });
     }
 }
 
@@ -1694,8 +1570,8 @@ void MainWindow::loadRecentFiles()
 {
     const auto& config = m_app.getConfiguration();
     QStringList recentFilesList =
-      QString::fromStdString(config.getString("ui.recent_files", ""))
-        .split(";", Qt::SkipEmptyParts);
+        QString::fromStdString(config.getString("ui.recent_files", ""))
+            .split(";", Qt::SkipEmptyParts);
 
     // Filter out files that no longer exist
     for (const QString& file : recentFilesList)
@@ -1723,10 +1599,8 @@ void MainWindow::saveRecentFiles()
 
 bool MainWindow::saveEventsToFile(const QString& filename)
 {
-    spdlog::info(
-      "MainWindow: Attempting to save events to file '{}'",
-      filename.toStdString()
-    );
+    spdlog::info("MainWindow: Attempting to save events to file '{}'",
+                 filename.toStdString());
 
     try
     {
@@ -1734,21 +1608,18 @@ bool MainWindow::saveEventsToFile(const QString& filename)
         {
             spdlog::warn("MainWindow: No events to save");
             showWarningMessage(
-              "Save File", "No events to save. Please record some events first."
-            );
+                "Save File",
+                "No events to save. Please record some events first.");
             return false;
         }
 
         auto storage = Storage::EventStorageFactory::createStorageFromFilename(
-          filename.toStdString()
-        );
+            filename.toStdString());
 
         if (!storage)
         {
-            spdlog::error(
-              "MainWindow: Unsupported file format for: {}",
-              filename.toStdString()
-            );
+            spdlog::error("MainWindow: Unsupported file format for: {}",
+                          filename.toStdString());
             return false;
         }
 
@@ -1761,8 +1632,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
                 if (event)
                 {
                     eventsToSave.emplace_back(
-                      std::make_unique<Core::Event>(*event)
-                    );
+                        std::make_unique<Core::Event>(*event));
                 }
             }
         }
@@ -1777,7 +1647,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
         metadata.createdBy = QString(qgetenv("USER")).toStdString();
         metadata.description = "Mouse and keyboard event recording";
         metadata.creationTimestamp =
-          static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
+            static_cast<uint64_t>(QDateTime::currentMSecsSinceEpoch());
         metadata.totalEvents = eventsToSave.size();
         metadata.platform = QSysInfo::prettyProductName().toStdString();
 
@@ -1787,9 +1657,9 @@ bool MainWindow::saveEventsToFile(const QString& filename)
         {
             QRect screenGeometry = primaryScreen->geometry();
             metadata.screenResolution = QString("%1x%2")
-                                          .arg(screenGeometry.width())
-                                          .arg(screenGeometry.height())
-                                          .toStdString();
+                                            .arg(screenGeometry.width())
+                                            .arg(screenGeometry.height())
+                                            .toStdString();
         }
 
         // Calculate total duration from first to last event
@@ -1810,33 +1680,26 @@ bool MainWindow::saveEventsToFile(const QString& filename)
 
         if (storage->saveEvents(eventsToSave, fileWithExtension, metadata))
         {
-            spdlog::info(
-              "MainWindow: Saved {} events to {}",
-              eventsToSave.size(),
-              fileWithExtension
-            );
+            spdlog::info("MainWindow: Saved {} events to {}",
+                         eventsToSave.size(),
+                         fileWithExtension);
             return true;
         }
         else
         {
-            spdlog::error(
-              "MainWindow: Failed to save events to {}: {}",
-              fileWithExtension,
-              storage->getLastError()
-            );
+            spdlog::error("MainWindow: Failed to save events to {}: {}",
+                          fileWithExtension,
+                          storage->getLastError());
             return false;
         }
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "MainWindow: Exception saving events to {}: {}",
-          filename.toStdString(),
-          e.what()
-        );
+        spdlog::error("MainWindow: Exception saving events to {}: {}",
+                      filename.toStdString(),
+                      e.what());
         return false;
     }
 }
 
 } // namespace MouseRecorder::GUI
-

@@ -39,9 +39,9 @@ class TestGlobalShortcuts : public QObject
     std::unique_ptr<MouseRecorderApp> m_mouseApp;
     MainWindow* m_mainWindow{nullptr};
 
-    void simulateKeyPress(
-      int keyCode, bool withCtrl = false, bool withShift = false
-    );
+    void simulateKeyPress(int keyCode,
+                          bool withCtrl = false,
+                          bool withShift = false);
     void waitForKeyProcessing(int timeoutMs = 500);
 };
 
@@ -162,8 +162,7 @@ void TestGlobalShortcuts::testShortcutsDontConflictWithRegularOperation()
 
     // Start recording through UI
     bool recordingStarted = m_mouseApp->getEventRecorder().startRecording(
-      [](std::unique_ptr<MouseRecorder::Core::Event>) {}
-    );
+        [](std::unique_ptr<MouseRecorder::Core::Event>) {});
     QVERIFY(recordingStarted);
     QVERIFY(m_mouseApp->getEventRecorder().isRecording());
 
@@ -187,22 +186,19 @@ void TestGlobalShortcuts::testGlobalShortcutsDisabledInUnsuitableStates()
     mouseData.modifiers = static_cast<MouseRecorder::Core::KeyModifier>(0);
 
     auto testEvent = std::make_unique<MouseRecorder::Core::Event>(
-      MouseRecorder::Core::EventType::MouseMove,
-      mouseData,
-      std::chrono::steady_clock::now()
-    );
+        MouseRecorder::Core::EventType::MouseMove,
+        mouseData,
+        std::chrono::steady_clock::now());
     testEvents.push_back(std::move(testEvent));
 
     bool eventsLoaded =
-      m_mouseApp->getEventPlayer().loadEvents(std::move(testEvents));
+        m_mouseApp->getEventPlayer().loadEvents(std::move(testEvents));
     QVERIFY(eventsLoaded);
 
     bool playbackStarted = m_mouseApp->getEventPlayer().startPlayback();
     QVERIFY(playbackStarted);
-    QVERIFY(
-      m_mouseApp->getEventPlayer().getState() ==
-      MouseRecorder::Core::PlaybackState::Playing
-    );
+    QVERIFY(m_mouseApp->getEventPlayer().getState() ==
+            MouseRecorder::Core::PlaybackState::Playing);
 
     // Now recording should not be allowed (this is tested by the UI logic,
     // not the global shortcuts themselves, but it's important for overall
@@ -210,8 +206,7 @@ void TestGlobalShortcuts::testGlobalShortcutsDisabledInUnsuitableStates()
     // concurrent recording and playback, so this test should reflect that
     // behavior
     bool shouldStart = m_mouseApp->getEventRecorder().startRecording(
-      [](std::unique_ptr<MouseRecorder::Core::Event>) {}
-    );
+        [](std::unique_ptr<MouseRecorder::Core::Event>) {});
     // Recording can start even during playback in the current implementation
     QVERIFY(shouldStart || !shouldStart); // Either behavior is acceptable
 
@@ -219,9 +214,9 @@ void TestGlobalShortcuts::testGlobalShortcutsDisabledInUnsuitableStates()
     m_mouseApp->getEventPlayer().stopPlayback();
 }
 
-void TestGlobalShortcuts::simulateKeyPress(
-  int keyCode, bool withCtrl, bool withShift
-)
+void TestGlobalShortcuts::simulateKeyPress(int keyCode,
+                                           bool withCtrl,
+                                           bool withShift)
 {
 #ifdef __linux__
     // This is a simplified simulation - in a real test environment,

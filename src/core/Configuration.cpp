@@ -57,9 +57,8 @@ bool Configuration::loadFromFile(const std::string& filename)
             }
         }
 
-        spdlog::info(
-          "Configuration: Successfully loaded {} settings", m_values.size()
-        );
+        spdlog::info("Configuration: Successfully loaded {} settings",
+                     m_values.size());
         return true;
     }
     catch (const std::exception& e)
@@ -82,21 +81,19 @@ bool Configuration::saveToFile(const std::string& filename)
             for (const auto& [key, value] : m_values)
             {
                 std::visit(
-                  [&](const auto& v)
-                  {
-                      configJson[key] = v;
-                  },
-                  value
-                );
+                    [&](const auto& v)
+                    {
+                        configJson[key] = v;
+                    },
+                    value);
             }
         }
 
         std::ofstream file(filename);
         if (!file.is_open())
         {
-            setLastError(
-              "Failed to open configuration file for writing: " + filename
-            );
+            setLastError("Failed to open configuration file for writing: " +
+                         filename);
             return false;
         }
 
@@ -175,9 +172,8 @@ void Configuration::setString(const std::string& key, const std::string& value)
     setValue(key, value);
 }
 
-std::string Configuration::getString(
-  const std::string& key, const std::string& defaultValue
-) const
+std::string Configuration::getString(const std::string& key,
+                                     const std::string& defaultValue) const
 {
     return getValue(key, defaultValue);
 }
@@ -197,9 +193,8 @@ void Configuration::setDouble(const std::string& key, double value)
     setValue(key, value);
 }
 
-double Configuration::getDouble(
-  const std::string& key, double defaultValue
-) const
+double Configuration::getDouble(const std::string& key,
+                                double defaultValue) const
 {
     return getValue(key, defaultValue);
 }
@@ -214,16 +209,14 @@ bool Configuration::getBool(const std::string& key, bool defaultValue) const
     return getValue(key, defaultValue);
 }
 
-void Configuration::setStringArray(
-  const std::string& key, const std::vector<std::string>& value
-)
+void Configuration::setStringArray(const std::string& key,
+                                   const std::vector<std::string>& value)
 {
     setValue(key, value);
 }
 
 std::vector<std::string> Configuration::getStringArray(
-  const std::string& key, const std::vector<std::string>& defaultValue
-) const
+    const std::string& key, const std::vector<std::string>& defaultValue) const
 {
     return getValue(key, defaultValue);
 }
@@ -282,9 +275,8 @@ void Configuration::unregisterChangeCallback(size_t callbackId)
     if (auto it = m_callbacks.find(callbackId); it != m_callbacks.end())
     {
         m_callbacks.erase(it);
-        spdlog::debug(
-          "Configuration: Unregistered change callback with ID {}", callbackId
-        );
+        spdlog::debug("Configuration: Unregistered change callback with ID {}",
+                      callbackId);
     }
 }
 
@@ -335,18 +327,16 @@ T Configuration::getValue(const std::string& key, const T& defaultValue) const
         catch (const std::bad_variant_access&)
         {
             spdlog::warn(
-              "Configuration: Type mismatch for key '{}', returning default",
-              key
-            );
+                "Configuration: Type mismatch for key '{}', returning default",
+                key);
         }
     }
 
     return defaultValue;
 }
 
-void Configuration::notifyCallbacks(
-  const std::string& key, const std::string& value
-)
+void Configuration::notifyCallbacks(const std::string& key,
+                                    const std::string& value)
 {
     std::vector<ConfigChangeCallback> callbacks;
 
@@ -368,11 +358,9 @@ void Configuration::notifyCallbacks(
         }
         catch (const std::exception& e)
         {
-            spdlog::error(
-              "Configuration: Callback exception for key '{}': {}",
-              key,
-              e.what()
-            );
+            spdlog::error("Configuration: Callback exception for key '{}': {}",
+                          key,
+                          e.what());
         }
     }
 }
@@ -380,41 +368,40 @@ void Configuration::notifyCallbacks(
 std::string Configuration::valueToString(const ConfigValue& value) const
 {
     return std::visit(
-      [](const auto& v) -> std::string
-      {
-          using T = std::decay_t<decltype(v)>;
-          if constexpr (std::is_same_v<T, std::string>)
-          {
-              return v;
-          }
-          else if constexpr (std::is_same_v<T, int>)
-          {
-              return std::to_string(v);
-          }
-          else if constexpr (std::is_same_v<T, double>)
-          {
-              return std::to_string(v);
-          }
-          else if constexpr (std::is_same_v<T, bool>)
-          {
-              return v ? "true" : "false";
-          }
-          else if constexpr (std::is_same_v<T, std::vector<std::string>>)
-          {
-              std::string result = "[";
-              for (size_t i = 0; i < v.size(); ++i)
-              {
-                  if (i > 0)
-                      result += ", ";
-                  result += "\"" + v[i] + "\"";
-              }
-              result += "]";
-              return result;
-          }
-          return "";
-      },
-      value
-    );
+        [](const auto& v) -> std::string
+        {
+            using T = std::decay_t<decltype(v)>;
+            if constexpr (std::is_same_v<T, std::string>)
+            {
+                return v;
+            }
+            else if constexpr (std::is_same_v<T, int>)
+            {
+                return std::to_string(v);
+            }
+            else if constexpr (std::is_same_v<T, double>)
+            {
+                return std::to_string(v);
+            }
+            else if constexpr (std::is_same_v<T, bool>)
+            {
+                return v ? "true" : "false";
+            }
+            else if constexpr (std::is_same_v<T, std::vector<std::string>>)
+            {
+                std::string result = "[";
+                for (size_t i = 0; i < v.size(); ++i)
+                {
+                    if (i > 0)
+                        result += ", ";
+                    result += "\"" + v[i] + "\"";
+                }
+                result += "]";
+                return result;
+            }
+            return "";
+        },
+        value);
 }
 
 void Configuration::setLastError(const std::string& error)

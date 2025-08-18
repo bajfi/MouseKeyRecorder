@@ -18,14 +18,11 @@ class EventStorageTest : public ::testing::Test
         // Create test events
         m_testEvents.push_back(EventFactory::createMouseMoveEvent({100, 200}));
         m_testEvents.push_back(
-          EventFactory::createMouseClickEvent({150, 250}, MouseButton::Left)
-        );
+            EventFactory::createMouseClickEvent({150, 250}, MouseButton::Left));
         m_testEvents.push_back(
-          EventFactory::createKeyPressEvent(65, "A", KeyModifier::Ctrl)
-        );
+            EventFactory::createKeyPressEvent(65, "A", KeyModifier::Ctrl));
         m_testEvents.push_back(
-          EventFactory::createMouseWheelEvent({200, 300}, 120)
-        );
+            EventFactory::createMouseWheelEvent({200, 300}, 120));
         m_testEvents.push_back(EventFactory::createKeyReleaseEvent(65, "A"));
 
         // Test file names
@@ -38,8 +35,7 @@ class EventStorageTest : public ::testing::Test
     {
         // Clean up test files
         std::vector<std::string> testFiles = {
-          m_jsonFile, m_xmlFile, m_binaryFile
-        };
+            m_jsonFile, m_xmlFile, m_binaryFile};
         for (const auto& file : testFiles)
         {
             if (std::filesystem::exists(file))
@@ -50,8 +46,7 @@ class EventStorageTest : public ::testing::Test
     }
 
     std::vector<std::unique_ptr<Event>> createEventCopies(
-      const std::vector<std::unique_ptr<Event>>& original
-    )
+        const std::vector<std::unique_ptr<Event>>& original)
     {
         std::vector<std::unique_ptr<Event>> copies;
         for (const auto& event : original)
@@ -62,10 +57,8 @@ class EventStorageTest : public ::testing::Test
         return copies;
     }
 
-    void verifyEventsEqual(
-      const std::vector<std::unique_ptr<Event>>& events1,
-      const std::vector<std::unique_ptr<Event>>& events2
-    )
+    void verifyEventsEqual(const std::vector<std::unique_ptr<Event>>& events1,
+                           const std::vector<std::unique_ptr<Event>>& events2)
     {
         ASSERT_EQ(events1.size(), events2.size());
 
@@ -198,7 +191,7 @@ TEST_F(EventStorageTest, StorageFactory)
 
     // Test Binary storage creation
     auto binaryStorage =
-      EventStorageFactory::createStorage(StorageFormat::Binary);
+        EventStorageFactory::createStorage(StorageFormat::Binary);
     ASSERT_NE(binaryStorage, nullptr);
 
     eventCopies = createEventCopies(m_testEvents);
@@ -226,8 +219,7 @@ TEST_F(EventStorageTest, InvalidFileLoad)
     std::vector<std::unique_ptr<Event>> events;
     StorageMetadata metadata;
     EXPECT_FALSE(
-      storage.loadEvents("non_existent_file.json", events, metadata)
-    );
+        storage.loadEvents("non_existent_file.json", events, metadata));
     EXPECT_TRUE(events.empty());
     EXPECT_FALSE(storage.getLastError().empty());
 }
@@ -266,7 +258,7 @@ TEST_F(EventStorageTest, FileFormatDetection)
     auto jsonStorage2 = EventStorageFactory::createStorage(StorageFormat::Json);
     auto xmlStorage = EventStorageFactory::createStorage(StorageFormat::Xml);
     auto binaryStorage =
-      EventStorageFactory::createStorage(StorageFormat::Binary);
+        EventStorageFactory::createStorage(StorageFormat::Binary);
 
     // Each call should create a new instance
     EXPECT_NE(jsonStorage1.get(), jsonStorage2.get());
@@ -286,18 +278,14 @@ TEST_F(EventStorageTest, RecordingWidgetExportIntegration)
     // Create events similar to what would be captured during recording
     recordedEvents.push_back(EventFactory::createMouseMoveEvent({10, 15}));
     recordedEvents.push_back(
-      EventFactory::createMouseClickEvent({25, 35}, MouseButton::Left)
-    );
+        EventFactory::createMouseClickEvent({25, 35}, MouseButton::Left));
     recordedEvents.push_back(EventFactory::createMouseMoveEvent({50, 75}));
     recordedEvents.push_back(
-      EventFactory::createKeyPressEvent(32, "Space", KeyModifier::None)
-    );
+        EventFactory::createKeyPressEvent(32, "Space", KeyModifier::None));
     recordedEvents.push_back(
-      EventFactory::createMouseClickEvent({100, 125}, MouseButton::Right)
-    );
+        EventFactory::createMouseClickEvent({100, 125}, MouseButton::Right));
     recordedEvents.push_back(
-      EventFactory::createKeyReleaseEvent(32, "Space", KeyModifier::None)
-    );
+        EventFactory::createKeyReleaseEvent(32, "Space", KeyModifier::None));
 
     ASSERT_EQ(recordedEvents.size(), 6);
 

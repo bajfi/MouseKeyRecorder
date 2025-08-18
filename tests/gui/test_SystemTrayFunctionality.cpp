@@ -111,7 +111,7 @@ void TestSystemTrayFunctionality::testTrayIconCreation()
 
     // Find the tray icon (it's a private member, so we test indirectly)
     QList<QSystemTrayIcon*> trayIcons =
-      m_mainWindow->findChildren<QSystemTrayIcon*>();
+        m_mainWindow->findChildren<QSystemTrayIcon*>();
     QVERIFY(trayIcons.size() > 0);
 
     QSystemTrayIcon* trayIcon = trayIcons.first();
@@ -128,7 +128,7 @@ void TestSystemTrayFunctionality::testTrayMenuCreation()
     }
 
     QList<QSystemTrayIcon*> trayIcons =
-      m_mainWindow->findChildren<QSystemTrayIcon*>();
+        m_mainWindow->findChildren<QSystemTrayIcon*>();
     QVERIFY(trayIcons.size() > 0);
 
     QSystemTrayIcon* trayIcon = trayIcons.first();
@@ -279,7 +279,7 @@ void TestSystemTrayFunctionality::testTrayIconDoubleClick()
     }
 
     QList<QSystemTrayIcon*> trayIcons =
-      m_mainWindow->findChildren<QSystemTrayIcon*>();
+        m_mainWindow->findChildren<QSystemTrayIcon*>();
     QVERIFY(trayIcons.size() > 0);
 
     QSystemTrayIcon* trayIcon = trayIcons.first();
@@ -305,7 +305,7 @@ void TestSystemTrayFunctionality::testContextMenuActions()
     }
 
     QList<QSystemTrayIcon*> trayIcons =
-      m_mainWindow->findChildren<QSystemTrayIcon*>();
+        m_mainWindow->findChildren<QSystemTrayIcon*>();
     QVERIFY(trayIcons.size() > 0);
 
     QSystemTrayIcon* trayIcon = trayIcons.first();

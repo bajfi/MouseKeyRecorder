@@ -68,10 +68,9 @@ LinuxEventReplay::~LinuxEventReplay()
             catch (const std::exception& e)
             {
                 spdlog::error(
-                  "LinuxEventReplay: Exception in destructor thread cleanup: "
-                  "{}",
-                  e.what()
-                );
+                    "LinuxEventReplay: Exception in destructor thread cleanup: "
+                    "{}",
+                    e.what());
             }
         }
     }
@@ -88,8 +87,7 @@ LinuxEventReplay::~LinuxEventReplay()
 }
 
 bool LinuxEventReplay::loadEvents(
-  std::vector<std::unique_ptr<Core::Event>> events
-)
+    std::vector<std::unique_ptr<Core::Event>> events)
 {
     spdlog::info("LinuxEventReplay: Loading {} events", events.size());
 
@@ -100,10 +98,9 @@ bool LinuxEventReplay::loadEvents(
         currentState != Core::PlaybackState::Error)
     {
         spdlog::error(
-          "LinuxEventReplay: Cannot load events while playback is active "
-          "(state: {})",
-          static_cast<int>(currentState)
-        );
+            "LinuxEventReplay: Cannot load events while playback is active "
+            "(state: {})",
+            static_cast<int>(currentState));
         setLastError("Cannot load events while playback is active");
         return false;
     }
@@ -111,9 +108,8 @@ bool LinuxEventReplay::loadEvents(
     // Extra safety: wait for any potential thread cleanup
     if (m_playbackThread && m_playbackThread->joinable())
     {
-        spdlog::warn(
-          "LinuxEventReplay: Waiting for thread cleanup during event loading"
-        );
+        spdlog::warn("LinuxEventReplay: Waiting for thread cleanup during "
+                     "event loading");
         m_playbackThread->join();
         m_playbackThread.reset();
     }
@@ -132,9 +128,8 @@ bool LinuxEventReplay::loadEvents(
         m_pressedButtons.clear();
     }
 
-    spdlog::info(
-      "LinuxEventReplay: {} events loaded successfully", m_events.size()
-    );
+    spdlog::info("LinuxEventReplay: {} events loaded successfully",
+                 m_events.size());
     return true;
 }
 
@@ -147,9 +142,8 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
         currentState != Core::PlaybackState::Completed)
     {
         spdlog::error(
-          "LinuxEventReplay: Playback is already active (state: {})",
-          static_cast<int>(currentState)
-        );
+            "LinuxEventReplay: Playback is already active (state: {})",
+            static_cast<int>(currentState));
         setLastError("Playback is already active");
         return false;
     }
@@ -187,14 +181,13 @@ bool LinuxEventReplay::startPlayback(PlaybackCallback callback)
     // Start playback thread
     try
     {
-        m_playbackThread =
-          std::make_unique<std::thread>(&LinuxEventReplay::playbackLoop, this);
+        m_playbackThread = std::make_unique<std::thread>(
+            &LinuxEventReplay::playbackLoop, this);
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "LinuxEventReplay: Failed to create playback thread: {}", e.what()
-        );
+        spdlog::error("LinuxEventReplay: Failed to create playback thread: {}",
+                      e.what());
         setLastError("Failed to create playback thread");
         cleanupX11();
         return false;
@@ -230,9 +223,8 @@ void LinuxEventReplay::stopPlayback()
         }
         catch (const std::exception& e)
         {
-            spdlog::error(
-              "LinuxEventReplay: Exception during thread join: {}", e.what()
-            );
+            spdlog::error("LinuxEventReplay: Exception during thread join: {}",
+                          e.what());
         }
         m_playbackThread.reset();
     }
@@ -351,8 +343,7 @@ bool LinuxEventReplay::initializeX11()
     // Check for XTest extension
     int event_base, error_base, major, minor;
     if (!XTestQueryExtension(
-          m_display, &event_base, &error_base, &major, &minor
-        ))
+            m_display, &event_base, &error_base, &major, &minor))
     {
         setLastError("XTest extension not available");
         cleanupX11();
@@ -363,10 +354,9 @@ bool LinuxEventReplay::initializeX11()
     XSynchronize(m_display, True);
 
     spdlog::debug(
-      "LinuxEventReplay: X11 initialized successfully, XTest version {}.{}",
-      major,
-      minor
-    );
+        "LinuxEventReplay: X11 initialized successfully, XTest version {}.{}",
+        major,
+        minor);
     return true;
 }
 
@@ -390,18 +380,16 @@ void LinuxEventReplay::cleanupInputState()
             for (KeyCode keycode : m_pressedKeys)
             {
                 XTestFakeKeyEvent(m_display, keycode, False, 0);
-                spdlog::debug(
-                  "LinuxEventReplay: Released tracked key {}", keycode
-                );
+                spdlog::debug("LinuxEventReplay: Released tracked key {}",
+                              keycode);
             }
             m_pressedKeys.clear();
 
             for (unsigned int button : m_pressedButtons)
             {
                 XTestFakeButtonEvent(m_display, button, False, 0);
-                spdlog::debug(
-                  "LinuxEventReplay: Released tracked button {}", button
-                );
+                spdlog::debug("LinuxEventReplay: Released tracked button {}",
+                              button);
             }
             m_pressedButtons.clear();
         }
@@ -415,22 +403,20 @@ void LinuxEventReplay::cleanupInputState()
         }
 
         // Release common modifier keys that might be stuck
-        const std::vector<KeySym> modifierKeys = {
-          XK_Shift_L,
-          XK_Shift_R,
-          XK_Control_L,
-          XK_Control_R,
-          XK_Alt_L,
-          XK_Alt_R,
-          XK_Meta_L,
-          XK_Meta_R,
-          XK_Super_L,
-          XK_Super_R,
-          XK_space,
-          XK_Return,
-          XK_Tab,
-          XK_Escape
-        };
+        const std::vector<KeySym> modifierKeys = {XK_Shift_L,
+                                                  XK_Shift_R,
+                                                  XK_Control_L,
+                                                  XK_Control_R,
+                                                  XK_Alt_L,
+                                                  XK_Alt_R,
+                                                  XK_Meta_L,
+                                                  XK_Meta_R,
+                                                  XK_Super_L,
+                                                  XK_Super_R,
+                                                  XK_space,
+                                                  XK_Return,
+                                                  XK_Tab,
+                                                  XK_Escape};
 
         for (KeySym keysym : modifierKeys)
         {
@@ -450,14 +436,13 @@ void LinuxEventReplay::cleanupInputState()
     catch (const std::exception& e)
     {
         spdlog::error(
-          "LinuxEventReplay: Exception during input state cleanup: {}", e.what()
-        );
+            "LinuxEventReplay: Exception during input state cleanup: {}",
+            e.what());
     }
     catch (...)
     {
         spdlog::warn(
-          "LinuxEventReplay: Unknown exception during input state cleanup"
-        );
+            "LinuxEventReplay: Unknown exception during input state cleanup");
     }
 }
 
@@ -483,8 +468,7 @@ void LinuxEventReplay::cleanupX11()
         catch (...)
         {
             spdlog::error(
-              "LinuxEventReplay: Exception while closing X11 display"
-            );
+                "LinuxEventReplay: Exception while closing X11 display");
         }
 
         m_display = nullptr;
@@ -516,11 +500,9 @@ void LinuxEventReplay::playbackLoop()
             if (m_loopEnabled.load() && m_loopCount.load() > 0)
             {
                 m_currentLoopIteration.fetch_add(1);
-                spdlog::debug(
-                  "LinuxEventReplay: Starting loop iteration {}/{}",
-                  m_currentLoopIteration.load(),
-                  m_loopCount.load()
-                );
+                spdlog::debug("LinuxEventReplay: Starting loop iteration {}/{}",
+                              m_currentLoopIteration.load(),
+                              m_loopCount.load());
             }
             for (size_t i = m_currentPosition.load();
                  i < m_events.size() && !m_shouldStop.load();
@@ -530,10 +512,9 @@ void LinuxEventReplay::playbackLoop()
                 if (i >= m_events.size())
                 {
                     spdlog::error(
-                      "LinuxEventReplay: Index {} out of bounds (size: {})",
-                      i,
-                      m_events.size()
-                    );
+                        "LinuxEventReplay: Index {} out of bounds (size: {})",
+                        i,
+                        m_events.size());
                     break;
                 }
 
@@ -546,17 +527,15 @@ void LinuxEventReplay::playbackLoop()
                 if (i >= m_events.size())
                 {
                     spdlog::warn(
-                      "LinuxEventReplay: Event index invalid after wait"
-                    );
+                        "LinuxEventReplay: Event index invalid after wait");
                     break;
                 }
 
                 const auto& event = m_events[i];
                 if (!event)
                 {
-                    spdlog::error(
-                      "LinuxEventReplay: Null event at position {}", i
-                    );
+                    spdlog::error("LinuxEventReplay: Null event at position {}",
+                                  i);
                     continue;
                 }
 
@@ -564,10 +543,10 @@ void LinuxEventReplay::playbackLoop()
                 if (i > 0 && i - 1 < m_events.size())
                 {
                     uint64_t currentEventTime =
-                      m_events[i - 1]->getTimestampMs();
+                        m_events[i - 1]->getTimestampMs();
                     uint64_t nextEventTime = event->getTimestampMs();
                     auto delay =
-                      calculateDelay(currentEventTime, nextEventTime);
+                        calculateDelay(currentEventTime, nextEventTime);
 
                     if (delay.count() > 0)
                     {
@@ -585,9 +564,8 @@ void LinuxEventReplay::playbackLoop()
                     catch (const std::exception& e)
                     {
                         spdlog::error(
-                          "LinuxEventReplay: Exception in event callback: {}",
-                          e.what()
-                        );
+                            "LinuxEventReplay: Exception in event callback: {}",
+                            e.what());
                     }
                 }
 
@@ -597,20 +575,18 @@ void LinuxEventReplay::playbackLoop()
                     if (!executeEvent(*event))
                     {
                         spdlog::warn(
-                          "LinuxEventReplay: Failed to execute event at "
-                          "position {}",
-                          i
-                        );
+                            "LinuxEventReplay: Failed to execute event at "
+                            "position {}",
+                            i);
                         // Continue with next event rather than stopping
                     }
                 }
                 catch (const std::exception& e)
                 {
                     spdlog::error(
-                      "LinuxEventReplay: Exception executing event {}: {}",
-                      i,
-                      e.what()
-                    );
+                        "LinuxEventReplay: Exception executing event {}: {}",
+                        i,
+                        e.what());
                     // Continue with next event
                 }
 
@@ -622,16 +598,14 @@ void LinuxEventReplay::playbackLoop()
                     try
                     {
                         m_playbackCallback(
-                          m_state.load(), i + 1, m_totalEvents.load()
-                        );
+                            m_state.load(), i + 1, m_totalEvents.load());
                     }
                     catch (const std::exception& e)
                     {
                         spdlog::error(
-                          "LinuxEventReplay: Exception in playback callback: "
-                          "{}",
-                          e.what()
-                        );
+                            "LinuxEventReplay: Exception in playback callback: "
+                            "{}",
+                            e.what());
                     }
                 }
             }
@@ -653,17 +627,15 @@ void LinuxEventReplay::playbackLoop()
                 {
                     shouldContinueLoop = true;
                     spdlog::debug(
-                      "LinuxEventReplay: Continuing loop iteration {}/{}",
-                      currentIteration,
-                      loopCount
-                    );
+                        "LinuxEventReplay: Continuing loop iteration {}/{}",
+                        currentIteration,
+                        loopCount);
                 }
                 else
                 {
                     spdlog::debug(
-                      "LinuxEventReplay: Completed {} loops, stopping",
-                      loopCount
-                    );
+                        "LinuxEventReplay: Completed {} loops, stopping",
+                        loopCount);
                 }
 
                 if (shouldContinueLoop)
@@ -694,12 +666,10 @@ void LinuxEventReplay::playbackLoop()
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "LinuxEventReplay: Exception in playback loop: {}", e.what()
-        );
-        setLastError(
-          "Playback loop encountered an error: " + std::string(e.what())
-        );
+        spdlog::error("LinuxEventReplay: Exception in playback loop: {}",
+                      e.what());
+        setLastError("Playback loop encountered an error: " +
+                     std::string(e.what()));
         setState(Core::PlaybackState::Error);
     }
     catch (...)
@@ -744,13 +714,11 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
     switch (event.getType())
     {
     case Core::EventType::MouseMove: {
-        XTestFakeMotionEvent(
-          m_display,
-          DefaultScreen(m_display),
-          mouseData->position.x,
-          mouseData->position.y,
-          0
-        );
+        XTestFakeMotionEvent(m_display,
+                             DefaultScreen(m_display),
+                             mouseData->position.x,
+                             mouseData->position.y,
+                             0);
         // Ensure mouse movement is immediately processed
         XFlush(m_display);
         XSync(m_display, False);
@@ -759,13 +727,11 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
 
     case Core::EventType::MouseClick: {
         // Move to position first
-        XTestFakeMotionEvent(
-          m_display,
-          DefaultScreen(m_display),
-          mouseData->position.x,
-          mouseData->position.y,
-          0
-        );
+        XTestFakeMotionEvent(m_display,
+                             DefaultScreen(m_display),
+                             mouseData->position.x,
+                             mouseData->position.y,
+                             0);
 
         // Convert mouse button
         unsigned int button = 1;
@@ -799,13 +765,11 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
 
     case Core::EventType::MouseDoubleClick: {
         // Move to position first
-        XTestFakeMotionEvent(
-          m_display,
-          DefaultScreen(m_display),
-          mouseData->position.x,
-          mouseData->position.y,
-          0
-        );
+        XTestFakeMotionEvent(m_display,
+                             DefaultScreen(m_display),
+                             mouseData->position.x,
+                             mouseData->position.y,
+                             0);
 
         // Convert mouse button
         unsigned int button = 1;
@@ -841,18 +805,16 @@ bool LinuxEventReplay::executeMouseEvent(const Core::Event& event)
 
     case Core::EventType::MouseWheel: {
         // Move to position first
-        XTestFakeMotionEvent(
-          m_display,
-          DefaultScreen(m_display),
-          mouseData->position.x,
-          mouseData->position.y,
-          0
-        );
+        XTestFakeMotionEvent(m_display,
+                             DefaultScreen(m_display),
+                             mouseData->position.x,
+                             mouseData->position.y,
+                             0);
 
         // Wheel direction
         unsigned int button = (mouseData->wheelDelta > 0) ? 4 : 5;
         int scrollCount =
-          std::abs(mouseData->wheelDelta) / 120; // Standard wheel delta
+            std::abs(mouseData->wheelDelta) / 120; // Standard wheel delta
 
         for (int i = 0; i < scrollCount; ++i)
         {
@@ -881,10 +843,8 @@ bool LinuxEventReplay::executeKeyboardEvent(const Core::Event& event)
     KeyCode keycode = getKeycodeFromName(keyData->keyName);
     if (keycode == 0)
     {
-        spdlog::warn(
-          "LinuxEventReplay: Could not find keycode for key '{}'",
-          keyData->keyName
-        );
+        spdlog::warn("LinuxEventReplay: Could not find keycode for key '{}'",
+                     keyData->keyName);
         return false;
     }
 
@@ -953,8 +913,7 @@ KeyCode LinuxEventReplay::getKeycodeFromName(const std::string& keyName)
 }
 
 std::chrono::milliseconds LinuxEventReplay::calculateDelay(
-  uint64_t currentEventTime, uint64_t nextEventTime
-)
+    uint64_t currentEventTime, uint64_t nextEventTime)
 {
     if (nextEventTime <= currentEventTime)
     {
@@ -980,8 +939,7 @@ void LinuxEventReplay::setState(Core::PlaybackState newState)
     if (m_playbackCallback)
     {
         m_playbackCallback(
-          newState, m_currentPosition.load(), m_totalEvents.load()
-        );
+            newState, m_currentPosition.load(), m_totalEvents.load());
     }
 }
 

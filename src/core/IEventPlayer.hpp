@@ -29,8 +29,8 @@ enum class PlaybackState
 class IEventPlayer
 {
   public:
-    using PlaybackCallback = std::function<
-      void(PlaybackState, size_t currentIndex, size_t totalEvents)>;
+    using PlaybackCallback = std::function<void(
+        PlaybackState, size_t currentIndex, size_t totalEvents)>;
     using EventCallback = std::function<void(const Event&)>;
 
     virtual ~IEventPlayer() = default;

@@ -75,7 +75,7 @@ bool LinuxEventCapture::startRecording(EventCallback callback)
 
     // Start event thread
     m_eventThread =
-      std::make_unique<std::thread>(&LinuxEventCapture::eventLoop, this);
+        std::make_unique<std::thread>(&LinuxEventCapture::eventLoop, this);
 
     spdlog::info("LinuxEventCapture: Recording started successfully");
     return true;
@@ -118,25 +118,22 @@ void LinuxEventCapture::setCaptureMouseEvents(bool capture)
 void LinuxEventCapture::setCaptureKeyboardEvents(bool capture)
 {
     m_captureKeyboardEvents.store(capture);
-    spdlog::debug(
-      "LinuxEventCapture: Keyboard event capture set to {}", capture
-    );
+    spdlog::debug("LinuxEventCapture: Keyboard event capture set to {}",
+                  capture);
 }
 
 void LinuxEventCapture::setOptimizeMouseMovements(bool optimize)
 {
     m_optimizeMouseMovements.store(optimize);
-    spdlog::debug(
-      "LinuxEventCapture: Mouse movement optimization set to {}", optimize
-    );
+    spdlog::debug("LinuxEventCapture: Mouse movement optimization set to {}",
+                  optimize);
 }
 
 void LinuxEventCapture::setMouseMovementThreshold(int threshold)
 {
     m_mouseMovementThreshold.store(std::max(0, threshold));
-    spdlog::debug(
-      "LinuxEventCapture: Mouse movement threshold set to {}", threshold
-    );
+    spdlog::debug("LinuxEventCapture: Mouse movement threshold set to {}",
+                  threshold);
 }
 
 std::string LinuxEventCapture::getLastError() const
@@ -161,8 +158,7 @@ bool LinuxEventCapture::initializeX11()
     // Check for XInput2 extension
     int event, error;
     if (!XQueryExtension(
-          m_display, "XInputExtension", &m_xiOpcode, &event, &error
-        ))
+            m_display, "XInputExtension", &m_xiOpcode, &event, &error))
     {
         setLastError("XInput extension not available");
         return false;
@@ -173,16 +169,14 @@ bool LinuxEventCapture::initializeX11()
     if (XIQueryVersion(m_display, &major, &minor) == BadRequest)
     {
         setLastError(
-          "XInput2 not available. Server supports only version < 2.0"
-        );
+            "XInput2 not available. Server supports only version < 2.0");
         return false;
     }
 
-    spdlog::debug(
-      "LinuxEventCapture: X11 initialized successfully, XInput2 version {}.{}",
-      major,
-      minor
-    );
+    spdlog::debug("LinuxEventCapture: X11 initialized successfully, XInput2 "
+                  "version {}.{}",
+                  major,
+                  minor);
     return true;
 }
 
@@ -324,9 +318,9 @@ void LinuxEventCapture::processRawMouseEvent(XIRawEvent* data)
         case 7: {
             // Scroll wheel events
             int wheelDelta =
-              (data->detail == 4 || data->detail == 6) ? 120 : -120;
-            auto event =
-              Core::EventFactory::createMouseWheelEvent(currentPos, wheelDelta);
+                (data->detail == 4 || data->detail == 6) ? 120 : -120;
+            auto event = Core::EventFactory::createMouseWheelEvent(currentPos,
+                                                                   wheelDelta);
             m_eventCallback(std::move(event));
             return;
         }
@@ -335,7 +329,7 @@ void LinuxEventCapture::processRawMouseEvent(XIRawEvent* data)
         }
 
         auto event =
-          Core::EventFactory::createMouseClickEvent(currentPos, button);
+            Core::EventFactory::createMouseClickEvent(currentPos, button);
         m_eventCallback(std::move(event));
         break;
     }
@@ -355,14 +349,14 @@ void LinuxEventCapture::processRawKeyEvent(XIRawEvent* data)
     {
     case XI_RawKeyPress: {
         auto event =
-          Core::EventFactory::createKeyPressEvent(data->detail, keyName);
+            Core::EventFactory::createKeyPressEvent(data->detail, keyName);
         m_eventCallback(std::move(event));
         break;
     }
 
     case XI_RawKeyRelease: {
         auto event =
-          Core::EventFactory::createKeyReleaseEvent(data->detail, keyName);
+            Core::EventFactory::createKeyReleaseEvent(data->detail, keyName);
         m_eventCallback(std::move(event));
         break;
     }
@@ -397,17 +391,15 @@ Core::Point LinuxEventCapture::getCurrentMousePosition()
     int rootX, rootY, winX, winY;
     unsigned int mask;
 
-    if (XQueryPointer(
-          m_display,
-          m_rootWindow,
-          &root,
-          &child,
-          &rootX,
-          &rootY,
-          &winX,
-          &winY,
-          &mask
-        ))
+    if (XQueryPointer(m_display,
+                      m_rootWindow,
+                      &root,
+                      &child,
+                      &rootX,
+                      &rootY,
+                      &winX,
+                      &winY,
+                      &mask))
     {
         return {rootX, rootY};
     }

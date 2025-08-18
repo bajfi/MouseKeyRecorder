@@ -46,15 +46,12 @@ bool MouseRecorderApp::initialize(const std::string& configFile, bool headless)
     return initialize(configFile, headless, "");
 }
 
-bool MouseRecorderApp::initialize(
-  const std::string& configFile,
-  bool headless,
-  const std::string& logLevelOverride
-)
+bool MouseRecorderApp::initialize(const std::string& configFile,
+                                  bool headless,
+                                  const std::string& logLevelOverride)
 {
-    spdlog::info(
-      "MouseRecorderApp: Initializing application (headless: {})", headless
-    );
+    spdlog::info("MouseRecorderApp: Initializing application (headless: {})",
+                 headless);
 
     if (m_initialized)
     {
@@ -73,12 +70,10 @@ bool MouseRecorderApp::initialize(
     // Override log level if provided
     if (!logLevelOverride.empty())
     {
-        m_configuration->setString(
-          Core::ConfigKeys::LOG_LEVEL, logLevelOverride
-        );
-        spdlog::info(
-          "MouseRecorderApp: Overriding log level to '{}'", logLevelOverride
-        );
+        m_configuration->setString(Core::ConfigKeys::LOG_LEVEL,
+                                   logLevelOverride);
+        spdlog::info("MouseRecorderApp: Overriding log level to '{}'",
+                     logLevelOverride);
     }
 
     // Initialize logging with configuration (including any overrides)
@@ -125,9 +120,8 @@ void MouseRecorderApp::shutdown()
         }
         catch (const std::exception& e)
         {
-            spdlog::warn(
-              "Error stopping recorder during shutdown: {}", e.what()
-            );
+            spdlog::warn("Error stopping recorder during shutdown: {}",
+                         e.what());
         }
 
         try
@@ -152,16 +146,14 @@ void MouseRecorderApp::shutdown()
                 if (!m_configuration->saveToFile(m_configFile))
                 {
                     spdlog::warn(
-                      "MouseRecorderApp: Failed to save configuration: {}",
-                      m_configuration->getLastError()
-                    );
+                        "MouseRecorderApp: Failed to save configuration: {}",
+                        m_configuration->getLastError());
                 }
             }
             catch (const std::exception& e)
             {
-                spdlog::warn(
-                  "Error saving configuration during shutdown: {}", e.what()
-                );
+                spdlog::warn("Error saving configuration during shutdown: {}",
+                             e.what());
             }
         }
 
@@ -211,8 +203,7 @@ Core::IEventPlayer& MouseRecorderApp::getEventPlayer()
 }
 
 std::unique_ptr<Core::IEventStorage> MouseRecorderApp::createStorage(
-  Core::StorageFormat format
-)
+    Core::StorageFormat format)
 {
     return Storage::EventStorageFactory::createStorage(format);
 }
@@ -233,11 +224,10 @@ bool MouseRecorderApp::initializeLogging(Core::IConfiguration& config)
     {
         // Get logging configuration
         std::string logLevel =
-          config.getString(Core::ConfigKeys::LOG_LEVEL, "info");
+            config.getString(Core::ConfigKeys::LOG_LEVEL, "info");
         bool logToFile = config.getBool(Core::ConfigKeys::LOG_TO_FILE, false);
         std::string logFilePath = config.getString(
-          Core::ConfigKeys::LOG_FILE_PATH, "mouserecorder.log"
-        );
+            Core::ConfigKeys::LOG_FILE_PATH, "mouserecorder.log");
 
         // Convert log level string to spdlog level
         spdlog::level::level_enum level = spdlog::level::info;
@@ -261,7 +251,7 @@ bool MouseRecorderApp::initializeLogging(Core::IConfiguration& config)
 
         // Console sink (always enabled)
         auto console_sink =
-          std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         console_sink->set_level(level);
         console_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%^%l%$] [%n] %v");
         sinks.push_back(console_sink);
@@ -272,9 +262,8 @@ bool MouseRecorderApp::initializeLogging(Core::IConfiguration& config)
             try
             {
                 auto file_sink =
-                  std::make_shared<spdlog::sinks::basic_file_sink_mt>(
-                    logFilePath, true
-                  );
+                    std::make_shared<spdlog::sinks::basic_file_sink_mt>(
+                        logFilePath, true);
                 file_sink->set_level(level);
                 file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%l] [%n] %v");
                 sinks.push_back(file_sink);
@@ -282,27 +271,24 @@ bool MouseRecorderApp::initializeLogging(Core::IConfiguration& config)
             catch (const std::exception& e)
             {
                 // File sink creation failed, but continue with console only
-                spdlog::warn(
-                  "Failed to create file sink '{}': {}", logFilePath, e.what()
-                );
+                spdlog::warn("Failed to create file sink '{}': {}",
+                             logFilePath,
+                             e.what());
             }
         }
 
         // Create logger
         auto logger = std::make_shared<spdlog::logger>(
-          "mouserecorder", sinks.begin(), sinks.end()
-        );
+            "mouserecorder", sinks.begin(), sinks.end());
         logger->set_level(level);
         logger->flush_on(spdlog::level::warn);
 
         // Set as default logger
         spdlog::set_default_logger(logger);
 
-        spdlog::info(
-          "Logging system initialized (level: {}, file: {})",
-          logLevel,
-          logToFile
-        );
+        spdlog::info("Logging system initialized (level: {}, file: {})",
+                     logLevel,
+                     logToFile);
         return true;
     }
     catch (const std::exception& e)
@@ -335,17 +321,16 @@ bool MouseRecorderApp::setupPlatformComponents()
     {
 #ifdef __linux__
         m_eventRecorder =
-          std::make_unique<Platform::Linux::LinuxEventCapture>();
+            std::make_unique<Platform::Linux::LinuxEventCapture>();
         m_eventPlayer = std::make_unique<Platform::Linux::LinuxEventReplay>();
         spdlog::info("MouseRecorderApp: Linux platform components initialized");
 #elif _WIN32
         m_eventRecorder =
-          std::make_unique<Platform::Windows::WindowsEventCapture>();
+            std::make_unique<Platform::Windows::WindowsEventCapture>();
         m_eventPlayer =
-          std::make_unique<Platform::Windows::WindowsEventReplay>();
+            std::make_unique<Platform::Windows::WindowsEventReplay>();
         spdlog::info(
-          "MouseRecorderApp: Windows platform components initialized"
-        );
+            "MouseRecorderApp: Windows platform components initialized");
 #else
         setLastError("Unsupported platform");
         return false;
@@ -355,22 +340,17 @@ bool MouseRecorderApp::setupPlatformComponents()
         if (m_configuration)
         {
             bool captureMouseEvents = m_configuration->getBool(
-              Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, true
-            );
+                Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, true);
             bool captureKeyboardEvents = m_configuration->getBool(
-              Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true
-            );
+                Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true);
             bool optimizeMouseMovements = m_configuration->getBool(
-              Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true
-            );
+                Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
             int mouseMovementThreshold = m_configuration->getInt(
-              Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5
-            );
+                Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
             double playbackSpeed = m_configuration->getDouble(
-              Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0
-            );
-            bool loopPlayback =
-              m_configuration->getBool(Core::ConfigKeys::LOOP_PLAYBACK, false);
+                Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
+            bool loopPlayback = m_configuration->getBool(
+                Core::ConfigKeys::LOOP_PLAYBACK, false);
 
             m_eventRecorder->setCaptureMouseEvents(captureMouseEvents);
             m_eventRecorder->setCaptureKeyboardEvents(captureKeyboardEvents);
@@ -380,9 +360,8 @@ bool MouseRecorderApp::setupPlatformComponents()
             m_eventPlayer->setPlaybackSpeed(playbackSpeed);
             m_eventPlayer->setLoopPlayback(loopPlayback);
 
-            spdlog::debug(
-              "MouseRecorderApp: Platform components configured from settings"
-            );
+            spdlog::debug("MouseRecorderApp: Platform components configured "
+                          "from settings");
         }
 
         return true;
@@ -396,9 +375,8 @@ bool MouseRecorderApp::setupPlatformComponents()
 
 bool MouseRecorderApp::loadConfiguration(const std::string& configFile)
 {
-    spdlog::debug(
-      "MouseRecorderApp: Loading configuration from {}", configFile
-    );
+    spdlog::debug("MouseRecorderApp: Loading configuration from {}",
+                  configFile);
 
     try
     {
@@ -409,27 +387,24 @@ bool MouseRecorderApp::loadConfiguration(const std::string& configFile)
         {
             if (!m_configuration->loadFromFile(configFile))
             {
-                spdlog::warn(
-                  "MouseRecorderApp: Failed to load configuration from {}: {}",
-                  configFile,
-                  m_configuration->getLastError()
-                );
+                spdlog::warn("MouseRecorderApp: Failed to load configuration "
+                             "from {}: {}",
+                             configFile,
+                             m_configuration->getLastError());
                 // Continue with defaults
             }
             else
             {
-                spdlog::info(
-                  "MouseRecorderApp: Configuration loaded from {}", configFile
-                );
+                spdlog::info("MouseRecorderApp: Configuration loaded from {}",
+                             configFile);
             }
         }
         else
         {
             spdlog::info(
-              "MouseRecorderApp: Configuration file {} not found, using "
-              "defaults",
-              configFile
-            );
+                "MouseRecorderApp: Configuration file {} not found, using "
+                "defaults",
+                configFile);
         }
 
         return true;

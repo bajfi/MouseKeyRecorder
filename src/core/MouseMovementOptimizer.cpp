@@ -9,18 +9,16 @@ namespace MouseRecorder::Core
 {
 
 size_t MouseMovementOptimizer::optimizeEvents(
-  std::vector<std::unique_ptr<Event>>& events, const OptimizationConfig& config
-)
+    std::vector<std::unique_ptr<Event>>& events,
+    const OptimizationConfig& config)
 {
     if (!config.enabled || events.empty())
     {
         return 0;
     }
 
-    spdlog::debug(
-      "MouseMovementOptimizer: Starting optimization of {} events",
-      events.size()
-    );
+    spdlog::debug("MouseMovementOptimizer: Starting optimization of {} events",
+                  events.size());
     size_t originalSize = events.size();
 
     // Extract mouse move events with their indices
@@ -28,8 +26,7 @@ size_t MouseMovementOptimizer::optimizeEvents(
     if (mouseMoves.size() < 3)
     {
         spdlog::debug(
-          "MouseMovementOptimizer: Too few mouse moves to optimize"
-        );
+            "MouseMovementOptimizer: Too few mouse moves to optimize");
         return 0;
     }
 
@@ -39,17 +36,15 @@ size_t MouseMovementOptimizer::optimizeEvents(
     {
     case OptimizationStrategy::DistanceThreshold: {
         auto toRemove = applyDistanceThreshold(
-          mouseMoves, config.distanceThreshold, config.preserveFirstLast
-        );
+            mouseMoves, config.distanceThreshold, config.preserveFirstLast);
         indicesToRemove.insert(
-          indicesToRemove.end(), toRemove.begin(), toRemove.end()
-        );
+            indicesToRemove.end(), toRemove.begin(), toRemove.end());
         break;
     }
 
     case OptimizationStrategy::DouglasPeucker: {
         auto toKeep =
-          applyDouglasPeucker(mouseMoves, config.douglasPeuckerEpsilon);
+            applyDouglasPeucker(mouseMoves, config.douglasPeuckerEpsilon);
         // Convert "keep" indices to "remove" indices
         std::set<size_t> keepSet(toKeep.begin(), toKeep.end());
         for (const auto& move : mouseMoves)
@@ -64,11 +59,9 @@ size_t MouseMovementOptimizer::optimizeEvents(
 
     case OptimizationStrategy::TimeBased: {
         auto toRemove = applyTimeThreshold(
-          mouseMoves, config.timeThresholdMs, config.preserveFirstLast
-        );
+            mouseMoves, config.timeThresholdMs, config.preserveFirstLast);
         indicesToRemove.insert(
-          indicesToRemove.end(), toRemove.begin(), toRemove.end()
-        );
+            indicesToRemove.end(), toRemove.begin(), toRemove.end());
         break;
     }
 
@@ -76,8 +69,7 @@ size_t MouseMovementOptimizer::optimizeEvents(
         // Apply multiple strategies in sequence
         // 1. First apply time-based filtering
         auto timeRemove = applyTimeThreshold(
-          mouseMoves, config.timeThresholdMs, config.preserveFirstLast
-        );
+            mouseMoves, config.timeThresholdMs, config.preserveFirstLast);
 
         // 2. Remove time-filtered events from mouseMoves temporarily
         std::set<size_t> timeRemoveSet(timeRemove.begin(), timeRemove.end());
@@ -93,8 +85,8 @@ size_t MouseMovementOptimizer::optimizeEvents(
         // 3. Apply Douglas-Peucker on remaining moves
         if (filteredMoves.size() >= 3)
         {
-            auto toKeep =
-              applyDouglasPeucker(filteredMoves, config.douglasPeuckerEpsilon);
+            auto toKeep = applyDouglasPeucker(filteredMoves,
+                                              config.douglasPeuckerEpsilon);
             std::set<size_t> keepSet(toKeep.begin(), toKeep.end());
 
             for (const auto& [index, move] : filteredMoves)
@@ -108,8 +100,7 @@ size_t MouseMovementOptimizer::optimizeEvents(
 
         // Add time-based removals
         indicesToRemove.insert(
-          indicesToRemove.end(), timeRemove.begin(), timeRemove.end()
-        );
+            indicesToRemove.end(), timeRemove.begin(), timeRemove.end());
         break;
     }
     }
@@ -139,17 +130,14 @@ size_t MouseMovementOptimizer::optimizeEvents(
         }
 
         // Remove click-adjacent indices from removal list
-        indicesToRemove.erase(
-          std::remove_if(
-            indicesToRemove.begin(),
-            indicesToRemove.end(),
-            [&clickAdjacent](size_t idx)
-            {
-                return clickAdjacent.count(idx) > 0;
-            }
-          ),
-          indicesToRemove.end()
-        );
+        indicesToRemove.erase(std::remove_if(indicesToRemove.begin(),
+                                             indicesToRemove.end(),
+                                             [&clickAdjacent](size_t idx)
+                                             {
+                                                 return clickAdjacent.count(
+                                                            idx) > 0;
+                                             }),
+                              indicesToRemove.end());
     }
 
     // Sort indices in descending order for safe removal
@@ -157,25 +145,22 @@ size_t MouseMovementOptimizer::optimizeEvents(
 
     // Remove duplicates
     indicesToRemove.erase(
-      std::unique(indicesToRemove.begin(), indicesToRemove.end()),
-      indicesToRemove.end()
-    );
+        std::unique(indicesToRemove.begin(), indicesToRemove.end()),
+        indicesToRemove.end());
 
     // Remove the events
     removeEventsAtIndices(events, indicesToRemove);
 
     size_t removedCount = originalSize - events.size();
-    spdlog::debug(
-      "MouseMovementOptimizer: Removed {} events, {} remaining",
-      removedCount,
-      events.size()
-    );
+    spdlog::debug("MouseMovementOptimizer: Removed {} events, {} remaining",
+                  removedCount,
+                  events.size());
 
     return removedCount;
 }
 
 std::vector<std::pair<size_t, const Event*>> MouseMovementOptimizer::
-  extractMouseMoveEvents(const std::vector<std::unique_ptr<Event>>& events)
+    extractMouseMoveEvents(const std::vector<std::unique_ptr<Event>>& events)
 {
     std::vector<std::pair<size_t, const Event*>> mouseMoves;
 
@@ -191,10 +176,9 @@ std::vector<std::pair<size_t, const Event*>> MouseMovementOptimizer::
 }
 
 std::vector<size_t> MouseMovementOptimizer::applyDistanceThreshold(
-  const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-  int threshold,
-  bool preserveFirstLast
-)
+    const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+    int threshold,
+    bool preserveFirstLast)
 {
     std::vector<size_t> toRemove;
 
@@ -212,7 +196,7 @@ std::vector<size_t> MouseMovementOptimizer::applyDistanceThreshold(
     // Start from index 1, skip first if preserving
     size_t startIdx = preserveFirstLast ? 1 : 0;
     size_t endIdx =
-      preserveFirstLast ? mouseMoves.size() - 1 : mouseMoves.size();
+        preserveFirstLast ? mouseMoves.size() - 1 : mouseMoves.size();
 
     for (size_t i = startIdx; i < endIdx; ++i)
     {
@@ -223,7 +207,7 @@ std::vector<size_t> MouseMovementOptimizer::applyDistanceThreshold(
         }
 
         double distance =
-          calculateDistance(lastKeptPosition, mouseData->position);
+            calculateDistance(lastKeptPosition, mouseData->position);
         if (distance < threshold)
         {
             toRemove.push_back(mouseMoves[i].first);
@@ -238,8 +222,8 @@ std::vector<size_t> MouseMovementOptimizer::applyDistanceThreshold(
 }
 
 std::vector<size_t> MouseMovementOptimizer::applyDouglasPeucker(
-  const std::vector<std::pair<size_t, const Event*>>& mouseMoves, double epsilon
-)
+    const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+    double epsilon)
 {
     if (mouseMoves.size() < 3)
     {
@@ -258,8 +242,7 @@ std::vector<size_t> MouseMovementOptimizer::applyDouglasPeucker(
     keep[mouseMoves.size() - 1] = true;
 
     douglasPeuckerRecursive(
-      mouseMoves, 0, mouseMoves.size() - 1, epsilon, keep
-    );
+        mouseMoves, 0, mouseMoves.size() - 1, epsilon, keep);
 
     std::vector<size_t> result;
     for (size_t i = 0; i < keep.size(); ++i)
@@ -274,10 +257,9 @@ std::vector<size_t> MouseMovementOptimizer::applyDouglasPeucker(
 }
 
 std::vector<size_t> MouseMovementOptimizer::applyTimeThreshold(
-  const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-  int timeThresholdMs,
-  bool preserveFirstLast
-)
+    const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+    int timeThresholdMs,
+    bool preserveFirstLast)
 {
     std::vector<size_t> toRemove;
 
@@ -291,15 +273,14 @@ std::vector<size_t> MouseMovementOptimizer::applyTimeThreshold(
     // Start from index 1, skip first if preserving
     size_t startIdx = preserveFirstLast ? 1 : 0;
     size_t endIdx =
-      preserveFirstLast ? mouseMoves.size() - 1 : mouseMoves.size();
+        preserveFirstLast ? mouseMoves.size() - 1 : mouseMoves.size();
 
     for (size_t i = startIdx; i < endIdx; ++i)
     {
         auto currentTime = mouseMoves[i].second->getTimestamp();
         auto timeDiff = std::chrono::duration_cast<std::chrono::milliseconds>(
-                          currentTime - lastKeptTime
-        )
-                          .count();
+                            currentTime - lastKeptTime)
+                            .count();
 
         if (timeDiff < timeThresholdMs)
         {
@@ -314,18 +295,17 @@ std::vector<size_t> MouseMovementOptimizer::applyTimeThreshold(
     return toRemove;
 }
 
-double MouseMovementOptimizer::calculateDistance(
-  const Point& p1, const Point& p2
-)
+double MouseMovementOptimizer::calculateDistance(const Point& p1,
+                                                 const Point& p2)
 {
     double dx = p2.x - p1.x;
     double dy = p2.y - p1.y;
     return std::hypot(dx, dy);
 }
 
-double MouseMovementOptimizer::perpendicularDistance(
-  const Point& point, const Point& lineStart, const Point& lineEnd
-)
+double MouseMovementOptimizer::perpendicularDistance(const Point& point,
+                                                     const Point& lineStart,
+                                                     const Point& lineEnd)
 {
     double dx = lineEnd.x - lineStart.x;
     double dy = lineEnd.y - lineStart.y;
@@ -341,18 +321,15 @@ double MouseMovementOptimizer::perpendicularDistance(
 
     t = std::clamp(t, 0.0, 1.0); // Clamp t to [0, 1]
 
-    Point projection{
-      static_cast<int>(lineStart.x + t * dx),
-      static_cast<int>(lineStart.y + t * dy)
-    };
+    Point projection{static_cast<int>(lineStart.x + t * dx),
+                     static_cast<int>(lineStart.y + t * dy)};
 
     return calculateDistance(point, projection);
 }
 
 void MouseMovementOptimizer::removeEventsAtIndices(
-  std::vector<std::unique_ptr<Event>>& events,
-  const std::vector<size_t>& indicesToRemove
-)
+    std::vector<std::unique_ptr<Event>>& events,
+    const std::vector<size_t>& indicesToRemove)
 {
     // Remove in reverse order to maintain index validity
     for (auto it = indicesToRemove.rbegin(); it != indicesToRemove.rend(); ++it)
@@ -365,12 +342,11 @@ void MouseMovementOptimizer::removeEventsAtIndices(
 }
 
 void MouseMovementOptimizer::douglasPeuckerRecursive(
-  const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-  size_t startIdx,
-  size_t endIdx,
-  double epsilon,
-  std::vector<bool>& keep
-)
+    const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+    size_t startIdx,
+    size_t endIdx,
+    double epsilon,
+    std::vector<bool>& keep)
 {
     if (endIdx <= startIdx + 1)
     {
@@ -397,9 +373,9 @@ void MouseMovementOptimizer::douglasPeuckerRecursive(
             continue;
         }
 
-        double distance = perpendicularDistance(
-          mouseData->position, startMouseData->position, endMouseData->position
-        );
+        double distance = perpendicularDistance(mouseData->position,
+                                                startMouseData->position,
+                                                endMouseData->position);
 
         if (distance > maxDistance)
         {

@@ -46,11 +46,9 @@ class MouseRecorderApp
      * @param logLevelOverride Optional log level to override config
      * @return true if initialization successful
      */
-    bool initialize(
-      const std::string& configFile,
-      bool headless,
-      const std::string& logLevelOverride
-    );
+    bool initialize(const std::string& configFile,
+                    bool headless,
+                    const std::string& logLevelOverride);
 
     /**
      * @brief Shutdown the application gracefully
@@ -81,8 +79,7 @@ class MouseRecorderApp
      * @return unique_ptr to storage handler
      */
     std::unique_ptr<Core::IEventStorage> createStorage(
-      Core::StorageFormat format
-    );
+        Core::StorageFormat format);
 
     /**
      * @brief Get application version

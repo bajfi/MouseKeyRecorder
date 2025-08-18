@@ -1,7 +1,7 @@
 ---
 # Language and Standard
 Language: Cpp # Specifies that this is for C++ code
-Standard: Latest # Use the latest C++ standard features
+Standard: c++20 # Use C++20 standard (compatible with clang-format-14)
 
 # Base Style and Indentation
 BasedOnStyle: Microsoft # Use Microsoft's style as a base
@@ -41,7 +41,6 @@ SpacesInParentheses: false # No spaces inside parentheses
 # Includes and Namespaces
 SortIncludes: false # Sort include statements
 IncludeBlocks: Preserve # Preserve include blocks
-SortUsingDeclarations: Lexicographic # Sort using declarations lexicographically
 CompactNamespaces: false # Don't compact namespaces
 
 # Comments
@@ -53,19 +52,6 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true # Constructor initializer l
 BreakConstructorInitializers: BeforeColon # Break constructor initializers before colons
 KeepEmptyLinesAtTheStartOfBlocks: false # Remove empty lines at start of block
 SeparateDefinitionBlocks: Always # Separate definition blocks
-
-BreakBeforeTemplateCloser: true # Break before template closer
-BreakTemplateDeclarations: Yes # Break template declarations
-BreakAdjacentStringLiterals: true # Break adjacent string literals
-BreakStringLiterals: true # Break string literals
-
-AlignAfterOpenBracket: BlockIndent
-BracedInitializerIndentWidth: 2
-
-ContinuationIndentWidth: 2
-ConstructorInitializerIndentWidth: 2
-
-LambdaBodyIndentation: Signature # Lambda body indentation
 
 BreakBeforeBraces: Custom # Break before braces
 BraceWrapping:
@@ -81,11 +67,4 @@ BraceWrapping:
   SplitEmptyNamespace: false # Split empty namespace
   IndentBraces: false
 
-EmptyLineAfterAccessModifier: Never
-EmptyLineBeforeAccessModifier: Always
 MaxEmptyLinesToKeep: 1
-RemoveEmptyLinesInUnwrappedLines: true
-KeepEmptyLines:
-  AtEndOfFile: true
-  AtStartOfBlock: false
-  AtStartOfFile: false

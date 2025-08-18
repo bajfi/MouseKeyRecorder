@@ -14,14 +14,12 @@ JsonEventStorage::JsonEventStorage()
 }
 
 bool JsonEventStorage::saveEvents(
-  const std::vector<std::unique_ptr<Core::Event>>& events,
-  const std::string& filename,
-  const Core::StorageMetadata& metadata
-)
+    const std::vector<std::unique_ptr<Core::Event>>& events,
+    const std::string& filename,
+    const Core::StorageMetadata& metadata)
 {
     spdlog::info(
-      "JsonEventStorage: Saving {} events to {}", events.size(), filename
-    );
+        "JsonEventStorage: Saving {} events to {}", events.size(), filename);
 
     try
     {
@@ -58,9 +56,8 @@ bool JsonEventStorage::saveEvents(
             return false;
         }
 
-        spdlog::info(
-          "JsonEventStorage: Successfully saved {} events", events.size()
-        );
+        spdlog::info("JsonEventStorage: Successfully saved {} events",
+                     events.size());
         return true;
     }
     catch (const std::exception& e)
@@ -71,10 +68,9 @@ bool JsonEventStorage::saveEvents(
 }
 
 bool JsonEventStorage::loadEvents(
-  const std::string& filename,
-  std::vector<std::unique_ptr<Core::Event>>& events,
-  Core::StorageMetadata& metadata
-)
+    const std::string& filename,
+    std::vector<std::unique_ptr<Core::Event>>& events,
+    Core::StorageMetadata& metadata)
 {
     spdlog::info("JsonEventStorage: Loading events from {}", filename);
 
@@ -111,9 +107,8 @@ bool JsonEventStorage::loadEvents(
             }
         }
 
-        spdlog::info(
-          "JsonEventStorage: Successfully loaded {} events", events.size()
-        );
+        spdlog::info("JsonEventStorage: Successfully loaded {} events",
+                     events.size());
         return true;
     }
     catch (const std::exception& e)
@@ -161,9 +156,8 @@ bool JsonEventStorage::validateFile(const std::string& filename) const
     }
 }
 
-bool JsonEventStorage::getFileMetadata(
-  const std::string& filename, Core::StorageMetadata& metadata
-) const
+bool JsonEventStorage::getFileMetadata(const std::string& filename,
+                                       Core::StorageMetadata& metadata) const
 {
     try
     {
@@ -254,8 +248,7 @@ json JsonEventStorage::eventToJson(const Core::Event& event) const
 }
 
 std::unique_ptr<Core::Event> JsonEventStorage::jsonToEvent(
-  const json& eventJson
-) const
+    const json& eventJson) const
 {
     try
     {
@@ -273,50 +266,43 @@ std::unique_ptr<Core::Event> JsonEventStorage::jsonToEvent(
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseMove, mouseData, timePoint
-            );
+                Core::EventType::MouseMove, mouseData, timePoint);
         }
         if (typeStr == "mouse_click")
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseClick, mouseData, timePoint
-            );
+                Core::EventType::MouseClick, mouseData, timePoint);
         }
         if (typeStr == "mouse_double_click")
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseDoubleClick, mouseData, timePoint
-            );
+                Core::EventType::MouseDoubleClick, mouseData, timePoint);
         }
         if (typeStr == "mouse_wheel")
         {
             auto mouseData = jsonToMouseEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseWheel, mouseData, timePoint
-            );
+                Core::EventType::MouseWheel, mouseData, timePoint);
         }
         if (typeStr == "key_press")
         {
             auto keyData = jsonToKeyboardEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::KeyPress, keyData, timePoint
-            );
+                Core::EventType::KeyPress, keyData, timePoint);
         }
         if (typeStr == "key_release")
         {
             auto keyData = jsonToKeyboardEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::KeyRelease, keyData, timePoint
-            );
+                Core::EventType::KeyRelease, keyData, timePoint);
         }
         if (typeStr == "key_combination")
         {
             auto keyData = jsonToKeyboardEventData(eventJson["data"]);
             return std::make_unique<Core::Event>(
-              Core::EventType::KeyCombination, keyData, timePoint
-            );
+                Core::EventType::KeyCombination, keyData, timePoint);
         }
 
         return nullptr;
@@ -328,8 +314,7 @@ std::unique_ptr<Core::Event> JsonEventStorage::jsonToEvent(
 }
 
 json JsonEventStorage::metadataToJson(
-  const Core::StorageMetadata& metadata
-) const
+    const Core::StorageMetadata& metadata) const
 {
     json metadataJson;
 
@@ -347,8 +332,7 @@ json JsonEventStorage::metadataToJson(
 }
 
 Core::StorageMetadata JsonEventStorage::jsonToMetadata(
-  const json& metadataJson
-) const
+    const json& metadataJson) const
 {
     Core::StorageMetadata metadata;
 
@@ -356,7 +340,7 @@ Core::StorageMetadata JsonEventStorage::jsonToMetadata(
         metadata.version = metadataJson["version"].get<std::string>();
     if (metadataJson.contains("application_name"))
         metadata.applicationName =
-          metadataJson["application_name"].get<std::string>();
+            metadataJson["application_name"].get<std::string>();
     if (metadataJson.contains("created_by"))
         metadata.createdBy = metadataJson["created_by"].get<std::string>();
     if (metadataJson.contains("description"))
@@ -371,14 +355,13 @@ Core::StorageMetadata JsonEventStorage::jsonToMetadata(
         metadata.platform = metadataJson["platform"].get<std::string>();
     if (metadataJson.contains("screen_resolution"))
         metadata.screenResolution =
-          metadataJson["screen_resolution"].get<std::string>();
+            metadataJson["screen_resolution"].get<std::string>();
 
     return metadata;
 }
 
 json JsonEventStorage::mouseEventDataToJson(
-  const Core::MouseEventData& data
-) const
+    const Core::MouseEventData& data) const
 {
     json dataJson;
 
@@ -411,8 +394,7 @@ json JsonEventStorage::mouseEventDataToJson(
 }
 
 Core::MouseEventData JsonEventStorage::jsonToMouseEventData(
-  const json& dataJson
-) const
+    const json& dataJson) const
 {
     Core::MouseEventData data;
 
@@ -443,15 +425,13 @@ Core::MouseEventData JsonEventStorage::jsonToMouseEventData(
         data.wheelDelta = dataJson["wheel_delta"];
     if (dataJson.contains("modifiers"))
         data.modifiers = static_cast<Core::KeyModifier>(
-          static_cast<uint32_t>(dataJson["modifiers"])
-        );
+            static_cast<uint32_t>(dataJson["modifiers"]));
 
     return data;
 }
 
 json JsonEventStorage::keyboardEventDataToJson(
-  const Core::KeyboardEventData& data
-) const
+    const Core::KeyboardEventData& data) const
 {
     json dataJson;
 
@@ -464,8 +444,7 @@ json JsonEventStorage::keyboardEventDataToJson(
 }
 
 Core::KeyboardEventData JsonEventStorage::jsonToKeyboardEventData(
-  const json& dataJson
-) const
+    const json& dataJson) const
 {
     Core::KeyboardEventData data;
 
@@ -475,8 +454,7 @@ Core::KeyboardEventData JsonEventStorage::jsonToKeyboardEventData(
         data.keyName = dataJson["key_name"].get<std::string>();
     if (dataJson.contains("modifiers"))
         data.modifiers = static_cast<Core::KeyModifier>(
-          static_cast<uint32_t>(dataJson["modifiers"])
-        );
+            static_cast<uint32_t>(dataJson["modifiers"]));
     if (dataJson.contains("is_repeated"))
         data.isRepeated = dataJson["is_repeated"];
 

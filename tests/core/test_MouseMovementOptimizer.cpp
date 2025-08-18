@@ -22,10 +22,9 @@ class MouseMovementOptimizerTest : public ::testing::Test
 
     // Helper function to create a mouse move event
     std::unique_ptr<Event> createMouseMoveEvent(
-      int x,
-      int y,
-      std::chrono::milliseconds offsetMs = std::chrono::milliseconds(0)
-    )
+        int x,
+        int y,
+        std::chrono::milliseconds offsetMs = std::chrono::milliseconds(0))
     {
         auto baseTime = std::chrono::steady_clock::now();
         auto timestamp = baseTime + offsetMs;
@@ -34,16 +33,14 @@ class MouseMovementOptimizerTest : public ::testing::Test
         mouseData.position = Point(x, y);
 
         return std::make_unique<Event>(
-          EventType::MouseMove, mouseData, timestamp
-        );
+            EventType::MouseMove, mouseData, timestamp);
     }
 
     // Helper function to create a mouse click event
     std::unique_ptr<Event> createMouseClickEvent(
-      int x,
-      int y,
-      std::chrono::milliseconds offsetMs = std::chrono::milliseconds(0)
-    )
+        int x,
+        int y,
+        std::chrono::milliseconds offsetMs = std::chrono::milliseconds(0))
     {
         auto baseTime = std::chrono::steady_clock::now();
         auto timestamp = baseTime + offsetMs;
@@ -53,19 +50,17 @@ class MouseMovementOptimizerTest : public ::testing::Test
         mouseData.button = MouseButton::Left;
 
         return std::make_unique<Event>(
-          EventType::MouseClick, mouseData, timestamp
-        );
+            EventType::MouseClick, mouseData, timestamp);
     }
 
     // Helper to create a sequence of mouse moves along a line
     std::vector<std::unique_ptr<Event>> createLinearMouseSequence(
-      int startX,
-      int startY,
-      int endX,
-      int endY,
-      int steps,
-      int timeIntervalMs = 16
-    )
+        int startX,
+        int startY,
+        int endX,
+        int endY,
+        int steps,
+        int timeIntervalMs = 16)
     {
         std::vector<std::unique_ptr<Event>> events;
 
@@ -78,8 +73,7 @@ class MouseMovementOptimizerTest : public ::testing::Test
             int y = static_cast<int>(startY + i * deltaY);
 
             events.push_back(createMouseMoveEvent(
-              x, y, std::chrono::milliseconds(i * timeIntervalMs)
-            ));
+                x, y, std::chrono::milliseconds(i * timeIntervalMs)));
         }
 
         return events;
@@ -119,24 +113,24 @@ TEST_F(MouseMovementOptimizerTest, PerpendicularDistance)
     Point lineEnd(10, 0);
     Point point(5, 3);
 
-    double distance =
-      MouseMovementOptimizer::perpendicularDistance(point, lineStart, lineEnd);
+    double distance = MouseMovementOptimizer::perpendicularDistance(
+        point, lineStart, lineEnd);
     EXPECT_DOUBLE_EQ(distance, 3.0);
 }
 
 TEST_F(MouseMovementOptimizerTest, DistanceThresholdOptimization)
 {
     auto events =
-      createLinearMouseSequence(0, 0, 100, 0, 21); // 21 points, 5px apart
+        createLinearMouseSequence(0, 0, 100, 0, 21); // 21 points, 5px apart
 
     MouseMovementOptimizer::OptimizationConfig config;
     config.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+        MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
     config.distanceThreshold = 10; // Remove points closer than 10px
 
     size_t originalSize = events.size();
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_GT(removedCount, 0);
     EXPECT_LT(events.size(), originalSize);
@@ -156,8 +150,7 @@ TEST_F(MouseMovementOptimizerTest, TimeBasedOptimization)
     for (int i = 0; i < 10; ++i)
     {
         events.push_back(
-          createMouseMoveEvent(i * 10, 0, std::chrono::milliseconds(i * 8))
-        );
+            createMouseMoveEvent(i * 10, 0, std::chrono::milliseconds(i * 8)));
     }
 
     MouseMovementOptimizer::OptimizationConfig config;
@@ -166,7 +159,7 @@ TEST_F(MouseMovementOptimizerTest, TimeBasedOptimization)
 
     size_t originalSize = events.size();
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_GT(removedCount, 0);
     EXPECT_LT(events.size(), originalSize);
@@ -185,12 +178,12 @@ TEST_F(MouseMovementOptimizerTest, DouglasPeuckerOptimization)
 
     MouseMovementOptimizer::OptimizationConfig config;
     config.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::DouglasPeucker;
+        MouseMovementOptimizer::OptimizationStrategy::DouglasPeucker;
     config.douglasPeuckerEpsilon = 0.5; // Remove deviations less than 0.5px
 
     size_t originalSize = events.size();
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_GT(removedCount, 0);
     EXPECT_LT(events.size(), originalSize);
@@ -209,17 +202,15 @@ TEST_F(MouseMovementOptimizerTest, PreserveClickAdjacent)
     // Create sequence: move -> move -> click -> move -> move
     events.push_back(createMouseMoveEvent(0, 0));
     events.push_back(
-      createMouseMoveEvent(1, 0)
-    ); // Should be preserved (before click)
+        createMouseMoveEvent(1, 0)); // Should be preserved (before click)
     events.push_back(createMouseClickEvent(2, 0));
     events.push_back(
-      createMouseMoveEvent(3, 0)
-    ); // Should be preserved (after click)
+        createMouseMoveEvent(3, 0)); // Should be preserved (after click)
     events.push_back(createMouseMoveEvent(4, 0));
 
     MouseMovementOptimizer::OptimizationConfig config;
     config.strategy =
-      MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
+        MouseMovementOptimizer::OptimizationStrategy::DistanceThreshold;
     config.distanceThreshold = 2;
     config.preserveClicks = true;
 
@@ -249,11 +240,11 @@ TEST_F(MouseMovementOptimizerTest, CombinedOptimization)
     // Rapid movements with small distances and short time intervals
     for (int i = 0; i < 20; ++i)
     {
-        events.push_back(createMouseMoveEvent(
-          i,
-          i % 3,
-          std::chrono::milliseconds(i * 8)
-        )); // 8ms intervals, small movements
+        events.push_back(
+            createMouseMoveEvent(i,
+                                 i % 3,
+                                 std::chrono::milliseconds(
+                                     i * 8))); // 8ms intervals, small movements
     }
 
     MouseMovementOptimizer::OptimizationConfig config;
@@ -264,7 +255,7 @@ TEST_F(MouseMovementOptimizerTest, CombinedOptimization)
 
     size_t originalSize = events.size();
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_GT(removedCount, 0);
     EXPECT_LT(events.size(), originalSize);
@@ -282,7 +273,7 @@ TEST_F(MouseMovementOptimizerTest, DisabledOptimization)
 
     size_t originalSize = events.size();
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_EQ(removedCount, 0);
     EXPECT_EQ(events.size(), originalSize);
@@ -295,7 +286,7 @@ TEST_F(MouseMovementOptimizerTest, EmptyEventList)
     MouseMovementOptimizer::OptimizationConfig config;
 
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_EQ(removedCount, 0);
     EXPECT_EQ(events.size(), 0);
@@ -317,7 +308,7 @@ TEST_F(MouseMovementOptimizerTest, OnlyNonMouseEvents)
 
     size_t originalSize = events.size();
     size_t removedCount =
-      MouseMovementOptimizer::optimizeEvents(events, config);
+        MouseMovementOptimizer::optimizeEvents(events, config);
 
     EXPECT_EQ(removedCount, 0);
     EXPECT_EQ(events.size(), originalSize);

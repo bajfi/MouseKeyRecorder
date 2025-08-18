@@ -84,9 +84,9 @@ void TestRecordingWidget::testInitialState()
 
     // Find the buttons by their object names or via findChild
     QPushButton* startButton =
-      m_widget->findChild<QPushButton*>("startRecordingButton");
+        m_widget->findChild<QPushButton*>("startRecordingButton");
     QPushButton* stopButton =
-      m_widget->findChild<QPushButton*>("stopRecordingButton");
+        m_widget->findChild<QPushButton*>("stopRecordingButton");
 
     QVERIFY(startButton != nullptr);
     QVERIFY(stopButton != nullptr);
@@ -99,9 +99,9 @@ void TestRecordingWidget::testInitialState()
 void TestRecordingWidget::testStartRecording()
 {
     QPushButton* startButton =
-      m_widget->findChild<QPushButton*>("startRecordingButton");
+        m_widget->findChild<QPushButton*>("startRecordingButton");
     QPushButton* stopButton =
-      m_widget->findChild<QPushButton*>("stopRecordingButton");
+        m_widget->findChild<QPushButton*>("stopRecordingButton");
 
     QVERIFY(startButton != nullptr);
     QVERIFY(stopButton != nullptr);
@@ -123,9 +123,9 @@ void TestRecordingWidget::testStartRecording()
 void TestRecordingWidget::testStopRecording()
 {
     QPushButton* startButton =
-      m_widget->findChild<QPushButton*>("startRecordingButton");
+        m_widget->findChild<QPushButton*>("startRecordingButton");
     QPushButton* stopButton =
-      m_widget->findChild<QPushButton*>("stopRecordingButton");
+        m_widget->findChild<QPushButton*>("stopRecordingButton");
 
     QVERIFY(startButton != nullptr);
     QVERIFY(stopButton != nullptr);
@@ -154,9 +154,9 @@ void TestRecordingWidget::testSignalEmission()
     QSignalSpy stopSpy(m_widget, &RecordingWidget::recordingStopped);
 
     QPushButton* startButton =
-      m_widget->findChild<QPushButton*>("startRecordingButton");
+        m_widget->findChild<QPushButton*>("startRecordingButton");
     QPushButton* stopButton =
-      m_widget->findChild<QPushButton*>("stopRecordingButton");
+        m_widget->findChild<QPushButton*>("stopRecordingButton");
 
     // Initially no signals should have been emitted
     QCOMPARE(startSpy.count(), 0);
@@ -176,9 +176,9 @@ void TestRecordingWidget::testSignalEmission()
 void TestRecordingWidget::testButtonStates()
 {
     QPushButton* startButton =
-      m_widget->findChild<QPushButton*>("startRecordingButton");
+        m_widget->findChild<QPushButton*>("startRecordingButton");
     QPushButton* stopButton =
-      m_widget->findChild<QPushButton*>("stopRecordingButton");
+        m_widget->findChild<QPushButton*>("stopRecordingButton");
 
     // Test multiple start/stop cycles
     for (int i = 0; i < 3; ++i)
@@ -216,13 +216,13 @@ void TestRecordingWidget::testEventDisplay()
 
     // Create test events
     auto mouseEvent =
-      EventFactory::createMouseClickEvent(Point(100, 200), MouseButton::Left);
+        EventFactory::createMouseClickEvent(Point(100, 200), MouseButton::Left);
     auto keyEvent =
-      EventFactory::createKeyPressEvent(65, "A", KeyModifier::None);
+        EventFactory::createKeyPressEvent(65, "A", KeyModifier::None);
 
     // Get the events table widget
     QTableWidget* eventsTable =
-      m_widget->findChild<QTableWidget*>("eventsTableWidget");
+        m_widget->findChild<QTableWidget*>("eventsTableWidget");
     QVERIFY(eventsTable != nullptr);
 
     // Initially, table should be empty
@@ -261,7 +261,7 @@ void TestRecordingWidget::testEventExport()
 
     // Find and click the export button
     QPushButton* exportButton =
-      m_widget->findChild<QPushButton*>("exportEventsButton");
+        m_widget->findChild<QPushButton*>("exportEventsButton");
     QVERIFY(exportButton != nullptr);
 
     // Click export button should emit the signal

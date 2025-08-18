@@ -24,8 +24,7 @@ TEST(SimpleConfigurationTest, BasicSetAndGet)
     // Verify the values
     EXPECT_FALSE(config->getBool(ConfigKeys::CAPTURE_MOUSE_EVENTS));
     EXPECT_EQ(10, config->getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD));
-    EXPECT_DOUBLE_EQ(
-      2.5, config->getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED)
-    );
+    EXPECT_DOUBLE_EQ(2.5,
+                     config->getDouble(ConfigKeys::DEFAULT_PLAYBACK_SPEED));
     EXPECT_STREQ("debug", config->getString(ConfigKeys::LOG_LEVEL).c_str());
 }

@@ -21,7 +21,7 @@ TEST_F(EventTest, CreateMouseMoveEvent)
 {
     Point position{100, 200};
     auto event =
-      EventFactory::createMouseMoveEvent(position, KeyModifier::Ctrl);
+        EventFactory::createMouseMoveEvent(position, KeyModifier::Ctrl);
 
     ASSERT_NE(event, nullptr);
     EXPECT_EQ(event->getType(), EventType::MouseMove);
@@ -39,8 +39,7 @@ TEST_F(EventTest, CreateMouseClickEvent)
 {
     Point position{150, 250};
     auto event = EventFactory::createMouseClickEvent(
-      position, MouseButton::Right, KeyModifier::Shift
-    );
+        position, MouseButton::Right, KeyModifier::Shift);
 
     ASSERT_NE(event, nullptr);
     EXPECT_EQ(event->getType(), EventType::MouseClick);
@@ -89,15 +88,14 @@ TEST_F(EventTest, KeyModifierCombination)
 
     // Check that both modifiers are present
     EXPECT_NE(static_cast<uint32_t>(keyData->modifiers & KeyModifier::Ctrl), 0);
-    EXPECT_NE(
-      static_cast<uint32_t>(keyData->modifiers & KeyModifier::Shift), 0
-    );
+    EXPECT_NE(static_cast<uint32_t>(keyData->modifiers & KeyModifier::Shift),
+              0);
 }
 
 TEST_F(EventTest, EventToString)
 {
     auto mouseEvent =
-      EventFactory::createMouseClickEvent({100, 200}, MouseButton::Left);
+        EventFactory::createMouseClickEvent({100, 200}, MouseButton::Left);
     auto keyEvent = EventFactory::createKeyPressEvent(65, "A");
 
     std::string mouseStr = mouseEvent->toString();

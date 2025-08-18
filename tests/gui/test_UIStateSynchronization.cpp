@@ -24,7 +24,7 @@ class UIStateSynchronizationTest : public ::testing::Test
 
         // Get reference to the recording widget
         m_recordingWidget =
-          m_window->findChild<::MouseRecorder::GUI::RecordingWidget*>();
+            m_window->findChild<::MouseRecorder::GUI::RecordingWidget*>();
         ASSERT_NE(m_recordingWidget, nullptr);
     }
 
@@ -42,9 +42,9 @@ class UIStateSynchronizationTest : public ::testing::Test
 TEST_F(UIStateSynchronizationTest, ButtonStatesInitiallCorrect)
 {
     auto startButton =
-      m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
     auto stopButton =
-      m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
 
     ASSERT_NE(startButton, nullptr);
     ASSERT_NE(stopButton, nullptr);
@@ -57,14 +57,13 @@ TEST_F(UIStateSynchronizationTest, ButtonStatesInitiallCorrect)
 TEST_F(UIStateSynchronizationTest, ButtonStatesUpdateOnRecordingStart)
 {
     auto startButton =
-      m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
     auto stopButton =
-      m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
 
     // Start recording via MainWindow (simulating shortcut)
     ASSERT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
     m_recordingWidget->startRecordingUI();
 
     QApplication::processEvents();
@@ -77,14 +76,13 @@ TEST_F(UIStateSynchronizationTest, ButtonStatesUpdateOnRecordingStart)
 TEST_F(UIStateSynchronizationTest, ButtonStatesUpdateOnRecordingStop)
 {
     auto startButton =
-      m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
     auto stopButton =
-      m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
 
     // First start recording
     ASSERT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
     m_recordingWidget->startRecordingUI();
     QApplication::processEvents();
 
@@ -104,9 +102,9 @@ TEST_F(UIStateSynchronizationTest, ButtonStatesUpdateOnRecordingStop)
 TEST_F(UIStateSynchronizationTest, SetRecordingStateWorks)
 {
     auto startButton =
-      m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("startRecordingButton");
     auto stopButton =
-      m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
+        m_recordingWidget->findChild<QPushButton*>("stopRecordingButton");
 
     // Test setting recording state to true
     m_recordingWidget->setRecordingState(true);

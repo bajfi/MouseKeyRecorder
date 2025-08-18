@@ -12,13 +12,12 @@
 namespace MouseRecorder::GUI
 {
 
-RecordingWidget::RecordingWidget(
-  Application::MouseRecorderApp& app, QWidget* parent
-)
-  : QWidget(parent),
-    ui(new Ui::RecordingWidget),
-    m_app(app),
-    m_recordingTimer(new QTimer(this))
+RecordingWidget::RecordingWidget(Application::MouseRecorderApp& app,
+                                 QWidget* parent)
+    : QWidget(parent),
+      ui(new Ui::RecordingWidget),
+      m_app(app),
+      m_recordingTimer(new QTimer(this))
 {
     ui->setupUi(this);
     setupUI();
@@ -33,70 +32,53 @@ RecordingWidget::~RecordingWidget()
 void RecordingWidget::setupUI()
 {
     // Connect signals
-    connect(
-      ui->startRecordingButton,
-      &QPushButton::clicked,
-      this,
-      &RecordingWidget::onStartRecording
-    );
-    connect(
-      ui->stopRecordingButton,
-      &QPushButton::clicked,
-      this,
-      &RecordingWidget::onStopRecording
-    );
-    connect(
-      ui->clearEventsButton,
-      &QPushButton::clicked,
-      this,
-      &RecordingWidget::onClearEvents
-    );
-    connect(
-      ui->exportEventsButton,
-      &QPushButton::clicked,
-      this,
-      &RecordingWidget::onExportEvents
-    );
+    connect(ui->startRecordingButton,
+            &QPushButton::clicked,
+            this,
+            &RecordingWidget::onStartRecording);
+    connect(ui->stopRecordingButton,
+            &QPushButton::clicked,
+            this,
+            &RecordingWidget::onStopRecording);
+    connect(ui->clearEventsButton,
+            &QPushButton::clicked,
+            this,
+            &RecordingWidget::onClearEvents);
+    connect(ui->exportEventsButton,
+            &QPushButton::clicked,
+            this,
+            &RecordingWidget::onExportEvents);
 
     // Connect configuration controls
-    connect(
-      ui->optimizeMovementCheckBox,
-      &QCheckBox::toggled,
-      this,
-      &RecordingWidget::onOptimizeMovementChanged
-    );
-    connect(
-      ui->movementThresholdSpinBox,
-      QOverload<int>::of(&QSpinBox::valueChanged),
-      this,
-      &RecordingWidget::onMovementThresholdChanged
-    );
-    connect(
-      ui->captureMouseCheckBox,
-      &QCheckBox::toggled,
-      [this](bool enabled)
-      {
-          auto& config = m_app.getConfiguration();
-          config.setBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, enabled);
-      }
-    );
-    connect(
-      ui->captureKeyboardCheckBox,
-      &QCheckBox::toggled,
-      [this](bool enabled)
-      {
-          auto& config = m_app.getConfiguration();
-          config.setBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, enabled);
-      }
-    );
+    connect(ui->optimizeMovementCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &RecordingWidget::onOptimizeMovementChanged);
+    connect(ui->movementThresholdSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &RecordingWidget::onMovementThresholdChanged);
+    connect(ui->captureMouseCheckBox,
+            &QCheckBox::toggled,
+            [this](bool enabled)
+            {
+                auto& config = m_app.getConfiguration();
+                config.setBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, enabled);
+            });
+    connect(ui->captureKeyboardCheckBox,
+            &QCheckBox::toggled,
+            [this](bool enabled)
+            {
+                auto& config = m_app.getConfiguration();
+                config.setBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
+                               enabled);
+            });
 
     // Setup timer
-    connect(
-      m_recordingTimer,
-      &QTimer::timeout,
-      this,
-      &RecordingWidget::updateRecordingTime
-    );
+    connect(m_recordingTimer,
+            &QTimer::timeout,
+            this,
+            &RecordingWidget::updateRecordingTime);
     m_recordingTimer->setInterval(1000); // Update every second
 
     // Initialize table headers
@@ -116,9 +98,9 @@ void RecordingWidget::updateStatistics()
     // The overloaded version should be called instead
 }
 
-void RecordingWidget::updateStatistics(
-  size_t totalEvents, size_t mouseEvents, size_t keyboardEvents
-)
+void RecordingWidget::updateStatistics(size_t totalEvents,
+                                       size_t mouseEvents,
+                                       size_t keyboardEvents)
 {
     ui->eventsCountValue->setText(QString::number(totalEvents));
     ui->mouseEventsValue->setText(QString::number(mouseEvents));
@@ -208,9 +190,9 @@ void RecordingWidget::updateRecordingTime()
     int seconds = m_recordingSeconds % 60;
 
     QString timeStr = QString("%1:%2:%3")
-                        .arg(hours, 2, 10, QChar('0'))
-                        .arg(minutes, 2, 10, QChar('0'))
-                        .arg(seconds, 2, 10, QChar('0'));
+                          .arg(hours, 2, 10, QChar('0'))
+                          .arg(minutes, 2, 10, QChar('0'))
+                          .arg(seconds, 2, 10, QChar('0'));
 
     ui->recordingTimeLabel->setText(timeStr);
     ui->recordingDurationValue->setText(timeStr);
@@ -285,18 +267,18 @@ void RecordingWidget::addEvent(const Core::Event* event)
             if (event->getType() == Core::EventType::MouseWheel)
             {
                 details = QString("%1 - X: %2, Y: %3, Delta: %4")
-                            .arg(typeStr)
-                            .arg(mouseData->position.x)
-                            .arg(mouseData->position.y)
-                            .arg(mouseData->wheelDelta);
+                              .arg(typeStr)
+                              .arg(mouseData->position.x)
+                              .arg(mouseData->position.y)
+                              .arg(mouseData->wheelDelta);
             }
             else
             {
                 details = QString("%1 - Button: %2, X: %3, Y: %4")
-                            .arg(typeStr)
-                            .arg(buttonStr)
-                            .arg(mouseData->position.x)
-                            .arg(mouseData->position.y);
+                              .arg(typeStr)
+                              .arg(buttonStr)
+                              .arg(mouseData->position.x)
+                              .arg(mouseData->position.y);
             }
         }
         else
@@ -328,9 +310,9 @@ void RecordingWidget::addEvent(const Core::Event* event)
             }
 
             details = QString("%1 - Key: %2 (%3)")
-                        .arg(typeStr)
-                        .arg(QString::fromStdString(keyData->keyName))
-                        .arg(keyData->keyCode);
+                          .arg(typeStr)
+                          .arg(QString::fromStdString(keyData->keyName))
+                          .arg(keyData->keyCode);
         }
         else
         {
@@ -359,8 +341,7 @@ void RecordingWidget::clearEvents()
 }
 
 void RecordingWidget::setEvents(
-  const std::vector<std::unique_ptr<Core::Event>>& events
-)
+    const std::vector<std::unique_ptr<Core::Event>>& events)
 {
     clearEvents();
 
@@ -379,11 +360,11 @@ void RecordingWidget::loadConfigurationSettings()
 
     // Load optimization settings
     bool optimizeEnabled =
-      config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
+        config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true);
     ui->optimizeMovementCheckBox->setChecked(optimizeEnabled);
 
     int threshold =
-      config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
+        config.getInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5);
     ui->movementThresholdSpinBox->setValue(threshold);
 
     // Enable/disable threshold controls based on optimization setting
@@ -392,11 +373,11 @@ void RecordingWidget::loadConfigurationSettings()
 
     // Load capture settings
     bool captureMouseEnabled =
-      config.getBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, true);
+        config.getBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS, true);
     ui->captureMouseCheckBox->setChecked(captureMouseEnabled);
 
     bool captureKeyboardEnabled =
-      config.getBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true);
+        config.getBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true);
     ui->captureKeyboardCheckBox->setChecked(captureKeyboardEnabled);
 }
 
@@ -405,24 +386,16 @@ void RecordingWidget::saveConfigurationSettings()
     auto& config = m_app.getConfiguration();
 
     // Save optimization settings
-    config.setBool(
-      Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
-      ui->optimizeMovementCheckBox->isChecked()
-    );
-    config.setInt(
-      Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
-      ui->movementThresholdSpinBox->value()
-    );
+    config.setBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
+                   ui->optimizeMovementCheckBox->isChecked());
+    config.setInt(Core::ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
+                  ui->movementThresholdSpinBox->value());
 
     // Save capture settings
-    config.setBool(
-      Core::ConfigKeys::CAPTURE_MOUSE_EVENTS,
-      ui->captureMouseCheckBox->isChecked()
-    );
-    config.setBool(
-      Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
-      ui->captureKeyboardCheckBox->isChecked()
-    );
+    config.setBool(Core::ConfigKeys::CAPTURE_MOUSE_EVENTS,
+                   ui->captureMouseCheckBox->isChecked());
+    config.setBool(Core::ConfigKeys::CAPTURE_KEYBOARD_EVENTS,
+                   ui->captureKeyboardCheckBox->isChecked());
 }
 
 void RecordingWidget::onOptimizeMovementChanged(bool enabled)
@@ -442,4 +415,3 @@ void RecordingWidget::onMovementThresholdChanged(int value)
 }
 
 } // namespace MouseRecorder::GUI
-

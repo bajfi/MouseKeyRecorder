@@ -18,10 +18,9 @@
 namespace MouseRecorder::GUI
 {
 
-PlaybackWidget::PlaybackWidget(
-  Application::MouseRecorderApp& app, QWidget* parent
-)
-  : QWidget(parent), ui(new Ui::PlaybackWidget), m_app(app)
+PlaybackWidget::PlaybackWidget(Application::MouseRecorderApp& app,
+                               QWidget* parent)
+    : QWidget(parent), ui(new Ui::PlaybackWidget), m_app(app)
 {
     ui->setupUi(this);
     setupUI();
@@ -50,54 +49,38 @@ PlaybackWidget::~PlaybackWidget()
 void PlaybackWidget::setupUI()
 {
     // Connect signals
+    connect(ui->browseFileButton,
+            &QPushButton::clicked,
+            this,
+            &PlaybackWidget::onBrowseFile);
+    connect(ui->reloadFileButton,
+            &QPushButton::clicked,
+            this,
+            &PlaybackWidget::onReloadFile);
     connect(
-      ui->browseFileButton,
-      &QPushButton::clicked,
-      this,
-      &PlaybackWidget::onBrowseFile
-    );
+        ui->playButton, &QPushButton::clicked, this, &PlaybackWidget::onPlay);
     connect(
-      ui->reloadFileButton,
-      &QPushButton::clicked,
-      this,
-      &PlaybackWidget::onReloadFile
-    );
-    connect(
-      ui->playButton, &QPushButton::clicked, this, &PlaybackWidget::onPlay
-    );
-    connect(
-      ui->stopButton, &QPushButton::clicked, this, &PlaybackWidget::onStop
-    );
-    connect(
-      ui->speedSlider,
-      &QSlider::valueChanged,
-      this,
-      &PlaybackWidget::onSpeedChanged
-    );
-    connect(
-      ui->resetSpeedButton,
-      &QPushButton::clicked,
-      this,
-      &PlaybackWidget::onResetSpeed
-    );
-    connect(
-      ui->progressSlider,
-      &QSlider::valueChanged,
-      this,
-      &PlaybackWidget::onProgressChanged
-    );
-    connect(
-      ui->loopCheckBox,
-      &QCheckBox::toggled,
-      this,
-      &PlaybackWidget::onLoopToggled
-    );
-    connect(
-      ui->loopCountSpinBox,
-      QOverload<int>::of(&QSpinBox::valueChanged),
-      this,
-      &PlaybackWidget::onLoopCountChanged
-    );
+        ui->stopButton, &QPushButton::clicked, this, &PlaybackWidget::onStop);
+    connect(ui->speedSlider,
+            &QSlider::valueChanged,
+            this,
+            &PlaybackWidget::onSpeedChanged);
+    connect(ui->resetSpeedButton,
+            &QPushButton::clicked,
+            this,
+            &PlaybackWidget::onResetSpeed);
+    connect(ui->progressSlider,
+            &QSlider::valueChanged,
+            this,
+            &PlaybackWidget::onProgressChanged);
+    connect(ui->loopCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &PlaybackWidget::onLoopToggled);
+    connect(ui->loopCountSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this,
+            &PlaybackWidget::onLoopCountChanged);
 
     // Initialize table headers
     ui->eventsPreviewTableWidget->setColumnCount(4);
@@ -106,12 +89,10 @@ void PlaybackWidget::setupUI()
 
     // Setup update timer for playback progress
     m_updateTimer = new QTimer(this);
-    connect(
-      m_updateTimer,
-      &QTimer::timeout,
-      this,
-      &PlaybackWidget::updatePlaybackProgress
-    );
+    connect(m_updateTimer,
+            &QTimer::timeout,
+            this,
+            &PlaybackWidget::updatePlaybackProgress);
 
     updateUI();
     loadConfigurationSettings();
@@ -124,7 +105,7 @@ void PlaybackWidget::loadConfigurationSettings()
 
     // Load default playback speed from configuration
     double defaultSpeed =
-      config.getDouble(Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
+        config.getDouble(Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
 
     // Convert speed to slider value (slider range: 1-50, representing
     // 0.1x-5.0x)
@@ -149,12 +130,10 @@ void PlaybackWidget::loadConfigurationSettings()
     ui->loopCheckBox->setChecked(loopEnabled);
     ui->loopCheckBox->blockSignals(false);
 
-    spdlog::debug(
-      "PlaybackWidget: Loaded default speed from config: {:.1f}x", defaultSpeed
-    );
-    spdlog::debug(
-      "PlaybackWidget: Loaded loop setting from config: {}", loopEnabled
-    );
+    spdlog::debug("PlaybackWidget: Loaded default speed from config: {:.1f}x",
+                  defaultSpeed);
+    spdlog::debug("PlaybackWidget: Loaded loop setting from config: {}",
+                  loopEnabled);
 }
 
 void PlaybackWidget::onBrowseFile()
@@ -175,26 +154,22 @@ void PlaybackWidget::onBrowseFile()
             if (testFile.open(QIODevice::WriteOnly | QIODevice::Text))
             {
                 testFile.write(
-                  "{\"events\":[], \"metadata\":{\"version\":\"1.0\"}}"
-                );
+                    "{\"events\":[], \"metadata\":{\"version\":\"1.0\"}}");
                 testFile.close();
             }
         }
-        spdlog::info(
-          "PlaybackWidget: Test environment - using temp file: {}",
-          fileName.toStdString()
-        );
+        spdlog::info("PlaybackWidget: Test environment - using temp file: {}",
+                     fileName.toStdString());
     }
     else
     {
         fileName = QFileDialog::getOpenFileName(
-          this,
-          "Open Recording File",
-          "",
-          "All Supported (*.json *.mre *.xml);;JSON Files (*.json);;Binary "
-          "Files "
-          "(*.mre);;XML Files (*.xml)"
-        );
+            this,
+            "Open Recording File",
+            "",
+            "All Supported (*.json *.mre *.xml);;JSON Files (*.json);;Binary "
+            "Files "
+            "(*.mre);;XML Files (*.xml)");
     }
 
     if (!fileName.isEmpty())
@@ -228,14 +203,11 @@ void PlaybackWidget::onPlay()
         if (currentState != Core::PlaybackState::Stopped &&
             currentState != Core::PlaybackState::Completed)
         {
-            spdlog::warn(
-              "PlaybackWidget: Attempted to play while state is: {}",
-              static_cast<int>(currentState)
-            );
+            spdlog::warn("PlaybackWidget: Attempted to play while state is: {}",
+                         static_cast<int>(currentState));
             showWarningMessage(
-              "Playback Active",
-              "Playback is already in progress. Please stop it first."
-            );
+                "Playback Active",
+                "Playback is already in progress. Please stop it first.");
             return;
         }
 
@@ -254,32 +226,29 @@ void PlaybackWidget::onPlay()
 
         if (!player.loadEvents(std::move(eventsCopy)))
         {
-            showErrorMessage(
-              "Playback Error", QString::fromStdString(player.getLastError())
-            );
+            showErrorMessage("Playback Error",
+                             QString::fromStdString(player.getLastError()));
             return;
         }
 
         // Set up playback callback
         auto callback =
-          [this](Core::PlaybackState state, size_t current, size_t total)
+            [this](Core::PlaybackState state, size_t current, size_t total)
         {
             // This callback runs in the playback thread, so queue the call
             QMetaObject::invokeMethod(
-              this,
-              [this, state, current, total]()
-              {
-                  onPlaybackProgress(state, current, total);
-              },
-              Qt::QueuedConnection
-            );
+                this,
+                [this, state, current, total]()
+                {
+                    onPlaybackProgress(state, current, total);
+                },
+                Qt::QueuedConnection);
         };
 
         if (!player.startPlayback(callback))
         {
-            showErrorMessage(
-              "Playback Error", QString::fromStdString(player.getLastError())
-            );
+            showErrorMessage("Playback Error",
+                             QString::fromStdString(player.getLastError()));
             return;
         }
 
@@ -294,9 +263,8 @@ void PlaybackWidget::onPlay()
     }
     catch (const std::exception& e)
     {
-        showErrorMessage(
-          "Error", QString("Failed to start playback: %1").arg(e.what())
-        );
+        showErrorMessage("Error",
+                         QString("Failed to start playback: %1").arg(e.what()));
         spdlog::error("PlaybackWidget: Exception during play: {}", e.what());
     }
 }
@@ -326,9 +294,8 @@ void PlaybackWidget::onStop()
     }
     catch (const std::exception& e)
     {
-        showErrorMessage(
-          "Error", QString("Failed to stop playback: %1").arg(e.what())
-        );
+        showErrorMessage("Error",
+                         QString("Failed to stop playback: %1").arg(e.what()));
         spdlog::error("PlaybackWidget: Exception during stop: {}", e.what());
     }
 }
@@ -345,9 +312,8 @@ void PlaybackWidget::onSpeedChanged(int value)
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "PlaybackWidget: Exception during speed change: {}", e.what()
-        );
+        spdlog::error("PlaybackWidget: Exception during speed change: {}",
+                      e.what());
     }
 }
 
@@ -355,7 +321,7 @@ void PlaybackWidget::onResetSpeed()
 {
     auto& config = m_app.getConfiguration();
     double defaultSpeed =
-      config.getDouble(Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
+        config.getDouble(Core::ConfigKeys::DEFAULT_PLAYBACK_SPEED, 1.0);
 
     // Convert speed to slider value and set it
     int sliderValue = static_cast<int>(defaultSpeed * 10.0);
@@ -404,9 +370,8 @@ void PlaybackWidget::onLoopToggled(bool enabled)
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "PlaybackWidget: Exception during loop toggle: {}", e.what()
-        );
+        spdlog::error("PlaybackWidget: Exception during loop toggle: {}",
+                      e.what());
     }
 }
 
@@ -416,17 +381,14 @@ void PlaybackWidget::onLoopCountChanged(int count)
     {
         auto& player = m_app.getEventPlayer();
         player.setLoopCount(count);
-        spdlog::info(
-          "PlaybackWidget: Loop count set to {} ({})",
-          count,
-          count == 0 ? "infinite" : "finite"
-        );
+        spdlog::info("PlaybackWidget: Loop count set to {} ({})",
+                     count,
+                     count == 0 ? "infinite" : "finite");
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "PlaybackWidget: Exception during loop count change: {}", e.what()
-        );
+        spdlog::error("PlaybackWidget: Exception during loop count change: {}",
+                      e.what());
     }
 }
 
@@ -443,20 +405,18 @@ void PlaybackWidget::loadFile(const QString& fileName)
     if (!TestUtils::isTestEnvironment())
     {
         progress = std::make_unique<QProgressDialog>(
-          "Loading events...", "Cancel", 0, 0, nullptr
-        );
+            "Loading events...", "Cancel", 0, 0, nullptr);
         progress->setWindowModality(Qt::WindowModal);
         progress->setMinimumDuration(500); // Show after 500ms
         progress->show();
-        QApplication::processEvents();     // Allow the progress dialog to show
+        QApplication::processEvents(); // Allow the progress dialog to show
     }
 
     try
     {
         // Load events using storage factory
         auto storage = Storage::EventStorageFactory::createStorageFromFilename(
-          fileName.toStdString()
-        );
+            fileName.toStdString());
 
         if (!storage)
         {
@@ -482,9 +442,8 @@ void PlaybackWidget::loadFile(const QString& fileName)
                 progress->close();
                 QApplication::processEvents();
             }
-            showErrorMessage(
-              "Error", QString::fromStdString(storage->getLastError())
-            );
+            showErrorMessage("Error",
+                             QString::fromStdString(storage->getLastError()));
             return;
         }
 
@@ -505,15 +464,15 @@ void PlaybackWidget::loadFile(const QString& fileName)
             int minutes = seconds / 60;
             int hours = minutes / 60;
 
-            ui->durationValue->setText(QString("%1:%2:%3")
-                                         .arg(hours, 2, 10, QChar('0'))
-                                         .arg(minutes % 60, 2, 10, QChar('0'))
-                                         .arg(seconds % 60, 2, 10, QChar('0')));
+            ui->durationValue->setText(
+                QString("%1:%2:%3")
+                    .arg(hours, 2, 10, QChar('0'))
+                    .arg(minutes % 60, 2, 10, QChar('0'))
+                    .arg(seconds % 60, 2, 10, QChar('0')));
 
             // Set progress slider range
             ui->progressSlider->setRange(
-              0, static_cast<int>(m_loadedEvents.size() - 1)
-            );
+                0, static_cast<int>(m_loadedEvents.size() - 1));
 
             // Initialize time labels
             updateTimeLabels(0, m_loadedEvents.size());
@@ -525,37 +484,31 @@ void PlaybackWidget::loadFile(const QString& fileName)
         }
 
         ui->createdValue->setText(
-          fileInfo.birthTime().toString("yyyy-MM-dd hh:mm:ss")
-        );
+            fileInfo.birthTime().toString("yyyy-MM-dd hh:mm:ss"));
 
         // Update events preview table
-        ui->eventsPreviewTableWidget->setRowCount(
-          std::min(
-            static_cast<int>(m_loadedEvents.size()), 100
-          ) // Show max 100 events
+        ui->eventsPreviewTableWidget->setRowCount(std::min(
+            static_cast<int>(m_loadedEvents.size()), 100) // Show max 100 events
         );
 
         for (int i = 0; i < ui->eventsPreviewTableWidget->rowCount(); ++i)
         {
             const auto& event = m_loadedEvents[static_cast<size_t>(i)];
             ui->eventsPreviewTableWidget->setItem(
-              i, 0, new QTableWidgetItem(QString::number(i))
-            );
+                i, 0, new QTableWidgetItem(QString::number(i)));
 
             // Format timestamp
             uint64_t timestamp = event->getTimestampMs();
             uint64_t relativeTime =
-              timestamp - m_loadedEvents.front()->getTimestampMs();
+                timestamp - m_loadedEvents.front()->getTimestampMs();
             int seconds = static_cast<int>(relativeTime / 1000);
             int milliseconds = static_cast<int>(relativeTime % 1000);
 
             ui->eventsPreviewTableWidget->setItem(
-              i,
-              1,
-              new QTableWidgetItem(QString("%1.%2s").arg(seconds).arg(
-                milliseconds, 3, 10, QChar('0')
-              ))
-            );
+                i,
+                1,
+                new QTableWidgetItem(QString("%1.%2s").arg(seconds).arg(
+                    milliseconds, 3, 10, QChar('0'))));
 
             // Event type
             QString typeString;
@@ -585,8 +538,7 @@ void PlaybackWidget::loadFile(const QString& fileName)
             }
 
             ui->eventsPreviewTableWidget->setItem(
-              i, 2, new QTableWidgetItem(typeString)
-            );
+                i, 2, new QTableWidgetItem(typeString));
 
             // Event details (simplified)
             QString details = QString::fromStdString(event->toString());
@@ -595,16 +547,13 @@ void PlaybackWidget::loadFile(const QString& fileName)
                 details = details.left(47) + "...";
             }
             ui->eventsPreviewTableWidget->setItem(
-              i, 3, new QTableWidgetItem(details)
-            );
+                i, 3, new QTableWidgetItem(details));
         }
 
         m_fileLoaded = true;
-        spdlog::info(
-          "PlaybackWidget: Loaded {} events from {}",
-          m_loadedEvents.size(),
-          m_currentFile.toStdString()
-        );
+        spdlog::info("PlaybackWidget: Loaded {} events from {}",
+                     m_loadedEvents.size(),
+                     m_currentFile.toStdString());
 
         // Close progress dialog before emitting signal
         if (progress)
@@ -623,9 +572,8 @@ void PlaybackWidget::loadFile(const QString& fileName)
             progress->close();
             QApplication::processEvents();
         }
-        showErrorMessage(
-          "Error", QString("Failed to load file: %1").arg(e.what())
-        );
+        showErrorMessage("Error",
+                         QString("Failed to load file: %1").arg(e.what()));
         m_fileLoaded = false;
         m_loadedEvents.clear();
     }
@@ -686,9 +634,8 @@ void PlaybackWidget::updatePlaybackProgress()
                 // Update time labels to show total duration
                 if (!m_loadedEvents.empty())
                 {
-                    updateTimeLabels(
-                      m_loadedEvents.size(), m_loadedEvents.size()
-                    );
+                    updateTimeLabels(m_loadedEvents.size(),
+                                     m_loadedEvents.size());
                 }
                 emit playbackStopped();
                 spdlog::info("PlaybackWidget: Playback completed");
@@ -699,25 +646,23 @@ void PlaybackWidget::updatePlaybackProgress()
             else if (state == Core::PlaybackState::Error)
             {
                 QString errorMsg =
-                  QString::fromStdString(player.getLastError());
+                    QString::fromStdString(player.getLastError());
                 showErrorMessage("Playback Error", errorMsg);
-                spdlog::error(
-                  "PlaybackWidget: Playback error: {}", errorMsg.toStdString()
-                );
+                spdlog::error("PlaybackWidget: Playback error: {}",
+                              errorMsg.toStdString());
             }
         }
     }
     catch (const std::exception& e)
     {
-        spdlog::error(
-          "PlaybackWidget: Exception during progress update: {}", e.what()
-        );
+        spdlog::error("PlaybackWidget: Exception during progress update: {}",
+                      e.what());
     }
 }
 
-void PlaybackWidget::onPlaybackProgress(
-  Core::PlaybackState state, size_t current, size_t total
-)
+void PlaybackWidget::onPlaybackProgress(Core::PlaybackState state,
+                                        size_t current,
+                                        size_t total)
 {
     // This is called from the playback thread via QueuedConnection
     emit playbackStateChanged(state);
@@ -758,18 +703,16 @@ void PlaybackWidget::updateTimeLabels(size_t currentEvent, size_t totalEvents)
         // Calculate total duration (time from first to last event)
         auto lastEventTime = m_loadedEvents[totalEvents - 1]->getTimestamp();
         totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
-          lastEventTime - firstEventTime
-        );
+            lastEventTime - firstEventTime);
 
         // Calculate current duration based on current event position
         if (currentEvent > 0 && currentEvent <= totalEvents)
         {
             auto currentEventTime =
-              m_loadedEvents[currentEvent - 1]->getTimestamp();
+                m_loadedEvents[currentEvent - 1]->getTimestamp();
             currentDuration =
-              std::chrono::duration_cast<std::chrono::milliseconds>(
-                currentEventTime - firstEventTime
-              );
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    currentEventTime - firstEventTime);
         }
     }
 
@@ -784,13 +727,12 @@ QString PlaybackWidget::formatTime(std::chrono::milliseconds duration)
     int seconds = static_cast<int>(totalSeconds % 60);
 
     return QString("%1:%2")
-      .arg(minutes, 2, 10, QChar('0'))
-      .arg(seconds, 2, 10, QChar('0'));
+        .arg(minutes, 2, 10, QChar('0'))
+        .arg(seconds, 2, 10, QChar('0'));
 }
 
-void PlaybackWidget::showErrorMessage(
-  const QString& title, const QString& message
-)
+void PlaybackWidget::showErrorMessage(const QString& title,
+                                      const QString& message)
 {
     if (!TestUtils::isTestEnvironment())
     {
@@ -798,9 +740,8 @@ void PlaybackWidget::showErrorMessage(
     }
 }
 
-void PlaybackWidget::showWarningMessage(
-  const QString& title, const QString& message
-)
+void PlaybackWidget::showWarningMessage(const QString& title,
+                                        const QString& message)
 {
     if (!TestUtils::isTestEnvironment())
     {
@@ -815,4 +756,3 @@ void PlaybackWidget::loadFileRequested(const QString& filename)
 }
 
 } // namespace MouseRecorder::GUI
-

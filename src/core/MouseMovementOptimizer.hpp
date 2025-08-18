@@ -39,8 +39,7 @@ class MouseMovementOptimizer
         double douglasPeuckerEpsilon{2.0}; // tolerance for line simplification
         bool preserveClicks{true};         // always preserve click positions
         bool preserveFirstLast{
-          true
-        }; // always preserve first and last positions
+            true}; // always preserve first and last positions
     };
 
     /**
@@ -50,10 +49,8 @@ class MouseMovementOptimizer
      * @param config Optimization configuration
      * @return Number of events removed during optimization
      */
-    static size_t optimizeEvents(
-      std::vector<std::unique_ptr<Event>>& events,
-      const OptimizationConfig& config
-    );
+    static size_t optimizeEvents(std::vector<std::unique_ptr<Event>>& events,
+                                 const OptimizationConfig& config);
 
     /**
      * @brief Extract just mouse move events from event sequence
@@ -62,8 +59,7 @@ class MouseMovementOptimizer
      * @return Vector of mouse move events with their original indices
      */
     static std::vector<std::pair<size_t, const Event*>> extractMouseMoveEvents(
-      const std::vector<std::unique_ptr<Event>>& events
-    );
+        const std::vector<std::unique_ptr<Event>>& events);
 
     /**
      * @brief Apply distance-based threshold optimization
@@ -73,10 +69,9 @@ class MouseMovementOptimizer
      * @return Set of indices to remove
      */
     static std::vector<size_t> applyDistanceThreshold(
-      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-      int threshold,
-      bool preserveFirstLast = true
-    );
+        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+        int threshold,
+        bool preserveFirstLast = true);
 
     /**
      * @brief Apply Douglas-Peucker line simplification algorithm
@@ -85,9 +80,8 @@ class MouseMovementOptimizer
      * @return Set of indices to keep (not remove)
      */
     static std::vector<size_t> applyDouglasPeucker(
-      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-      double epsilon
-    );
+        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+        double epsilon);
 
     /**
      * @brief Apply time-based optimization (remove events too close in time)
@@ -97,10 +91,9 @@ class MouseMovementOptimizer
      * @return Set of indices to remove
      */
     static std::vector<size_t> applyTimeThreshold(
-      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-      int timeThresholdMs,
-      bool preserveFirstLast = true
-    );
+        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+        int timeThresholdMs,
+        bool preserveFirstLast = true);
 
     /**
      * @brief Calculate distance between two points
@@ -117,9 +110,9 @@ class MouseMovementOptimizer
      * @param lineEnd End of line segment
      * @return Perpendicular distance
      */
-    static double perpendicularDistance(
-      const Point& point, const Point& lineStart, const Point& lineEnd
-    );
+    static double perpendicularDistance(const Point& point,
+                                        const Point& lineStart,
+                                        const Point& lineEnd);
 
     /**
      * @brief Remove events at specified indices from vector
@@ -127,21 +120,19 @@ class MouseMovementOptimizer
      * @param indicesToRemove Sorted vector of indices to remove
      */
     static void removeEventsAtIndices(
-      std::vector<std::unique_ptr<Event>>& events,
-      const std::vector<size_t>& indicesToRemove
-    );
+        std::vector<std::unique_ptr<Event>>& events,
+        const std::vector<size_t>& indicesToRemove);
 
   private:
     /**
      * @brief Recursive Douglas-Peucker implementation
      */
     static void douglasPeuckerRecursive(
-      const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
-      size_t startIdx,
-      size_t endIdx,
-      double epsilon,
-      std::vector<bool>& keep
-    );
+        const std::vector<std::pair<size_t, const Event*>>& mouseMoves,
+        size_t startIdx,
+        size_t endIdx,
+        double epsilon,
+        std::vector<bool>& keep);
 };
 
 } // namespace MouseRecorder::Core

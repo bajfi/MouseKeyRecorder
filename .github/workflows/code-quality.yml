@@ -56,13 +56,21 @@ jobs:
         export TZ=Etc/UTC
         ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
         sudo apt-get update
+        # Add modern CMake and GCC for C++23 support
+        sudo apt-get install -y software-properties-common wget
+        wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+        sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main'
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
         sudo apt-get install -y \
-          build-essential cmake \
+          gcc-13 g++-13 cmake \
           qtbase5-dev qttools5-dev \
           libx11-dev libxtst-dev libxi-dev \
           libspdlog-dev nlohmann-json3-dev libpugixml-dev \
           libgtest-dev pkg-config \
           cppcheck clang-tidy xvfb
+        # Set GCC 13 as default
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
     - name: Configure CMake with compile commands
       env:
@@ -119,13 +127,21 @@ jobs:
         export TZ=Etc/UTC
         ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
         sudo apt-get update
+        # Add modern CMake and GCC for C++23 support
+        sudo apt-get install -y software-properties-common wget
+        wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+        sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main'
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt-get update
         sudo apt-get install -y \
-          build-essential cmake \
+          gcc-13 g++-13 cmake \
           qtbase5-dev qttools5-dev \
           libx11-dev libxtst-dev libxi-dev \
           libspdlog-dev nlohmann-json3-dev libpugixml-dev \
           libgtest-dev pkg-config \
           lcov gcovr xvfb
+        # Set GCC 13 as default
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
     - name: Configure CMake with coverage
       env:

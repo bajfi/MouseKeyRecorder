@@ -21,8 +21,7 @@ int main(int argc, char* argv[])
     app.setApplicationName("MouseRecorder");
     app.setApplicationVersion("0.0.1");
     app.setApplicationDisplayName(
-      "MouseRecorder - Event Recording and Playback"
-    );
+        "MouseRecorder - Event Recording and Playback");
     app.setOrganizationName("MouseRecorder Team");
     app.setOrganizationDomain("mouserecorder.org");
 
@@ -32,22 +31,22 @@ int main(int argc, char* argv[])
     // Setup command line parser
     QCommandLineParser parser;
     parser.setApplicationDescription(
-      "Cross-platform Mouse and Keyboard Event Recorder"
-    );
+        "Cross-platform Mouse and Keyboard Event Recorder");
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption configOption(
-      QStringList() << "c" << "config", "Configuration file path", "config_file"
-    );
+    QCommandLineOption configOption(QStringList() << "c"
+                                                  << "config",
+                                    "Configuration file path",
+                                    "config_file");
     parser.addOption(configOption);
 
     QCommandLineOption logLevelOption(
-      QStringList() << "l" << "log-level",
-      "Set log level (trace, debug, info, warn, error, critical, off)",
-      "level",
-      "info"
-    );
+        QStringList() << "l"
+                      << "log-level",
+        "Set log level (trace, debug, info, warn, error, critical, off)",
+        "level",
+        "info");
     parser.addOption(logLevelOption);
 
     parser.process(app);
@@ -58,7 +57,7 @@ int main(int argc, char* argv[])
     {
         // Use default location
         QString configDir =
-          QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+            QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
         QDir().mkpath(configDir);
         configFile = QDir(configDir).filePath("mouserecorder.conf");
     }
@@ -70,15 +69,13 @@ int main(int argc, char* argv[])
     QString logLevel = parser.value(logLevelOption);
 
     if (!mouseRecorderApp.initialize(
-          configFile.toStdString(), false, logLevel.toStdString()
-        ))
+            configFile.toStdString(), false, logLevel.toStdString()))
     {
         QMessageBox::critical(
-          nullptr,
-          "Initialization Error",
-          QString("Failed to initialize application: %1")
-            .arg(QString::fromStdString(mouseRecorderApp.getLastError()))
-        );
+            nullptr,
+            "Initialization Error",
+            QString("Failed to initialize application: %1")
+                .arg(QString::fromStdString(mouseRecorderApp.getLastError())));
         return 1;
     }
 
@@ -89,7 +86,7 @@ int main(int argc, char* argv[])
     auto& config = mouseRecorderApp.getConfiguration();
 
     if (auto theme =
-          QString::fromStdString(config.getString("ui.theme", "system"));
+            QString::fromStdString(config.getString("ui.theme", "system"));
         theme != "system")
     {
         QStringList availableStyles = QStyleFactory::keys();

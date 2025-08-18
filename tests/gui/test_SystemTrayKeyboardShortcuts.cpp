@@ -23,7 +23,7 @@ class SystemTrayKeyboardShortcutTest : public ::testing::Test
 
         // Initialize in headless mode for testing
         ASSERT_TRUE(m_app->initialize("", true))
-          << "Failed to initialize MouseRecorderApp";
+            << "Failed to initialize MouseRecorderApp";
 
         // Create main window
         m_window = std::make_unique<::MouseRecorder::GUI::MainWindow>(*m_app);
@@ -62,14 +62,12 @@ TEST_F(SystemTrayKeyboardShortcutTest, StopRecordingShortcutWorks)
 {
     // First start recording
     ASSERT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
     ASSERT_TRUE(m_app->getEventRecorder().isRecording());
 
     // Simulate Ctrl+Shift+R shortcut key press
     QKeyEvent keyPress(
-      QEvent::KeyPress, Qt::Key_R, Qt::ControlModifier | Qt::ShiftModifier
-    );
+        QEvent::KeyPress, Qt::Key_R, Qt::ControlModifier | Qt::ShiftModifier);
     QApplication::sendEvent(m_window.get(), &keyPress);
 
     // Process events to handle shortcut activation
@@ -83,8 +81,7 @@ TEST_F(SystemTrayKeyboardShortcutTest, DuplicateStartRecordingIgnored)
 {
     // Start recording first time
     ASSERT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
     ASSERT_TRUE(m_app->getEventRecorder().isRecording());
 
     // Try to start recording again via shortcut
@@ -103,8 +100,7 @@ TEST_F(SystemTrayKeyboardShortcutTest, StopRecordingWhenNotRecordingIgnored)
 
     // Try to stop recording via shortcut
     QKeyEvent keyPress(
-      QEvent::KeyPress, Qt::Key_R, Qt::ControlModifier | Qt::ShiftModifier
-    );
+        QEvent::KeyPress, Qt::Key_R, Qt::ControlModifier | Qt::ShiftModifier);
     QApplication::sendEvent(m_window.get(), &keyPress);
     QApplication::processEvents();
 
@@ -174,8 +170,7 @@ TEST_F(SystemTrayTest, AutoMinimizeOnRecordingStart)
 
     // Start recording
     ASSERT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
 
     // Wait for auto-minimize timer (500ms delay)
     QTimer timer;
@@ -194,8 +189,7 @@ TEST_F(SystemTrayTest, AutoRestoreOnRecordingStop)
     // Enable auto-minimize and start recording
     m_app->getConfiguration().setBool("ui.auto_minimize_on_record", true);
     ASSERT_TRUE(m_app->getEventRecorder().startRecording(
-      [](std::unique_ptr<Core::Event>) {}
-    ));
+        [](std::unique_ptr<Core::Event>) {}));
 
     // Wait for auto-minimize
     QTimer timer;

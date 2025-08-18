@@ -35,8 +35,7 @@ class LinuxEventReplayTest : public ::testing::Test
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         events.push_back(
-          EventFactory::createMouseClickEvent({100, 100}, MouseButton::Left)
-        );
+            EventFactory::createMouseClickEvent({100, 100}, MouseButton::Left));
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         events.push_back(EventFactory::createKeyPressEvent(65, "A"));

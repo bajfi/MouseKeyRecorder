@@ -27,9 +27,8 @@ class Configuration : public IConfiguration
 
     // String values
     void setString(const std::string& key, const std::string& value) override;
-    std::string getString(
-      const std::string& key, const std::string& defaultValue = ""
-    ) const override;
+    std::string getString(const std::string& key,
+                          const std::string& defaultValue = "") const override;
 
     // Integer values
     void setInt(const std::string& key, int value) override;
@@ -37,21 +36,20 @@ class Configuration : public IConfiguration
 
     // Double values
     void setDouble(const std::string& key, double value) override;
-    double getDouble(const std::string& key, double defaultValue = 0.0)
-      const override;
+    double getDouble(const std::string& key,
+                     double defaultValue = 0.0) const override;
 
     // Boolean values
     void setBool(const std::string& key, bool value) override;
-    bool getBool(const std::string& key, bool defaultValue = false)
-      const override;
+    bool getBool(const std::string& key,
+                 bool defaultValue = false) const override;
 
     // Array values
-    void setStringArray(
-      const std::string& key, const std::vector<std::string>& value
-    ) override;
+    void setStringArray(const std::string& key,
+                        const std::vector<std::string>& value) override;
     std::vector<std::string> getStringArray(
-      const std::string& key, const std::vector<std::string>& defaultValue = {}
-    ) const override;
+        const std::string& key,
+        const std::vector<std::string>& defaultValue = {}) const override;
 
     // Key management
     bool hasKey(const std::string& key) const override;
@@ -67,15 +65,14 @@ class Configuration : public IConfiguration
 
   private:
     using ConfigValue =
-      std::variant<std::string, int, double, bool, std::vector<std::string>>;
+        std::variant<std::string, int, double, bool, std::vector<std::string>>;
 
     /**
      * @brief Set a configuration value with type safety
      * @param key Configuration key
      * @param value Value to set
      */
-    template <typename T>
-    void setValue(const std::string& key, const T& value);
+    template <typename T> void setValue(const std::string& key, const T& value);
 
     /**
      * @brief Get a configuration value with type safety

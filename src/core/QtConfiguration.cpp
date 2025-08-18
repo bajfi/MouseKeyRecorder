@@ -106,9 +106,8 @@ bool QtConfiguration::saveToFile(const std::string& filename)
 
             if (fileSettings.status() != QSettings::NoError)
             {
-                setLastError(
-                  "Failed to save configuration to file: " + filename
-                );
+                setLastError("Failed to save configuration to file: " +
+                             filename);
                 return false;
             }
         }
@@ -150,9 +149,8 @@ void QtConfiguration::loadDefaults()
     // Logging settings
     m_settings->setValue(toQString(ConfigKeys::LOG_LEVEL), toQString("info"));
     m_settings->setValue(toQString(ConfigKeys::LOG_TO_FILE), false);
-    m_settings->setValue(
-      toQString(ConfigKeys::LOG_FILE_PATH), toQString("mouserecorder.log")
-    );
+    m_settings->setValue(toQString(ConfigKeys::LOG_FILE_PATH),
+                         toQString("mouserecorder.log"));
 
     // UI settings
     m_settings->setValue(toQString(ConfigKeys::AUTO_MINIMIZE_ON_RECORD), true);
@@ -160,9 +158,8 @@ void QtConfiguration::loadDefaults()
     m_settings->sync();
 }
 
-void QtConfiguration::setString(
-  const std::string& key, const std::string& value
-)
+void QtConfiguration::setString(const std::string& key,
+                                const std::string& value)
 {
     QString oldValue;
     bool changed = false;
@@ -182,14 +179,12 @@ void QtConfiguration::setString(
     }
 }
 
-std::string QtConfiguration::getString(
-  const std::string& key, const std::string& defaultValue
-) const
+std::string QtConfiguration::getString(const std::string& key,
+                                       const std::string& defaultValue) const
 {
     QMutexLocker locker(&m_mutex);
     return fromQString(
-      m_settings->value(toQString(key), toQString(defaultValue)).toString()
-    );
+        m_settings->value(toQString(key), toQString(defaultValue)).toString());
 }
 
 void QtConfiguration::setInt(const std::string& key, int value)
@@ -228,8 +223,8 @@ void QtConfiguration::setDouble(const std::string& key, double value)
         QMutexLocker locker(&m_mutex);
         oldValue = m_settings->value(toQString(key)).toDouble();
         m_settings->setValue(toQString(key), value);
-        changed =
-          (std::abs(oldValue - value) > std::numeric_limits<double>::epsilon());
+        changed = (std::abs(oldValue - value) >
+                   std::numeric_limits<double>::epsilon());
     }
 
     // Call callbacks outside of mutex to avoid deadlock
@@ -239,9 +234,8 @@ void QtConfiguration::setDouble(const std::string& key, double value)
     }
 }
 
-double QtConfiguration::getDouble(
-  const std::string& key, double defaultValue
-) const
+double QtConfiguration::getDouble(const std::string& key,
+                                  double defaultValue) const
 {
     QMutexLocker locker(&m_mutex);
     return m_settings->value(toQString(key), defaultValue).toDouble();
@@ -273,9 +267,8 @@ bool QtConfiguration::getBool(const std::string& key, bool defaultValue) const
     return m_settings->value(toQString(key), defaultValue).toBool();
 }
 
-void QtConfiguration::setStringArray(
-  const std::string& key, const std::vector<std::string>& value
-)
+void QtConfiguration::setStringArray(const std::string& key,
+                                     const std::vector<std::string>& value)
 {
     std::string valueStr;
 
@@ -307,8 +300,7 @@ void QtConfiguration::setStringArray(
 }
 
 std::vector<std::string> QtConfiguration::getStringArray(
-  const std::string& key, const std::vector<std::string>& defaultValue
-) const
+    const std::string& key, const std::vector<std::string>& defaultValue) const
 {
     QMutexLocker locker(&m_mutex);
 
@@ -319,7 +311,7 @@ std::vector<std::string> QtConfiguration::getStringArray(
     }
 
     QStringList qList =
-      m_settings->value(toQString(key), defaultQList).toStringList();
+        m_settings->value(toQString(key), defaultQList).toStringList();
 
     std::vector<std::string> result;
     for (const QString& str : qList)
@@ -413,9 +405,8 @@ std::string QtConfiguration::fromQString(const QString& str) const
     return str.toStdString();
 }
 
-void QtConfiguration::notifyCallbacks(
-  const std::string& key, const std::string& value
-)
+void QtConfiguration::notifyCallbacks(const std::string& key,
+                                      const std::string& value)
 {
     // Don't hold the main mutex while calling callbacks to avoid deadlocks
     std::map<size_t, ConfigChangeCallback> callbacks;
@@ -432,9 +423,9 @@ void QtConfiguration::notifyCallbacks(
         }
         catch (const std::exception& e)
         {
-            spdlog::warn(
-              "QtConfiguration: Callback {} threw exception: {}", id, e.what()
-            );
+            spdlog::warn("QtConfiguration: Callback {} threw exception: {}",
+                         id,
+                         e.what());
         }
     }
 }

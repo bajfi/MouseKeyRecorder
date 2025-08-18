@@ -53,11 +53,9 @@ class IEventStorage
      * @param metadata Optional metadata to include
      * @return true if save was successful
      */
-    virtual bool saveEvents(
-      const std::vector<std::unique_ptr<Event>>& events,
-      const std::string& filename,
-      const StorageMetadata& metadata = {}
-    ) = 0;
+    virtual bool saveEvents(const std::vector<std::unique_ptr<Event>>& events,
+                            const std::string& filename,
+                            const StorageMetadata& metadata = {}) = 0;
 
     /**
      * @brief Load events from file
@@ -66,11 +64,9 @@ class IEventStorage
      * @param metadata Output metadata if available
      * @return true if load was successful
      */
-    virtual bool loadEvents(
-      const std::string& filename,
-      std::vector<std::unique_ptr<Event>>& events,
-      StorageMetadata& metadata
-    ) = 0;
+    virtual bool loadEvents(const std::string& filename,
+                            std::vector<std::unique_ptr<Event>>& events,
+                            StorageMetadata& metadata) = 0;
 
     /**
      * @brief Get supported file format
@@ -103,9 +99,8 @@ class IEventStorage
      * @param metadata Output metadata
      * @return true if metadata was successfully read
      */
-    virtual bool getFileMetadata(
-      const std::string& filename, StorageMetadata& metadata
-    ) const = 0;
+    virtual bool getFileMetadata(const std::string& filename,
+                                 StorageMetadata& metadata) const = 0;
 
     /**
      * @brief Get the last error message if any operation failed

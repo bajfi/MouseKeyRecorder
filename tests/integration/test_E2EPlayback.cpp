@@ -34,8 +34,7 @@ class EndToEndPlaybackTest : public ::testing::Test
         // Initialize MouseRecorderApp (NOT headless for testing)
         mouseRecorderApp = std::make_unique<Application::MouseRecorderApp>();
         ASSERT_TRUE(
-          mouseRecorderApp->initialize("", false)
-        ); // headless = false
+            mouseRecorderApp->initialize("", false)); // headless = false
     }
 
     void TearDown() override
@@ -58,24 +57,17 @@ class EndToEndPlaybackTest : public ::testing::Test
         // Create simple test events
         std::vector<std::unique_ptr<Core::Event>> events;
         events.push_back(Core::EventFactory::createMouseMoveEvent({100, 100}));
-        events.push_back(
-          Core::EventFactory::createMouseClickEvent(
-            {100, 100}, Core::MouseButton::Left
-          )
-        );
-        events.push_back(
-          Core::EventFactory::createKeyPressEvent(
-            32, "space", Core::KeyModifier::None
-          )
-        );
+        events.push_back(Core::EventFactory::createMouseClickEvent(
+            {100, 100}, Core::MouseButton::Left));
+        events.push_back(Core::EventFactory::createKeyPressEvent(
+            32, "space", Core::KeyModifier::None));
 
         Storage::JsonEventStorage storage;
         Core::StorageMetadata metadata;
         metadata.description = "E2E test";
 
         EXPECT_TRUE(
-          storage.saveEvents(events, fileName.toStdString(), metadata)
-        );
+            storage.saveEvents(events, fileName.toStdString(), metadata));
 
         tempFiles.push_back(std::move(tempFile));
         return fileName;
@@ -94,7 +86,7 @@ TEST_F(EndToEndPlaybackTest, CompletePlaybackWorkflow)
 
     // Create PlaybackWidget
     auto playbackWidget =
-      std::make_unique<MouseRecorder::GUI::PlaybackWidget>(*mouseRecorderApp);
+        std::make_unique<MouseRecorder::GUI::PlaybackWidget>(*mouseRecorderApp);
 
     // Load the test file
     playbackWidget->loadFile(testFile);
@@ -102,13 +94,13 @@ TEST_F(EndToEndPlaybackTest, CompletePlaybackWorkflow)
 
     // Verify file was loaded
     auto* filePathEdit =
-      playbackWidget->findChild<QLineEdit*>("filePathLineEdit");
+        playbackWidget->findChild<QLineEdit*>("filePathLineEdit");
     ASSERT_TRUE(filePathEdit != nullptr);
     EXPECT_EQ(filePathEdit->text(), testFile);
 
     // Verify event count
     auto* totalEventsLabel =
-      playbackWidget->findChild<QLabel*>("totalEventsValue");
+        playbackWidget->findChild<QLabel*>("totalEventsValue");
     ASSERT_TRUE(totalEventsLabel != nullptr);
     EXPECT_EQ(totalEventsLabel->text().toInt(), 3);
 
@@ -125,11 +117,11 @@ TEST_F(EndToEndPlaybackTest, CompletePlaybackWorkflow)
 
     // Set up signal spy
     QSignalSpy playbackStartedSpy(
-      playbackWidget.get(), &MouseRecorder::GUI::PlaybackWidget::playbackStarted
-    );
+        playbackWidget.get(),
+        &MouseRecorder::GUI::PlaybackWidget::playbackStarted);
     QSignalSpy playbackStoppedSpy(
-      playbackWidget.get(), &MouseRecorder::GUI::PlaybackWidget::playbackStopped
-    );
+        playbackWidget.get(),
+        &MouseRecorder::GUI::PlaybackWidget::playbackStopped);
 
     // Start playback at high speed
     auto* speedSlider = playbackWidget->findChild<QSlider*>("speedSlider");
@@ -202,10 +194,8 @@ TEST_F(EndToEndPlaybackTest, AppIntegrationTest)
     // Check if playback is Playing or has already Completed (due to fast
     // execution)
     auto state = player.getState();
-    EXPECT_TRUE(
-      state == Core::PlaybackState::Playing ||
-      state == Core::PlaybackState::Completed
-    );
+    EXPECT_TRUE(state == Core::PlaybackState::Playing ||
+                state == Core::PlaybackState::Completed);
 
     player.stopPlayback();
     QTest::qWait(50);
@@ -230,9 +220,8 @@ TEST_F(EndToEndPlaybackTest, RecentFilesIntegration)
     ASSERT_NE(tabWidget, nullptr);
 
     // Set up signal spies
-    QSignalSpy fileLoadRequestedSpy(
-      &mainWindow, &GUI::MainWindow::fileLoadRequested
-    );
+    QSignalSpy fileLoadRequestedSpy(&mainWindow,
+                                    &GUI::MainWindow::fileLoadRequested);
     QSignalSpy fileLoadedSpy(playbackWidget, &GUI::PlaybackWidget::fileLoaded);
 
     // Initially we should be on Recording tab (index 0)

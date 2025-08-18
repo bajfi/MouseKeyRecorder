@@ -19,25 +19,20 @@ class XmlEventStorage : public Core::IEventStorage
     ~XmlEventStorage() override = default;
 
     // IEventStorage interface
-    bool saveEvents(
-      const std::vector<std::unique_ptr<Core::Event>>& events,
-      const std::string& filename,
-      const Core::StorageMetadata& metadata = {}
-    ) override;
+    bool saveEvents(const std::vector<std::unique_ptr<Core::Event>>& events,
+                    const std::string& filename,
+                    const Core::StorageMetadata& metadata = {}) override;
 
-    bool loadEvents(
-      const std::string& filename,
-      std::vector<std::unique_ptr<Core::Event>>& events,
-      Core::StorageMetadata& metadata
-    ) override;
+    bool loadEvents(const std::string& filename,
+                    std::vector<std::unique_ptr<Core::Event>>& events,
+                    Core::StorageMetadata& metadata) override;
 
     Core::StorageFormat getSupportedFormat() const noexcept override;
     std::string getFileExtension() const noexcept override;
     std::string getFormatDescription() const noexcept override;
     bool validateFile(const std::string& filename) const override;
-    bool getFileMetadata(
-      const std::string& filename, Core::StorageMetadata& metadata
-    ) const override;
+    bool getFileMetadata(const std::string& filename,
+                         Core::StorageMetadata& metadata) const override;
     std::string getLastError() const override;
     void setCompressionLevel(int level) override;
     bool supportsCompression() const noexcept override;
@@ -62,9 +57,8 @@ class XmlEventStorage : public Core::IEventStorage
      * @param metadata Metadata to convert
      * @param parent Parent XML node
      */
-    void metadataToXml(
-      const Core::StorageMetadata& metadata, pugi::xml_node& parent
-    ) const;
+    void metadataToXml(const Core::StorageMetadata& metadata,
+                       pugi::xml_node& parent) const;
 
     /**
      * @brief Convert XML node to StorageMetadata

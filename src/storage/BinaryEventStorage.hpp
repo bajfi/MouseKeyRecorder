@@ -26,32 +26,27 @@ class BinaryEventStorage : public Core::IEventStorage
     ~BinaryEventStorage() override = default;
 
     // IEventStorage interface
-    bool saveEvents(
-      const std::vector<std::unique_ptr<Core::Event>>& events,
-      const std::string& filename,
-      const Core::StorageMetadata& metadata = {}
-    ) override;
+    bool saveEvents(const std::vector<std::unique_ptr<Core::Event>>& events,
+                    const std::string& filename,
+                    const Core::StorageMetadata& metadata = {}) override;
 
-    bool loadEvents(
-      const std::string& filename,
-      std::vector<std::unique_ptr<Core::Event>>& events,
-      Core::StorageMetadata& metadata
-    ) override;
+    bool loadEvents(const std::string& filename,
+                    std::vector<std::unique_ptr<Core::Event>>& events,
+                    Core::StorageMetadata& metadata) override;
 
     Core::StorageFormat getSupportedFormat() const noexcept override;
     std::string getFileExtension() const noexcept override;
     std::string getFormatDescription() const noexcept override;
     bool validateFile(const std::string& filename) const override;
-    bool getFileMetadata(
-      const std::string& filename, Core::StorageMetadata& metadata
-    ) const override;
+    bool getFileMetadata(const std::string& filename,
+                         Core::StorageMetadata& metadata) const override;
     std::string getLastError() const override;
     void setCompressionLevel(int level) override;
     bool supportsCompression() const noexcept override;
 
   private:
     static constexpr uint32_t MAGIC_NUMBER =
-      0x4D525245; // "MRRE" - MouseRecorder Recording Events
+        0x4D525245; // "MRRE" - MouseRecorder Recording Events
     static constexpr uint32_t FORMAT_VERSION = 1;
 
     /**
@@ -59,8 +54,8 @@ class BinaryEventStorage : public Core::IEventStorage
      * @param event Event to serialize
      * @param buffer Output buffer
      */
-    void serializeEvent(const Core::Event& event, std::vector<uint8_t>& buffer)
-      const;
+    void serializeEvent(const Core::Event& event,
+                        std::vector<uint8_t>& buffer) const;
 
     /**
      * @brief Deserialize an event from binary buffer
@@ -69,17 +64,15 @@ class BinaryEventStorage : public Core::IEventStorage
      * @return unique_ptr to Event or nullptr if deserialization failed
      */
     std::unique_ptr<Core::Event> deserializeEvent(
-      const std::vector<uint8_t>& buffer, size_t& offset
-    ) const;
+        const std::vector<uint8_t>& buffer, size_t& offset) const;
 
     /**
      * @brief Serialize metadata to binary buffer
      * @param metadata Metadata to serialize
      * @param buffer Output buffer
      */
-    void serializeMetadata(
-      const Core::StorageMetadata& metadata, std::vector<uint8_t>& buffer
-    ) const;
+    void serializeMetadata(const Core::StorageMetadata& metadata,
+                           std::vector<uint8_t>& buffer) const;
 
     /**
      * @brief Deserialize metadata from binary buffer
@@ -88,8 +81,7 @@ class BinaryEventStorage : public Core::IEventStorage
      * @return StorageMetadata
      */
     Core::StorageMetadata deserializeMetadata(
-      const std::vector<uint8_t>& buffer, size_t& offset
-    ) const;
+        const std::vector<uint8_t>& buffer, size_t& offset) const;
 
     /**
      * @brief Write binary data to buffer (little-endian)
@@ -106,14 +98,14 @@ class BinaryEventStorage : public Core::IEventStorage
     /**
      * @brief Write string to buffer (length-prefixed)
      */
-    void writeString(std::vector<uint8_t>& buffer, const std::string& str)
-      const;
+    void writeString(std::vector<uint8_t>& buffer,
+                     const std::string& str) const;
 
     /**
      * @brief Read string from buffer (length-prefixed)
      */
-    std::string readString(const std::vector<uint8_t>& buffer, size_t& offset)
-      const;
+    std::string readString(const std::vector<uint8_t>& buffer,
+                           size_t& offset) const;
 
     /**
      * @brief Compress data using simple RLE compression
@@ -127,8 +119,8 @@ class BinaryEventStorage : public Core::IEventStorage
      * @param input Compressed data
      * @return Decompressed data
      */
-    std::vector<uint8_t> decompressData(const std::vector<uint8_t>& input
-    ) const;
+    std::vector<uint8_t> decompressData(
+        const std::vector<uint8_t>& input) const;
 
     /**
      * @brief Set last error message

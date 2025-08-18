@@ -23,9 +23,8 @@ class ConfigurationWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit ConfigurationWidget(
-      Application::MouseRecorderApp& app, QWidget* parent = nullptr
-    );
+    explicit ConfigurationWidget(Application::MouseRecorderApp& app,
+                                 QWidget* parent = nullptr);
     ~ConfigurationWidget();
 
   public slots:

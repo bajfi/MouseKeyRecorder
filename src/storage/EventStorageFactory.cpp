@@ -10,13 +10,10 @@ namespace MouseRecorder::Storage
 {
 
 std::unique_ptr<Core::IEventStorage> EventStorageFactory::createStorage(
-  Core::StorageFormat format
-)
+    Core::StorageFormat format)
 {
-    spdlog::debug(
-      "EventStorageFactory: Creating storage for format {}",
-      static_cast<int>(format)
-    );
+    spdlog::debug("EventStorageFactory: Creating storage for format {}",
+                  static_cast<int>(format));
 
     switch (format)
     {
@@ -30,24 +27,21 @@ std::unique_ptr<Core::IEventStorage> EventStorageFactory::createStorage(
         return std::make_unique<XmlEventStorage>();
 
     default:
-        spdlog::error(
-          "EventStorageFactory: Unsupported storage format {}",
-          static_cast<int>(format)
-        );
+        spdlog::error("EventStorageFactory: Unsupported storage format {}",
+                      static_cast<int>(format));
         return nullptr;
     }
 }
 
 std::unique_ptr<Core::IEventStorage> EventStorageFactory::
-  createStorageFromFilename(const std::string& filename)
+    createStorageFromFilename(const std::string& filename)
 {
     std::filesystem::path path(filename);
     std::string extension = path.extension().string();
 
     // Convert to lowercase for comparison
     std::transform(
-      extension.begin(), extension.end(), extension.begin(), ::tolower
-    );
+        extension.begin(), extension.end(), extension.begin(), ::tolower);
 
     auto format = getFormatFromExtension(extension);
     if (format)
@@ -56,19 +50,16 @@ std::unique_ptr<Core::IEventStorage> EventStorageFactory::
     }
 
     spdlog::warn(
-      "EventStorageFactory: Unknown file extension '{}', defaulting to JSON",
-      extension
-    );
+        "EventStorageFactory: Unknown file extension '{}', defaulting to JSON",
+        extension);
     return createStorage(Core::StorageFormat::Json);
 }
 
 std::vector<Core::StorageFormat> EventStorageFactory::getSupportedFormats()
 {
-    return {
-      Core::StorageFormat::Json,
-      Core::StorageFormat::Binary,
-      Core::StorageFormat::Xml
-    };
+    return {Core::StorageFormat::Json,
+            Core::StorageFormat::Binary,
+            Core::StorageFormat::Xml};
 }
 
 std::string EventStorageFactory::getFileExtension(Core::StorageFormat format)
@@ -82,8 +73,7 @@ std::string EventStorageFactory::getFileExtension(Core::StorageFormat format)
 }
 
 std::string EventStorageFactory::getFormatDescription(
-  Core::StorageFormat format
-)
+    Core::StorageFormat format)
 {
     auto storage = createStorage(format);
     if (storage)
@@ -96,14 +86,13 @@ std::string EventStorageFactory::getFormatDescription(
 bool EventStorageFactory::isFormatSupported(Core::StorageFormat format)
 {
     auto supportedFormats = getSupportedFormats();
-    return std::find(
-             supportedFormats.begin(), supportedFormats.end(), format
-           ) != supportedFormats.end();
+    return std::find(supportedFormats.begin(),
+                     supportedFormats.end(),
+                     format) != supportedFormats.end();
 }
 
 std::optional<Core::StorageFormat> EventStorageFactory::getFormatFromExtension(
-  const std::string& extension
-)
+    const std::string& extension)
 {
     std::string ext = extension;
 

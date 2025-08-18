@@ -13,14 +13,12 @@ BinaryEventStorage::BinaryEventStorage()
 }
 
 bool BinaryEventStorage::saveEvents(
-  const std::vector<std::unique_ptr<Core::Event>>& events,
-  const std::string& filename,
-  const Core::StorageMetadata& metadata
-)
+    const std::vector<std::unique_ptr<Core::Event>>& events,
+    const std::string& filename,
+    const Core::StorageMetadata& metadata)
 {
     spdlog::info(
-      "BinaryEventStorage: Saving {} events to {}", events.size(), filename
-    );
+        "BinaryEventStorage: Saving {} events to {}", events.size(), filename);
 
     try
     {
@@ -35,8 +33,7 @@ bool BinaryEventStorage::saveEvents(
         serializeMetadata(metadata, metadataBuffer);
         writeBinary(buffer, static_cast<uint32_t>(metadataBuffer.size()));
         buffer.insert(
-          buffer.end(), metadataBuffer.begin(), metadataBuffer.end()
-        );
+            buffer.end(), metadataBuffer.begin(), metadataBuffer.end());
 
         // Write event count
         writeBinary(buffer, static_cast<uint32_t>(events.size()));
@@ -69,9 +66,8 @@ bool BinaryEventStorage::saveEvents(
             return false;
         }
 
-        file.write(
-          reinterpret_cast<const char*>(finalData.data()), finalData.size()
-        );
+        file.write(reinterpret_cast<const char*>(finalData.data()),
+                   finalData.size());
         file.close();
 
         if (file.fail())
@@ -81,10 +77,9 @@ bool BinaryEventStorage::saveEvents(
         }
 
         spdlog::info(
-          "BinaryEventStorage: Successfully saved {} events ({} bytes)",
-          events.size(),
-          finalData.size()
-        );
+            "BinaryEventStorage: Successfully saved {} events ({} bytes)",
+            events.size(),
+            finalData.size());
         return true;
     }
     catch (const std::exception& e)
@@ -95,10 +90,9 @@ bool BinaryEventStorage::saveEvents(
 }
 
 bool BinaryEventStorage::loadEvents(
-  const std::string& filename,
-  std::vector<std::unique_ptr<Core::Event>>& events,
-  Core::StorageMetadata& metadata
-)
+    const std::string& filename,
+    std::vector<std::unique_ptr<Core::Event>>& events,
+    Core::StorageMetadata& metadata)
 {
     spdlog::info("BinaryEventStorage: Loading events from {}", filename);
 
@@ -144,9 +138,8 @@ bool BinaryEventStorage::loadEvents(
         uint32_t version = readBinary<uint32_t>(buffer, offset);
         if (version != FORMAT_VERSION)
         {
-            setLastError(
-              "Unsupported file version: " + std::to_string(version)
-            );
+            setLastError("Unsupported file version: " +
+                         std::to_string(version));
             return false;
         }
 
@@ -177,14 +170,12 @@ bool BinaryEventStorage::loadEvents(
             else
             {
                 spdlog::warn(
-                  "BinaryEventStorage: Failed to deserialize event {}", i
-                );
+                    "BinaryEventStorage: Failed to deserialize event {}", i);
             }
         }
 
-        spdlog::info(
-          "BinaryEventStorage: Successfully loaded {} events", events.size()
-        );
+        spdlog::info("BinaryEventStorage: Successfully loaded {} events",
+                     events.size());
         return true;
     }
     catch (const std::exception& e)
@@ -232,9 +223,8 @@ bool BinaryEventStorage::validateFile(const std::string& filename) const
     }
 }
 
-bool BinaryEventStorage::getFileMetadata(
-  const std::string& filename, Core::StorageMetadata& metadata
-) const
+bool BinaryEventStorage::getFileMetadata(const std::string& filename,
+                                         Core::StorageMetadata& metadata) const
 {
     try
     {
@@ -283,9 +273,8 @@ std::string BinaryEventStorage::getLastError() const
 void BinaryEventStorage::setCompressionLevel(int level)
 {
     m_compressionEnabled = (level > 0);
-    spdlog::debug(
-      "BinaryEventStorage: Compression set to {}", m_compressionEnabled
-    );
+    spdlog::debug("BinaryEventStorage: Compression set to {}",
+                  m_compressionEnabled);
 }
 
 bool BinaryEventStorage::supportsCompression() const noexcept
@@ -293,9 +282,8 @@ bool BinaryEventStorage::supportsCompression() const noexcept
     return true;
 }
 
-void BinaryEventStorage::serializeEvent(
-  const Core::Event& event, std::vector<uint8_t>& buffer
-) const
+void BinaryEventStorage::serializeEvent(const Core::Event& event,
+                                        std::vector<uint8_t>& buffer) const
 {
     // Event type
     writeBinary(buffer, static_cast<uint8_t>(event.getType()));
@@ -333,14 +321,13 @@ void BinaryEventStorage::serializeEvent(
 }
 
 std::unique_ptr<Core::Event> BinaryEventStorage::deserializeEvent(
-  const std::vector<uint8_t>& buffer, size_t& offset
-) const
+    const std::vector<uint8_t>& buffer, size_t& offset) const
 {
     try
     {
         // Event type
         auto eventType =
-          static_cast<Core::EventType>(readBinary<uint8_t>(buffer, offset));
+            static_cast<Core::EventType>(readBinary<uint8_t>(buffer, offset));
 
         // Timestamp
         uint64_t timestamp = readBinary<uint64_t>(buffer, offset);
@@ -357,16 +344,13 @@ std::unique_ptr<Core::Event> BinaryEventStorage::deserializeEvent(
             mouseData.position.x = readBinary<int32_t>(buffer, offset);
             mouseData.position.y = readBinary<int32_t>(buffer, offset);
             mouseData.button = static_cast<Core::MouseButton>(
-              readBinary<uint8_t>(buffer, offset)
-            );
+                readBinary<uint8_t>(buffer, offset));
             mouseData.wheelDelta = readBinary<int32_t>(buffer, offset);
             mouseData.modifiers = static_cast<Core::KeyModifier>(
-              readBinary<uint32_t>(buffer, offset)
-            );
+                readBinary<uint32_t>(buffer, offset));
 
             return std::make_unique<Core::Event>(
-              eventType, mouseData, timePoint
-            );
+                eventType, mouseData, timePoint);
         }
 
         case Core::EventType::KeyPress:
@@ -376,8 +360,7 @@ std::unique_ptr<Core::Event> BinaryEventStorage::deserializeEvent(
             keyData.keyCode = readBinary<uint32_t>(buffer, offset);
             keyData.keyName = readString(buffer, offset);
             keyData.modifiers = static_cast<Core::KeyModifier>(
-              readBinary<uint32_t>(buffer, offset)
-            );
+                readBinary<uint32_t>(buffer, offset));
             keyData.isRepeated = (readBinary<uint8_t>(buffer, offset) != 0);
 
             return std::make_unique<Core::Event>(eventType, keyData, timePoint);
@@ -393,8 +376,7 @@ std::unique_ptr<Core::Event> BinaryEventStorage::deserializeEvent(
 }
 
 void BinaryEventStorage::serializeMetadata(
-  const Core::StorageMetadata& metadata, std::vector<uint8_t>& buffer
-) const
+    const Core::StorageMetadata& metadata, std::vector<uint8_t>& buffer) const
 {
     writeString(buffer, metadata.version);
     writeString(buffer, metadata.applicationName);
@@ -408,8 +390,7 @@ void BinaryEventStorage::serializeMetadata(
 }
 
 Core::StorageMetadata BinaryEventStorage::deserializeMetadata(
-  const std::vector<uint8_t>& buffer, size_t& offset
-) const
+    const std::vector<uint8_t>& buffer, size_t& offset) const
 {
     Core::StorageMetadata metadata;
 
@@ -427,18 +408,16 @@ Core::StorageMetadata BinaryEventStorage::deserializeMetadata(
 }
 
 template <typename T>
-void BinaryEventStorage::writeBinary(
-  std::vector<uint8_t>& buffer, const T& value
-) const
+void BinaryEventStorage::writeBinary(std::vector<uint8_t>& buffer,
+                                     const T& value) const
 {
     const uint8_t* bytes = reinterpret_cast<const uint8_t*>(&value);
     buffer.insert(buffer.end(), bytes, bytes + sizeof(T));
 }
 
 template <typename T>
-T BinaryEventStorage::readBinary(
-  const std::vector<uint8_t>& buffer, size_t& offset
-) const
+T BinaryEventStorage::readBinary(const std::vector<uint8_t>& buffer,
+                                 size_t& offset) const
 {
     if (offset + sizeof(T) > buffer.size())
     {
@@ -451,17 +430,15 @@ T BinaryEventStorage::readBinary(
     return value;
 }
 
-void BinaryEventStorage::writeString(
-  std::vector<uint8_t>& buffer, const std::string& str
-) const
+void BinaryEventStorage::writeString(std::vector<uint8_t>& buffer,
+                                     const std::string& str) const
 {
     writeBinary(buffer, static_cast<uint32_t>(str.length()));
     buffer.insert(buffer.end(), str.begin(), str.end());
 }
 
-std::string BinaryEventStorage::readString(
-  const std::vector<uint8_t>& buffer, size_t& offset
-) const
+std::string BinaryEventStorage::readString(const std::vector<uint8_t>& buffer,
+                                           size_t& offset) const
 {
     uint32_t length = readBinary<uint32_t>(buffer, offset);
 
@@ -470,16 +447,14 @@ std::string BinaryEventStorage::readString(
         throw std::runtime_error("Buffer underrun while reading string");
     }
 
-    std::string str(
-      reinterpret_cast<const char*>(buffer.data() + offset), length
-    );
+    std::string str(reinterpret_cast<const char*>(buffer.data() + offset),
+                    length);
     offset += length;
     return str;
 }
 
 std::vector<uint8_t> BinaryEventStorage::compressData(
-  const std::vector<uint8_t>& input
-) const
+    const std::vector<uint8_t>& input) const
 {
     // Simple RLE compression
     std::vector<uint8_t> output;
@@ -526,8 +501,7 @@ std::vector<uint8_t> BinaryEventStorage::compressData(
 }
 
 std::vector<uint8_t> BinaryEventStorage::decompressData(
-  const std::vector<uint8_t>& input
-) const
+    const std::vector<uint8_t>& input) const
 {
     if (input.empty() || input[0] != 0x01)
     {

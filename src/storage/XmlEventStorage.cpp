@@ -11,14 +11,12 @@ XmlEventStorage::XmlEventStorage()
 }
 
 bool XmlEventStorage::saveEvents(
-  const std::vector<std::unique_ptr<Core::Event>>& events,
-  const std::string& filename,
-  const Core::StorageMetadata& metadata
-)
+    const std::vector<std::unique_ptr<Core::Event>>& events,
+    const std::string& filename,
+    const Core::StorageMetadata& metadata)
 {
     spdlog::info(
-      "XmlEventStorage: Saving {} events to {}", events.size(), filename
-    );
+        "XmlEventStorage: Saving {} events to {}", events.size(), filename);
 
     try
     {
@@ -35,7 +33,7 @@ bool XmlEventStorage::saveEvents(
         // Add events
         auto eventsNode = root.append_child("Events");
         eventsNode.append_attribute("count") =
-          static_cast<unsigned int>(events.size());
+            static_cast<unsigned int>(events.size());
 
         for (const auto& event : events)
         {
@@ -47,21 +45,19 @@ bool XmlEventStorage::saveEvents(
         }
 
         // Save to file
-        if (auto result = doc.save_file(
-              filename.c_str(),
-              m_prettyPrint ? "  " : "",
-              pugi::format_default | pugi::format_write_bom,
-              pugi::encoding_utf8
-            );
+        if (auto result =
+                doc.save_file(filename.c_str(),
+                              m_prettyPrint ? "  " : "",
+                              pugi::format_default | pugi::format_write_bom,
+                              pugi::encoding_utf8);
             !result)
         {
             setLastError("Failed to save XML file: " + filename);
             return false;
         }
 
-        spdlog::info(
-          "XmlEventStorage: Successfully saved {} events", events.size()
-        );
+        spdlog::info("XmlEventStorage: Successfully saved {} events",
+                     events.size());
         return true;
     }
     catch (const std::exception& e)
@@ -72,10 +68,9 @@ bool XmlEventStorage::saveEvents(
 }
 
 bool XmlEventStorage::loadEvents(
-  const std::string& filename,
-  std::vector<std::unique_ptr<Core::Event>>& events,
-  Core::StorageMetadata& metadata
-)
+    const std::string& filename,
+    std::vector<std::unique_ptr<Core::Event>>& events,
+    Core::StorageMetadata& metadata)
 {
     spdlog::info("XmlEventStorage: Loading events from {}", filename);
 
@@ -85,9 +80,8 @@ bool XmlEventStorage::loadEvents(
 
         if (auto result = doc.load_file(filename.c_str()); !result)
         {
-            setLastError(
-              "Failed to parse XML file: " + std::string(result.description())
-            );
+            setLastError("Failed to parse XML file: " +
+                         std::string(result.description()));
             return false;
         }
 
@@ -118,9 +112,8 @@ bool XmlEventStorage::loadEvents(
             }
         }
 
-        spdlog::info(
-          "XmlEventStorage: Successfully loaded {} events", events.size()
-        );
+        spdlog::info("XmlEventStorage: Successfully loaded {} events",
+                     events.size());
         return true;
     }
     catch (const std::exception& e)
@@ -165,9 +158,8 @@ bool XmlEventStorage::validateFile(const std::string& filename) const
     }
 }
 
-bool XmlEventStorage::getFileMetadata(
-  const std::string& filename, Core::StorageMetadata& metadata
-) const
+bool XmlEventStorage::getFileMetadata(const std::string& filename,
+                                      Core::StorageMetadata& metadata) const
 {
     try
     {
@@ -215,9 +207,8 @@ bool XmlEventStorage::supportsCompression() const noexcept
     return false; // XML itself doesn't support compression
 }
 
-void XmlEventStorage::eventToXml(
-  const Core::Event& event, pugi::xml_node& parent
-) const
+void XmlEventStorage::eventToXml(const Core::Event& event,
+                                 pugi::xml_node& parent) const
 {
     parent.append_attribute("timestamp") = event.getTimestampMs();
 
@@ -232,7 +223,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         break;
     }
@@ -268,7 +259,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         break;
     }
@@ -304,7 +295,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         break;
     }
@@ -320,7 +311,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         break;
     }
@@ -334,7 +325,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         if (data->isRepeated)
         {
@@ -352,7 +343,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         break;
     }
@@ -366,7 +357,7 @@ void XmlEventStorage::eventToXml(
         if (static_cast<uint32_t>(data->modifiers) != 0)
         {
             parent.append_attribute("modifiers") =
-              static_cast<uint32_t>(data->modifiers);
+                static_cast<uint32_t>(data->modifiers);
         }
         break;
     }
@@ -374,8 +365,7 @@ void XmlEventStorage::eventToXml(
 }
 
 std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
-  const pugi::xml_node& node
-) const
+    const pugi::xml_node& node) const
 {
     try
     {
@@ -390,12 +380,10 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
             data.position.x = pos.attribute("x").as_int();
             data.position.y = pos.attribute("y").as_int();
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
 
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseMove, data, timePoint
-            );
+                Core::EventType::MouseMove, data, timePoint);
         }
         if (typeStr == "mouse_click")
         {
@@ -417,12 +405,10 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
                 data.button = Core::MouseButton::X2;
 
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
 
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseClick, data, timePoint
-            );
+                Core::EventType::MouseClick, data, timePoint);
         }
         if (typeStr == "mouse_double_click")
         {
@@ -444,12 +430,10 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
                 data.button = Core::MouseButton::X2;
 
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
 
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseDoubleClick, data, timePoint
-            );
+                Core::EventType::MouseDoubleClick, data, timePoint);
         }
         if (typeStr == "mouse_wheel")
         {
@@ -459,12 +443,10 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
             data.position.y = pos.attribute("y").as_int();
             data.wheelDelta = node.attribute("wheel_delta").as_int();
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
 
             return std::make_unique<Core::Event>(
-              Core::EventType::MouseWheel, data, timePoint
-            );
+                Core::EventType::MouseWheel, data, timePoint);
         }
         if (typeStr == "key_press")
         {
@@ -472,13 +454,11 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
             data.keyCode = node.attribute("key_code").as_uint();
             data.keyName = node.attribute("key_name").value();
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
             data.isRepeated = node.attribute("repeated").as_bool();
 
             return std::make_unique<Core::Event>(
-              Core::EventType::KeyPress, data, timePoint
-            );
+                Core::EventType::KeyPress, data, timePoint);
         }
         if (typeStr == "key_release")
         {
@@ -486,12 +466,10 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
             data.keyCode = node.attribute("key_code").as_uint();
             data.keyName = node.attribute("key_name").value();
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
 
             return std::make_unique<Core::Event>(
-              Core::EventType::KeyRelease, data, timePoint
-            );
+                Core::EventType::KeyRelease, data, timePoint);
         }
         if (typeStr == "key_combination")
         {
@@ -499,12 +477,10 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
             data.keyCode = node.attribute("key_code").as_uint();
             data.keyName = node.attribute("key_name").value();
             data.modifiers = static_cast<Core::KeyModifier>(
-              node.attribute("modifiers").as_uint()
-            );
+                node.attribute("modifiers").as_uint());
 
             return std::make_unique<Core::Event>(
-              Core::EventType::KeyCombination, data, timePoint
-            );
+                Core::EventType::KeyCombination, data, timePoint);
         }
 
         return nullptr;
@@ -515,27 +491,25 @@ std::unique_ptr<Core::Event> XmlEventStorage::xmlToEvent(
     }
 }
 
-void XmlEventStorage::metadataToXml(
-  const Core::StorageMetadata& metadata, pugi::xml_node& parent
-) const
+void XmlEventStorage::metadataToXml(const Core::StorageMetadata& metadata,
+                                    pugi::xml_node& parent) const
 {
     parent.append_child("Version").text() = metadata.version.c_str();
     parent.append_child("ApplicationName").text() =
-      metadata.applicationName.c_str();
+        metadata.applicationName.c_str();
     parent.append_child("CreatedBy").text() = metadata.createdBy.c_str();
     parent.append_child("Description").text() = metadata.description.c_str();
     parent.append_child("CreationTimestamp").text() =
-      metadata.creationTimestamp;
+        metadata.creationTimestamp;
     parent.append_child("TotalDurationMs").text() = metadata.totalDurationMs;
     parent.append_child("TotalEvents").text() = metadata.totalEvents;
     parent.append_child("Platform").text() = metadata.platform.c_str();
     parent.append_child("ScreenResolution").text() =
-      metadata.screenResolution.c_str();
+        metadata.screenResolution.c_str();
 }
 
 Core::StorageMetadata XmlEventStorage::xmlToMetadata(
-  const pugi::xml_node& node
-) const
+    const pugi::xml_node& node) const
 {
     Core::StorageMetadata metadata;
 
@@ -544,12 +518,12 @@ Core::StorageMetadata XmlEventStorage::xmlToMetadata(
     metadata.createdBy = node.child("CreatedBy").text().as_string();
     metadata.description = node.child("Description").text().as_string();
     metadata.creationTimestamp =
-      node.child("CreationTimestamp").text().as_ullong();
+        node.child("CreationTimestamp").text().as_ullong();
     metadata.totalDurationMs = node.child("TotalDurationMs").text().as_ullong();
     metadata.totalEvents = node.child("TotalEvents").text().as_ullong();
     metadata.platform = node.child("Platform").text().as_string();
     metadata.screenResolution =
-      node.child("ScreenResolution").text().as_string();
+        node.child("ScreenResolution").text().as_string();
 
     return metadata;
 }

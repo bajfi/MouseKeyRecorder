@@ -19,21 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Ubuntu builds with different Qt versions
-          - os: ubuntu-20.04
-            qt-version: "5.15.2"
-            docker: ubuntu:20.04
-            deps: |
-              export DEBIAN_FRONTEND=noninteractive && \
-              export TZ=Etc/UTC && \
-              ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-              apt-get update && apt-get install -y \
-                build-essential cmake git \
-                qtbase5-dev qttools5-dev \
-                libx11-dev libxtst-dev libxi-dev \
-                libspdlog-dev nlohmann-json3-dev libpugixml-dev \
-                libgtest-dev pkg-config xvfb
-
+          # Ubuntu builds with different Qt versions and C++23 support
           - os: ubuntu-22.04
             qt-version: "5.15.3"
             docker: ubuntu:22.04
@@ -42,11 +28,17 @@ jobs:
               export TZ=Etc/UTC && \
               ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
               apt-get update && apt-get install -y \
-                build-essential cmake git \
+                software-properties-common wget && \
+              wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
+              apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main' && \
+              add-apt-repository ppa:ubuntu-toolchain-r/test && \
+              apt-get update && apt-get install -y \
+                gcc-13 g++-13 cmake git \
                 qtbase5-dev qttools5-dev \
                 libx11-dev libxtst-dev libxi-dev \
                 libspdlog-dev nlohmann-json3-dev libpugixml-dev \
-                libgtest-dev pkg-config xvfb
+                libgtest-dev pkg-config xvfb && \
+              update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
 
           - os: ubuntu-24.04
             qt-version: "5.15.3"
@@ -126,7 +118,7 @@ jobs:
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       with:
         name: mouserecorder-${{ matrix.os }}-${{ github.sha }}
         path: |

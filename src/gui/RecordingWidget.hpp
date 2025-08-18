@@ -30,16 +30,15 @@ class RecordingWidget : public QWidget
     Q_OBJECT
 
   public:
-    explicit RecordingWidget(
-      Application::MouseRecorderApp& app, QWidget* parent = nullptr
-    );
+    explicit RecordingWidget(Application::MouseRecorderApp& app,
+                             QWidget* parent = nullptr);
     ~RecordingWidget();
 
   public slots:
     void updateStatistics();
-    void updateStatistics(
-      size_t totalEvents, size_t mouseEvents, size_t keyboardEvents
-    );
+    void updateStatistics(size_t totalEvents,
+                          size_t mouseEvents,
+                          size_t keyboardEvents);
     void addEvent(const Core::Event* event);
     void clearEvents();
     void setEvents(const std::vector<std::unique_ptr<Core::Event>>& events);
@@ -54,8 +53,7 @@ class RecordingWidget : public QWidget
     void recordingStarted();
     void recordingStopped();
     void exportEventsRequested(
-      const std::vector<std::unique_ptr<Core::Event>>& events
-    );
+        const std::vector<std::unique_ptr<Core::Event>>& events);
 
   private slots:
     void onStartRecording();

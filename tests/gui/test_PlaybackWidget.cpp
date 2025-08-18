@@ -47,13 +47,11 @@ class PlaybackWidgetTest : public ::testing::Test
         // Initialize MouseRecorderApp (NOT in headless mode for testing)
         mouseRecorderApp = std::make_unique<Application::MouseRecorderApp>();
         ASSERT_TRUE(
-          mouseRecorderApp->initialize("", false)
-        ); // headless = false
+            mouseRecorderApp->initialize("", false)); // headless = false
 
         // Create PlaybackWidget
         playbackWidget = std::make_unique<MouseRecorder::GUI::PlaybackWidget>(
-          *mouseRecorderApp
-        );
+            *mouseRecorderApp);
     }
 
     void TearDown() override
@@ -84,21 +82,12 @@ class PlaybackWidgetTest : public ::testing::Test
         // Create some test events
         std::vector<std::unique_ptr<Core::Event>> events;
         events.push_back(Core::EventFactory::createMouseMoveEvent({100, 200}));
-        events.push_back(
-          Core::EventFactory::createMouseClickEvent(
-            {100, 200}, Core::MouseButton::Left
-          )
-        );
-        events.push_back(
-          Core::EventFactory::createKeyPressEvent(
-            65, "a", Core::KeyModifier::None
-          )
-        );
-        events.push_back(
-          Core::EventFactory::createKeyReleaseEvent(
-            65, "a", Core::KeyModifier::None
-          )
-        );
+        events.push_back(Core::EventFactory::createMouseClickEvent(
+            {100, 200}, Core::MouseButton::Left));
+        events.push_back(Core::EventFactory::createKeyPressEvent(
+            65, "a", Core::KeyModifier::None));
+        events.push_back(Core::EventFactory::createKeyReleaseEvent(
+            65, "a", Core::KeyModifier::None));
 
         // Save events to file
         Storage::JsonEventStorage storage;
@@ -107,8 +96,7 @@ class PlaybackWidgetTest : public ::testing::Test
         metadata.totalEvents = events.size();
 
         EXPECT_TRUE(
-          storage.saveEvents(events, fileName.toStdString(), metadata)
-        );
+            storage.saveEvents(events, fileName.toStdString(), metadata));
 
         // Keep the file alive by storing the unique_ptr
         tempFiles.push_back(std::move(tempFile));
@@ -151,7 +139,7 @@ TEST_F(PlaybackWidgetTest, LoadFile)
 
     // Check that file was loaded
     auto* filePathEdit =
-      playbackWidget->findChild<QLineEdit*>("filePathLineEdit");
+        playbackWidget->findChild<QLineEdit*>("filePathLineEdit");
     ASSERT_TRUE(filePathEdit != nullptr);
     EXPECT_EQ(filePathEdit->text().toStdString(), testFile.toStdString());
 
@@ -171,11 +159,11 @@ TEST_F(PlaybackWidgetTest, PlaybackControls)
 
     // Set up signal spies
     QSignalSpy playbackStartedSpy(
-      playbackWidget.get(), &MouseRecorder::GUI::PlaybackWidget::playbackStarted
-    );
+        playbackWidget.get(),
+        &MouseRecorder::GUI::PlaybackWidget::playbackStarted);
     QSignalSpy playbackStoppedSpy(
-      playbackWidget.get(), &MouseRecorder::GUI::PlaybackWidget::playbackStopped
-    );
+        playbackWidget.get(),
+        &MouseRecorder::GUI::PlaybackWidget::playbackStopped);
 
     auto* playButton = playbackWidget->findChild<QPushButton*>("playButton");
     auto* stopButton = playbackWidget->findChild<QPushButton*>("stopButton");
@@ -219,9 +207,8 @@ TEST_F(PlaybackWidgetTest, SpeedControl)
     EXPECT_TRUE(speedLabel->text().contains("2.0x"));
 
     // Check that the player speed was updated
-    EXPECT_DOUBLE_EQ(
-      mouseRecorderApp->getEventPlayer().getPlaybackSpeed(), 2.0
-    );
+    EXPECT_DOUBLE_EQ(mouseRecorderApp->getEventPlayer().getPlaybackSpeed(),
+                     2.0);
 }
 
 TEST_F(PlaybackWidgetTest, FileMetadataDisplay)
@@ -233,9 +220,9 @@ TEST_F(PlaybackWidgetTest, FileMetadataDisplay)
     QTest::qWait(100);
 
     auto* totalEventsLabel =
-      playbackWidget->findChild<QLabel*>("totalEventsValue");
+        playbackWidget->findChild<QLabel*>("totalEventsValue");
     auto* fileFormatLabel =
-      playbackWidget->findChild<QLabel*>("fileFormatValue");
+        playbackWidget->findChild<QLabel*>("fileFormatValue");
 
     ASSERT_TRUE(totalEventsLabel != nullptr);
     ASSERT_TRUE(fileFormatLabel != nullptr);
@@ -254,7 +241,7 @@ TEST_F(PlaybackWidgetTest, ProgressTracking)
     QTest::qWait(100);
 
     auto* progressSlider =
-      playbackWidget->findChild<QSlider*>("progressSlider");
+        playbackWidget->findChild<QSlider*>("progressSlider");
     ASSERT_TRUE(progressSlider != nullptr);
 
     // Check initial state
@@ -308,11 +295,8 @@ TEST_F(PlaybackWidgetTest, LoadFileRequestedSlot)
 
     // Create some test events
     std::vector<std::unique_ptr<Core::Event>> events;
-    events.push_back(
-      Core::EventFactory::createMouseClickEvent(
-        Core::Point{150, 250}, Core::MouseButton::Left
-      )
-    );
+    events.push_back(Core::EventFactory::createMouseClickEvent(
+        Core::Point{150, 250}, Core::MouseButton::Left));
     events.push_back(Core::EventFactory::createKeyPressEvent(72, "H"));
 
     // Save test events to file
@@ -321,9 +305,8 @@ TEST_F(PlaybackWidgetTest, LoadFileRequestedSlot)
     metadata.version = "1.0";
     metadata.description = "Test events";
 
-    ASSERT_TRUE(
-      storage.saveEvents(events, tempFile.fileName().toStdString(), metadata)
-    );
+    ASSERT_TRUE(storage.saveEvents(
+        events, tempFile.fileName().toStdString(), metadata));
 
     tempFile.close();
 
