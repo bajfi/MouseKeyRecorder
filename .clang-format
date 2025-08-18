@@ -74,7 +74,6 @@ BraceWrapping:
   AfterClass: true # After class
   AfterFunction: true # After function
   AfterNamespace: true # After namespace
-  AfterModule: true # After module
   AfterUnion: true # After union
   BeforeLambdaBody: true # Before lambda body
   SplitEmptyFunction: false # Split empty function

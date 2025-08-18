@@ -162,10 +162,11 @@ jobs:
           '/usr/*' \
           '*/tests/*' \
           '*/build/*' \
-          '*_autogen/*' \
+          '*_autogen*' \
+          '*/CMakeFiles/*' \
           --output-file coverage_filtered.info \
           --rc geninfo_unexecuted_blocks=1 \
-          --ignore-errors gcov,source,mismatch
+          --ignore-errors gcov,source,mismatch,unused
 
         # Generate HTML report
         genhtml coverage_filtered.info --output-directory coverage_html \
