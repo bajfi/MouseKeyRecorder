@@ -44,11 +44,16 @@ void ConfigurationWidget::setupUI()
             &QCheckBox::toggled,
             this,
             &ConfigurationWidget::updateUI);
+    connect(ui->filterApplicationShortcutsCheckBox,
+            &QCheckBox::toggled,
+            this,
+            &ConfigurationWidget::updateUI);
 
     // Setup default values
     ui->captureMouseEventsCheckBox->setChecked(true);
     ui->captureKeyboardEventsCheckBox->setChecked(true);
     ui->optimizeMouseMovementsCheckBox->setChecked(true);
+    ui->filterApplicationShortcutsCheckBox->setChecked(true);
     ui->movementThresholdSpinBox->setValue(5);
     ui->defaultFormatComboBox->setCurrentIndex(0); // JSON
 
@@ -83,6 +88,8 @@ void ConfigurationWidget::loadConfiguration()
         config.getBool(ConfigKeys::CAPTURE_KEYBOARD_EVENTS, true));
     ui->optimizeMouseMovementsCheckBox->setChecked(
         config.getBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true));
+    ui->filterApplicationShortcutsCheckBox->setChecked(
+        config.getBool(ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT, true));
     ui->movementThresholdSpinBox->setValue(
         config.getInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD, 5));
 
@@ -194,6 +201,8 @@ void ConfigurationWidget::saveConfiguration()
                    ui->captureKeyboardEventsCheckBox->isChecked());
     config.setBool(ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS,
                    ui->optimizeMouseMovementsCheckBox->isChecked());
+    config.setBool(ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT,
+                   ui->filterApplicationShortcutsCheckBox->isChecked());
     config.setInt(ConfigKeys::MOUSE_MOVEMENT_THRESHOLD,
                   ui->movementThresholdSpinBox->value());
 
@@ -300,6 +309,7 @@ void ConfigurationWidget::onRestoreDefaults()
     ui->captureMouseEventsCheckBox->setChecked(true);
     ui->captureKeyboardEventsCheckBox->setChecked(true);
     ui->optimizeMouseMovementsCheckBox->setChecked(true);
+    ui->filterApplicationShortcutsCheckBox->setChecked(true);
     ui->movementThresholdSpinBox->setValue(5);
 
     // Restore optimization defaults

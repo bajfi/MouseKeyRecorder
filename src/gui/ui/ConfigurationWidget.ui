@@ -60,6 +60,19 @@
                                                 </property>
                                             </widget>
                                         </item>
+                                        <item row="1" column="1">
+                                            <widget class="QCheckBox" name="filterApplicationShortcutsCheckBox">
+                                                <property name="text">
+                                                    <string>Filter Stop Recording Shortcut</string>
+                                                </property>
+                                                <property name="toolTip">
+                                                    <string>Prevent the stop recording shortcut keys from being recorded</string>
+                                                </property>
+                                                <property name="checked">
+                                                    <bool>true</bool>
+                                                </property>
+                                            </widget>
+                                        </item>
                                         <item row="2" column="0">
                                             <widget class="QLabel" name="movementThresholdLabel">
                                                 <property name="text">

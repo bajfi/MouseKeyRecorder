@@ -1,9 +1,9 @@
 # MouseRecorder
 
-[![build](https://img.shields.io/github/actions/workflow/status/bajfi/MouseKeyRecorder/actions/workflows/ci.yml?branch=main&label=build&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-passing-brightgreen?logo=ubuntu)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
-[![code quality](https://img.shields.io/badge/code%20quality-A-brightgreen?logo=codeclimate)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/code-quality.yml)
-[![license](https://img.shields.io/badge/license-MIT-blue?logo=opensource)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/bajfi/MouseKeyRecorder/ci.yml?branch=main&label=CI&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
+[![Code Quality](https://img.shields.io/github/actions/workflow/status/bajfi/MouseKeyRecorder/code-quality.yml?branch=main&label=Code%20Quality&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/code-quality.yml)
+[![Platform Support](https://img.shields.io/badge/Platform-Ubuntu%20%7C%20Fedora%20%7C%20Arch-brightgreen?logo=linux)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue?logo=opensource)](LICENSE)
 
 A cross-platform mouse and keyboard event recording and playback application built with modern C++23 and Qt.
 

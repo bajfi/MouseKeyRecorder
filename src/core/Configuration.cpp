@@ -132,6 +132,7 @@ void Configuration::loadDefaults()
     m_values[ConfigKeys::MOUSE_OPTIMIZATION_PRESERVE_FIRST_LAST] = true;
     m_values[ConfigKeys::MOUSE_OPTIMIZATION_STRATEGY] = std::string("combined");
     m_values[ConfigKeys::DEFAULT_STORAGE_FORMAT] = std::string("json");
+    m_values[ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT] = true;
 
     // Playback settings
     m_values[ConfigKeys::DEFAULT_PLAYBACK_SPEED] = 1.0;

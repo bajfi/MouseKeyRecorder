@@ -1,12 +1,16 @@
 #pragma once
 
 #include "core/IEventRecorder.hpp"
+#include "core/IConfiguration.hpp"
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 #include <memory>
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <set>
+#include <vector>
+#include <chrono>
 
 namespace MouseRecorder::Platform::Linux
 {
@@ -20,7 +24,7 @@ namespace MouseRecorder::Platform::Linux
 class LinuxEventCapture : public Core::IEventRecorder
 {
   public:
-    LinuxEventCapture();
+    explicit LinuxEventCapture(const Core::IConfiguration& config);
     ~LinuxEventCapture() override;
 
     // IEventRecorder interface
@@ -94,7 +98,55 @@ class LinuxEventCapture : public Core::IEventRecorder
      */
     bool shouldRecordMouseMovement(const Core::Point& newPos);
 
+    /**
+     * @brief Check if the key combination is a stop recording shortcut
+     * @param keycode X11 keycode
+     * @return true if the key combination is the stop recording shortcut
+     */
+    bool isStopRecordingShortcut(KeyCode keycode);
+
+    /**
+     * @brief Update the currently pressed modifier keys
+     * @param keycode X11 keycode
+     * @param pressed true if key is pressed, false if released
+     */
+    void updateModifierState(KeyCode keycode, bool pressed);
+
+    /**
+     * @brief Convert X11 keycode and modifiers to Qt key sequence string
+     * @param keycode main key code
+     * @return Qt-style key sequence string (e.g., "Ctrl+R")
+     */
+    std::string buildKeySequence(KeyCode keycode);
+
+    /**
+     * @brief Check if a keycode is a modifier key
+     * @param keycode X11 keycode
+     * @return true if the key is a modifier (Ctrl, Shift, Alt)
+     */
+    bool isModifierKey(KeyCode keycode);
+
+    /**
+     * @brief Add event to buffer for potential filtering
+     * @param event Event to buffer
+     */
+    void bufferEvent(std::unique_ptr<Core::Event> event);
+
+    /**
+     * @brief Flush buffered events to callback
+     */
+    void flushEventBuffer();
+
+    /**
+     * @brief Remove recent modifier key events from buffer when stop shortcut
+     * detected
+     */
+    void filterRecentModifierEvents();
+
   private:
+    // Configuration reference
+    const Core::IConfiguration& m_config;
+
     // X11 resources
     Display* m_display{nullptr};
     Window m_rootWindow{0};
@@ -114,6 +166,22 @@ class LinuxEventCapture : public Core::IEventRecorder
     // State tracking
     Core::Point m_lastMousePosition{-1, -1};
     std::atomic<bool> m_hasLastMousePosition{false};
+
+    // Shortcut filtering state
+    std::set<KeyCode> m_pressedKeys;
+    mutable std::mutex m_keyStateMutex;
+
+    // Buffer for recent events to allow retroactive filtering
+    struct BufferedEvent
+    {
+        std::unique_ptr<Core::Event> event;
+        std::chrono::steady_clock::time_point timestamp;
+    };
+
+    std::vector<BufferedEvent> m_eventBuffer;
+    mutable std::mutex m_bufferMutex;
+    static constexpr size_t MAX_BUFFER_SIZE = 10;
+    static constexpr std::chrono::milliseconds BUFFER_TIMEOUT{500};
 
     // Callback and error handling
     EventCallback m_eventCallback;

@@ -140,6 +140,8 @@ constexpr const char* MOUSE_OPTIMIZATION_STRATEGY =
     "recording.mouse_optimization_strategy";
 constexpr const char* DEFAULT_STORAGE_FORMAT =
     "recording.default_storage_format";
+constexpr const char* FILTER_STOP_RECORDING_SHORTCUT =
+    "recording.filter_stop_recording_shortcut";
 
 // Playback settings
 constexpr const char* DEFAULT_PLAYBACK_SPEED = "playback.default_speed";

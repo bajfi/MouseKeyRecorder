@@ -3,6 +3,7 @@
 #include "application/MouseRecorderApp.hpp"
 #include <X11/extensions/XTest.h>
 #include <X11/XKBlib.h>
+#include <X11/keysym.h>
 #include <spdlog/spdlog.h>
 #include <cmath>
 #include <algorithm>
@@ -10,7 +11,8 @@
 namespace MouseRecorder::Platform::Linux
 {
 
-LinuxEventCapture::LinuxEventCapture()
+LinuxEventCapture::LinuxEventCapture(const Core::IConfiguration& config)
+    : m_config(config)
 {
     spdlog::debug("LinuxEventCapture: Constructor");
 }
@@ -98,6 +100,9 @@ void LinuxEventCapture::stopRecording()
         m_eventThread->join();
         m_eventThread.reset();
     }
+
+    // Flush any remaining buffered events when stopping
+    flushEventBuffer();
 
     m_eventCallback = nullptr;
 
@@ -348,13 +353,46 @@ void LinuxEventCapture::processRawKeyEvent(XIRawEvent* data)
     switch (data->evtype)
     {
     case XI_RawKeyPress: {
+        // Update modifier state
+        updateModifierState(data->detail, true);
+
+        // Check if this completes a stop recording shortcut
+        if (isStopRecordingShortcut(data->detail))
+        {
+            spdlog::debug("LinuxEventCapture: Detected stop recording "
+                          "shortcut, filtering recent modifiers");
+            // Filter out recent modifier events that are part of this shortcut
+            filterRecentModifierEvents();
+            // Don't record this final key either
+            return;
+        }
+
         auto event =
             Core::EventFactory::createKeyPressEvent(data->detail, keyName);
-        m_eventCallback(std::move(event));
+
+        // If this is a modifier key and filtering is enabled, buffer it briefly
+        // in case it's part of a stop shortcut
+        if (isModifierKey(data->detail) &&
+            m_config.getBool(Core::ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT,
+                             true))
+        {
+            bufferEvent(std::move(event));
+        }
+        else
+        {
+            // Flush any buffered events first, then send this one
+            flushEventBuffer();
+            m_eventCallback(std::move(event));
+        }
         break;
     }
 
     case XI_RawKeyRelease: {
+        // Update modifier state
+        updateModifierState(data->detail, false);
+
+        // Key releases are processed normally - no special filtering needed
+        flushEventBuffer(); // Flush any pending events first
         auto event =
             Core::EventFactory::createKeyReleaseEvent(data->detail, keyName);
         m_eventCallback(std::move(event));
@@ -437,6 +475,267 @@ void LinuxEventCapture::setLastError(const std::string& error)
     std::lock_guard<std::mutex> lock(m_errorMutex);
     m_lastError = error;
     spdlog::error("LinuxEventCapture: {}", error);
+}
+
+bool LinuxEventCapture::isStopRecordingShortcut(KeyCode keycode)
+{
+    // If shortcut filtering is disabled, never filter
+    if (!m_config.getBool(Core::ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT,
+                          true))
+    {
+        return false;
+    }
+
+    // Build the current key sequence string including this key
+    auto currentSequence = buildKeySequence(keycode);
+
+    if (currentSequence.empty())
+    {
+        return false;
+    }
+
+    // Only check against the stop recording shortcut
+    auto stopRecording = m_config.getString(
+        Core::ConfigKeys::SHORTCUT_STOP_RECORDING, "Ctrl+Shift+R");
+
+    bool isStopShortcut = (currentSequence == stopRecording);
+
+    if (isStopShortcut)
+    {
+        spdlog::debug("LinuxEventCapture: Detected stop recording shortcut: {}",
+                      currentSequence);
+    }
+
+    return isStopShortcut;
+}
+
+bool LinuxEventCapture::isModifierKey(KeyCode keycode)
+{
+    if (!m_display)
+    {
+        return false;
+    }
+
+    auto keysym = XkbKeycodeToKeysym(m_display, keycode, 0, 0);
+
+    switch (keysym)
+    {
+    case XK_Control_L:
+    case XK_Control_R:
+    case XK_Shift_L:
+    case XK_Shift_R:
+    case XK_Alt_L:
+    case XK_Alt_R:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void LinuxEventCapture::updateModifierState(KeyCode keycode, bool pressed)
+{
+    std::lock_guard<std::mutex> lock(m_keyStateMutex);
+
+    if (pressed)
+    {
+        m_pressedKeys.insert(keycode);
+        return;
+    }
+    m_pressedKeys.erase(keycode);
+}
+
+std::string LinuxEventCapture::buildKeySequence(KeyCode keycode)
+{
+    if (!m_display)
+    {
+        return "";
+    }
+
+    std::lock_guard<std::mutex> lock(m_keyStateMutex);
+
+    // Get the key symbol for the main key
+    KeySym keysym = XkbKeycodeToKeysym(m_display, keycode, 0, 0);
+    if (keysym == NoSymbol)
+    {
+        return "";
+    }
+
+    char* keyName = XKeysymToString(keysym);
+    if (!keyName)
+    {
+        return "";
+    }
+
+    // Check for modifier keys currently pressed (including the current key if
+    // it's a modifier)
+    bool hasCtrl = false;
+    bool hasShift = false;
+    bool hasAlt = false;
+    bool isModifierKey = false;
+
+    // Check if the current key is a modifier
+    switch (keysym)
+    {
+    case XK_Control_L:
+    case XK_Control_R:
+        hasCtrl = true;
+        isModifierKey = true;
+        break;
+    case XK_Shift_L:
+    case XK_Shift_R:
+        hasShift = true;
+        isModifierKey = true;
+        break;
+    case XK_Alt_L:
+    case XK_Alt_R:
+        hasAlt = true;
+        isModifierKey = true;
+        break;
+    }
+
+    // If this is a modifier key press, don't create a sequence
+    if (isModifierKey)
+    {
+        return "";
+    }
+
+    // Check for modifiers in the currently pressed keys
+    for (KeyCode pressedKey : m_pressedKeys)
+    {
+        if (pressedKey == keycode)
+            continue; // Skip the current key
+
+        KeySym pressedSym = XkbKeycodeToKeysym(m_display, pressedKey, 0, 0);
+
+        switch (pressedSym)
+        {
+        case XK_Control_L:
+        case XK_Control_R:
+            hasCtrl = true;
+            break;
+        case XK_Shift_L:
+        case XK_Shift_R:
+            hasShift = true;
+            break;
+        case XK_Alt_L:
+        case XK_Alt_R:
+            hasAlt = true;
+            break;
+        }
+    }
+
+    // Only create sequences for non-modifier keys with at least one modifier
+    if (!hasCtrl && !hasShift && !hasAlt)
+    {
+        return "";
+    }
+
+    std::string result;
+
+    // Build the sequence string in Qt format
+    if (hasCtrl)
+        result += "Ctrl+";
+    if (hasShift)
+        result += "Shift+";
+    if (hasAlt)
+        result += "Alt+";
+
+    // Convert key name to proper case for Qt format
+    std::string key = std::string(keyName);
+    if (key.length() == 1)
+    {
+        key[0] = std::toupper(key[0]);
+    }
+
+    result += key;
+
+    return result;
+}
+
+void LinuxEventCapture::bufferEvent(std::unique_ptr<Core::Event> event)
+{
+    std::lock_guard<std::mutex> lock(m_bufferMutex);
+
+    // Add event to buffer with current timestamp
+    BufferedEvent bufferedEvent;
+    bufferedEvent.event = std::move(event);
+    bufferedEvent.timestamp = std::chrono::steady_clock::now();
+
+    m_eventBuffer.push_back(std::move(bufferedEvent));
+
+    // Remove old events beyond buffer size
+    if (m_eventBuffer.size() > MAX_BUFFER_SIZE)
+    {
+        m_eventBuffer.erase(m_eventBuffer.begin());
+    }
+
+    // Remove events older than timeout
+    auto now = std::chrono::steady_clock::now();
+    m_eventBuffer.erase(std::remove_if(m_eventBuffer.begin(),
+                                       m_eventBuffer.end(),
+                                       [now](const BufferedEvent& buffered)
+                                       {
+                                           return (now - buffered.timestamp) >
+                                                  BUFFER_TIMEOUT;
+                                       }),
+                        m_eventBuffer.end());
+}
+
+void LinuxEventCapture::flushEventBuffer()
+{
+    std::lock_guard<std::mutex> lock(m_bufferMutex);
+
+    // Send all buffered events to callback
+    for (auto& bufferedEvent : m_eventBuffer)
+    {
+        if (bufferedEvent.event && m_eventCallback)
+        {
+            m_eventCallback(std::move(bufferedEvent.event));
+        }
+    }
+
+    m_eventBuffer.clear();
+}
+
+void LinuxEventCapture::filterRecentModifierEvents()
+{
+    std::lock_guard<std::mutex> lock(m_bufferMutex);
+
+    // Remove recent modifier key events from buffer
+    auto now = std::chrono::steady_clock::now();
+
+    m_eventBuffer.erase(
+        std::remove_if(m_eventBuffer.begin(),
+                       m_eventBuffer.end(),
+                       [this, now](const BufferedEvent& buffered)
+                       {
+                           // Remove if it's a recent modifier key event
+                           if ((now - buffered.timestamp) > BUFFER_TIMEOUT)
+                           {
+                               return false; // Keep old events
+                           }
+
+                           if (!buffered.event ||
+                               !buffered.event->isKeyboardEvent())
+                           {
+                               return false; // Keep non-keyboard events
+                           }
+
+                           const Core::KeyboardEventData* keyData =
+                               buffered.event->getKeyboardData();
+                           if (!keyData)
+                           {
+                               return false;
+                           }
+
+                           // Check if this is a modifier key that should be
+                           // filtered
+                           return isModifierKey(keyData->keyCode);
+                       }),
+        m_eventBuffer.end());
+
+    spdlog::debug(
+        "LinuxEventCapture: Filtered recent modifier events from buffer");
 }
 
 } // namespace MouseRecorder::Platform::Linux

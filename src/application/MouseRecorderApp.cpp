@@ -320,8 +320,8 @@ bool MouseRecorderApp::setupPlatformComponents()
     try
     {
 #ifdef __linux__
-        m_eventRecorder =
-            std::make_unique<Platform::Linux::LinuxEventCapture>();
+        m_eventRecorder = std::make_unique<Platform::Linux::LinuxEventCapture>(
+            *m_configuration);
         m_eventPlayer = std::make_unique<Platform::Linux::LinuxEventReplay>();
         spdlog::info("MouseRecorderApp: Linux platform components initialized");
 #elif _WIN32

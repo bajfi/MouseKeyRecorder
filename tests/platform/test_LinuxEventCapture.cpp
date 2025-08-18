@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 #include "platform/linux/LinuxEventCapture.hpp"
 #include "core/Event.hpp"
+#include "core/QtConfiguration.hpp"
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <memory>
 
 using namespace MouseRecorder::Platform::Linux;
 using namespace MouseRecorder::Core;
@@ -13,7 +15,8 @@ class LinuxEventCaptureTest : public ::testing::Test
   protected:
     void SetUp() override
     {
-        m_eventCapture = std::make_unique<LinuxEventCapture>();
+        m_config = std::make_unique<QtConfiguration>();
+        m_eventCapture = std::make_unique<LinuxEventCapture>(*m_config);
     }
 
     void TearDown() override
@@ -23,8 +26,10 @@ class LinuxEventCaptureTest : public ::testing::Test
             m_eventCapture->stopRecording();
         }
         m_eventCapture.reset();
+        m_config.reset();
     }
 
+    std::unique_ptr<IConfiguration> m_config;
     std::unique_ptr<LinuxEventCapture> m_eventCapture;
     std::vector<std::unique_ptr<Event>> m_capturedEvents;
     std::atomic<bool> m_callbackCalled{false};
@@ -120,4 +125,28 @@ TEST_F(LinuxEventCaptureTest, MouseMovementThreshold)
     // No way to verify the actual value without access to internals,
     // but at least verify no exceptions are thrown
     SUCCEED();
+}
+
+TEST_F(LinuxEventCaptureTest, ShortcutFilteringConfiguration)
+{
+    // Test that shortcut filtering configuration is properly handled
+
+    // Enable shortcut filtering
+    m_config->setBool(ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT, true);
+    EXPECT_TRUE(
+        m_config->getBool(ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT, false));
+
+    // Disable shortcut filtering
+    m_config->setBool(ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT, false);
+    EXPECT_FALSE(
+        m_config->getBool(ConfigKeys::FILTER_STOP_RECORDING_SHORTCUT, true));
+
+    // Test with custom shortcuts
+    m_config->setString(ConfigKeys::SHORTCUT_START_RECORDING, "Ctrl+F1");
+    m_config->setString(ConfigKeys::SHORTCUT_STOP_RECORDING, "Ctrl+F2");
+
+    EXPECT_EQ("Ctrl+F1",
+              m_config->getString(ConfigKeys::SHORTCUT_START_RECORDING, ""));
+    EXPECT_EQ("Ctrl+F2",
+              m_config->getString(ConfigKeys::SHORTCUT_STOP_RECORDING, ""));
 }
