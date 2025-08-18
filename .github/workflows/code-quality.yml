@@ -11,6 +11,8 @@ on:
 
 env:
   CMAKE_BUILD_TYPE: Debug
+  QT_QPA_PLATFORM: offscreen
+  DISPLAY: :99
 
 jobs:
   code-formatting:
@@ -56,10 +58,12 @@ jobs:
           qtbase5-dev qttools5-dev \
           libx11-dev libxtst-dev libxi-dev \
           libspdlog-dev nlohmann-json3-dev libpugixml-dev \
-          pkg-config \
-          cppcheck clang-tidy
+          libgtest-dev pkg-config \
+          cppcheck clang-tidy xvfb
 
     - name: Configure CMake with compile commands
+      env:
+        QT_QPA_PLATFORM: offscreen
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
@@ -77,9 +81,11 @@ jobs:
           src/ 2> cppcheck-report.xml || true
 
     - name: Run clang-tidy
+      env:
+        QT_QPA_PLATFORM: offscreen
       run: |
         # Build first to generate necessary files
-        cmake --build build -j$(nproc)
+        xvfb-run -a cmake --build build -j$(nproc)
 
         # Run clang-tidy on source files
         find src -name "*.cpp" | head -10 | xargs -I {} \
@@ -116,6 +122,8 @@ jobs:
           lcov gcovr xvfb
 
     - name: Configure CMake with coverage
+      env:
+        QT_QPA_PLATFORM: offscreen
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Debug \
@@ -125,9 +133,13 @@ jobs:
           -DUSE_SYSTEM_DEPS=ON
 
     - name: Build with coverage
+      env:
+        QT_QPA_PLATFORM: offscreen
       run: cmake --build build -j$(nproc)
 
     - name: Run tests with coverage
+      env:
+        QT_QPA_PLATFORM: offscreen
       run: |
         cd build
         xvfb-run -a ctest --output-on-failure
