@@ -1,6 +1,6 @@
 # MouseRecorder
 
-[![build](https://img.shields.io/github/actions/workflow/status/USERNAME/MouseRecorder/ci.yml?branch=main&label=build&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
+[![build](https://img.shields.io/github/actions/workflow/status/bajfi/MouseKeyRecorder/actions/workflows/ci.yml?branch=main&label=build&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-passing-brightgreen?logo=ubuntu)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
 [![code quality](https://img.shields.io/badge/code%20quality-A-brightgreen?logo=codeclimate)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/code-quality.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue?logo=opensource)](LICENSE)

@@ -28,12 +28,11 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: MouseRecorder ${{ steps.get_version.outputs.VERSION }}
+        name: MouseRecorder ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
         body: |
@@ -67,7 +66,7 @@ jobs:
             deps: |
               apt-get update && apt-get install -y \
                 build-essential cmake git \
-                qt5-default qttools5-dev \
+                qtbase5-dev qttools5-dev \
                 libx11-dev libxtst-dev libxi-dev \
                 libspdlog-dev nlohmann-json3-dev libpugixml-dev \
                 pkg-config file

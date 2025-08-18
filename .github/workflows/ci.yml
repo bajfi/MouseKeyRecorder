@@ -9,6 +9,7 @@ on:
 env:
   CMAKE_BUILD_TYPE: Release
   QT_QPA_PLATFORM: offscreen
+  DISPLAY: :99
 
 jobs:
   build:
@@ -25,7 +26,7 @@ jobs:
             deps: |
               apt-get update && apt-get install -y \
                 build-essential cmake git \
-                qt5-default qttools5-dev \
+                qtbase5-dev qttools5-dev \
                 libx11-dev libxtst-dev libxi-dev \
                 libspdlog-dev nlohmann-json3-dev libpugixml-dev \
                 libgtest-dev pkg-config xvfb
@@ -42,12 +43,12 @@ jobs:
                 libgtest-dev pkg-config xvfb
 
           - os: ubuntu-24.04
-            qt-version: "6.4.2"
+            qt-version: "5.15.3"
             docker: ubuntu:24.04
             deps: |
               apt-get update && apt-get install -y \
                 build-essential cmake git \
-                qt6-base-dev qt6-tools-dev \
+                qtbase5-dev qttools5-dev \
                 libx11-dev libxtst-dev libxi-dev \
                 libspdlog-dev nlohmann-json3-dev libpugixml-dev \
                 libgtest-dev pkg-config xvfb
@@ -82,13 +83,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v5
-      with:
-        submodules: recursive
 
     - name: Install dependencies
       run: ${{ matrix.deps }}
 
     - name: Configure CMake
+      env:
+        QT_QPA_PLATFORM: offscreen
+        DISPLAY: :99
       run: |
         cmake -B build \
           -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
@@ -96,9 +98,15 @@ jobs:
           -DUSE_SYSTEM_DEPS=ON
 
     - name: Build
+      env:
+        QT_QPA_PLATFORM: offscreen
+        DISPLAY: :99
       run: cmake --build build --config ${{ env.CMAKE_BUILD_TYPE }} -j$(nproc)
 
     - name: Run tests
+      env:
+        QT_QPA_PLATFORM: offscreen
+        DISPLAY: :99
       run: |
         cd build
         xvfb-run -a ctest --output-on-failure --timeout 30 -C ${{ env.CMAKE_BUILD_TYPE }}
