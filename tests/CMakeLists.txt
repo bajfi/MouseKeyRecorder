@@ -9,8 +9,6 @@ set(TEST_SOURCES
     core/test_MouseMovementOptimizer.cpp
     application/test_MouseRecorderApp.cpp
     application/test_ShutdownBehavior.cpp
-    platform/test_LinuxEventCapture.cpp
-    platform/test_LinuxEventReplay.cpp
     storage/test_EventStorage.cpp
     storage/test_EventStorageFormats.cpp
     storage/test_EventStorageMetadata.cpp
@@ -24,6 +22,21 @@ set(TEST_SOURCES
     integration/test_SystemTrayAndShortcuts.cpp
     integration/test_MouseMovementOptimization.cpp
 )
+
+if (LINUX)
+    list(APPEND TEST_SOURCES
+        platform/linux/test_LinuxEventCapture.cpp
+        platform/linux/test_LinuxEventReplay.cpp
+    )
+endif()
+
+# Add Windows platform tests if building on Windows
+if(WIN32)
+    list(APPEND TEST_SOURCES
+        platform/windows/test_WindowsEventCapture.cpp
+        platform/windows/test_WindowsEventReplay.cpp
+    )
+endif()
 
 # Function to create a test executable with proper linking
 function(create_test_executable target_name sources)

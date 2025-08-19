@@ -326,7 +326,8 @@ bool MouseRecorderApp::setupPlatformComponents()
         spdlog::info("MouseRecorderApp: Linux platform components initialized");
 #elif _WIN32
         m_eventRecorder =
-            std::make_unique<Platform::Windows::WindowsEventCapture>();
+            std::make_unique<Platform::Windows::WindowsEventCapture>(
+                *m_configuration);
         m_eventPlayer =
             std::make_unique<Platform::Windows::WindowsEventReplay>();
         spdlog::info(

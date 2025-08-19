@@ -174,7 +174,17 @@ if(UNIX AND NOT APPLE)
             ${XI_INCLUDE_DIRS}
     )
 elseif(WIN32)
-    target_link_libraries(MouseRecorderCore PUBLIC user32)
+    target_link_libraries(MouseRecorderCore PUBLIC
+        user32
+        kernel32
+        gdi32
+        shell32
+        ole32
+        oleaut32
+        uuid
+        comdlg32
+        advapi32
+    )
 endif()
 
 # Main executable
