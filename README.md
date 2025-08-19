@@ -2,14 +2,14 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/bajfi/MouseKeyRecorder/ci.yml?branch=main&label=CI&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
 [![Code Quality](https://img.shields.io/github/actions/workflow/status/bajfi/MouseKeyRecorder/code-quality.yml?branch=main&label=Code%20Quality&logo=github)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/code-quality.yml)
-[![Platform Support](https://img.shields.io/badge/Platform-Ubuntu%20%7C%20Fedora%20%7C%20Arch-brightgreen?logo=linux)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
+[![Platform Support](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-brightgreen?logo=multiplatform)](https://github.com/bajfi/MouseKeyRecorder/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue?logo=opensource)](LICENSE)
 
 A cross-platform mouse and keyboard event recording and playback application built with modern C++23 and Qt.
 
 ## Features
 
-- **Cross-Platform Support**: Works on Linux (X11) with Windows and macOS support planned
+- **Cross-Platform Support**: Works on Linux (X11) and Windows with macOS support planned
 - **Multiple File Formats**: Save recordings in JSON, XML, or binary format (.mre)
 - **Intelligent Recording**: Optional mouse movement optimization to reduce file size
 - **Configurable Playback**: Variable speed playback with loop support
@@ -67,7 +67,30 @@ sudo pacman -S \
     pkgconf
 ```
 
+#### Windows
+
+On Windows, you can use either Visual Studio with vcpkg or install Qt separately:
+
+##### Option 1: Using Visual Studio with vcpkg (Recommended)
+
+```powershell
+# Install vcpkg if you haven't already
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+.\bootstrap-vcpkg.bat
+
+# Install Qt and dependencies
+.\vcpkg.exe install qt5-base:x64-windows qt5-tools:x64-windows
+```
+
+##### Option 2: Install Qt manually
+
+1. Download and install Qt 6.5.3 or Qt 5.15.2 from [qt.io](https://www.qt.io/download)
+2. Ensure CMake and Visual Studio 2019/2022 are installed
+
 ### Build Instructions
+
+#### Linux/macOS
 
 1. **Clone the repository**
 
@@ -107,14 +130,70 @@ sudo pacman -S \
    sudo make install
    ```
 
+#### Windows Build Instructions
+
+1. **Clone the repository**
+
+   ```powershell
+   git clone https://github.com/bajfi/MouseKeyRecorder.git
+   cd MouseKeyRecorder
+   ```
+
+2. **Create build directory**
+
+   ```powershell
+   mkdir build
+   cd build
+   ```
+
+3. **Configure with CMake**
+
+   If using vcpkg:
+
+   ```powershell
+   cmake -B . -G "Visual Studio 17 2022" -A x64 ^
+     -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake ^
+     -DCMAKE_BUILD_TYPE=Release ^
+     -DBUILD_TESTS=ON
+   ```
+
+   If using manually installed Qt:
+
+   ```powershell
+   cmake -B . -G "Visual Studio 17 2022" -A x64 ^
+     -DCMAKE_BUILD_TYPE=Release ^
+     -DBUILD_TESTS=ON ^
+     -DUSE_SYSTEM_DEPS=OFF
+   ```
+
+4. **Build the application**
+
+   ```powershell
+   cmake --build . --config Release --parallel
+   ```
+
+5. **Run tests (optional)**
+
+   ```powershell
+   ctest --output-on-failure --timeout 60 -C Release
+   ```
+
 ## Usage
 
 ### Basic Usage
 
 1. **Launch the application**
 
+   On Linux/macOS:
+
    ```bash
    ./MouseRecorder
+   ```
+
+   On Windows:
+
+   ```powershell
+   .\Release\MouseRecorder.exe
    ```
 
 2. **Recording Events**
