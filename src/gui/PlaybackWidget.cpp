@@ -214,7 +214,7 @@ void PlaybackWidget::onPlay()
         // Create copies of events instead of moving them
         // This prevents the issue where subsequent plays fail due to empty
         // event vector
-        std::vector<std::unique_ptr<Core::Event>> eventsCopy;
+        Core::EventVector eventsCopy;
         eventsCopy.reserve(m_loadedEvents.size());
 
         for (const auto& event : m_loadedEvents)
@@ -432,7 +432,7 @@ void PlaybackWidget::loadFile(const QString& fileName)
             return;
         }
 
-        std::vector<std::unique_ptr<Core::Event>> events;
+        Core::EventVector events;
         Core::StorageMetadata metadata;
 
         if (!storage->loadEvents(fileName.toStdString(), events, metadata))

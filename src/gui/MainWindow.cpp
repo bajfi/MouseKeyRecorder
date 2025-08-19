@@ -900,7 +900,7 @@ void MainWindow::onExportEvents()
         }
 
         // Copy events for export (since saveEvents expects const reference)
-        std::vector<std::unique_ptr<Core::Event>> eventsToExport;
+        Core::EventVector eventsToExport;
         {
             std::lock_guard<std::mutex> lock(m_eventsMutex);
             for (const auto& event : m_recordedEvents)
@@ -1024,7 +1024,7 @@ void MainWindow::onStartPlayback()
         };
 
         // Load events into player
-        std::vector<std::unique_ptr<Core::Event>> eventsToPlay;
+        Core::EventVector eventsToPlay;
         if (!m_recordedEvents.empty())
         {
             // Copy recorded events for playback
@@ -1406,7 +1406,7 @@ Core::MouseMovementOptimizer::OptimizationConfig MainWindow::
 }
 
 size_t MainWindow::applyMouseMovementOptimization(
-    std::vector<std::unique_ptr<Core::Event>>& events) const
+    Core::EventVector& events) const
 {
     const auto& config = m_app.getConfiguration();
     if (!config.getBool(Core::ConfigKeys::OPTIMIZE_MOUSE_MOVEMENTS, true))
@@ -1624,7 +1624,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
         }
 
         // Create a copy of events for saving
-        std::vector<std::unique_ptr<Core::Event>> eventsToSave;
+        Core::EventVector eventsToSave;
         {
             std::lock_guard<std::mutex> lock(m_eventsMutex);
             for (const auto& event : m_recordedEvents)

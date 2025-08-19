@@ -1,9 +1,7 @@
 #pragma once
 
 #include <QWidget>
-#include "../core/Event.hpp"
-#include <vector>
-#include <memory>
+#include "core/EventTypes.hpp"
 
 QT_BEGIN_NAMESPACE
 class QTimer;
@@ -41,7 +39,7 @@ class RecordingWidget : public QWidget
                           size_t keyboardEvents);
     void addEvent(const Core::Event* event);
     void clearEvents();
-    void setEvents(const std::vector<std::unique_ptr<Core::Event>>& events);
+    void setEvents(const Core::EventVector& events);
 
   public:
     // Methods to update button states programmatically (for shortcuts)
@@ -52,8 +50,7 @@ class RecordingWidget : public QWidget
   signals:
     void recordingStarted();
     void recordingStopped();
-    void exportEventsRequested(
-        const std::vector<std::unique_ptr<Core::Event>>& events);
+    void exportEventsRequested(const Core::EventVector& events);
 
   private slots:
     void onStartRecording();

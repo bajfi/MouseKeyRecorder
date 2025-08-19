@@ -177,7 +177,7 @@ void RecordingWidget::onExportEvents()
     // Create a temporary vector of unique_ptrs for the signal
     // Note: This is not ideal but matches the expected signal signature
     // In practice, the MainWindow should handle the actual export
-    std::vector<std::unique_ptr<Core::Event>> emptyEvents;
+    Core::EventVector emptyEvents;
     emit exportEventsRequested(emptyEvents);
 }
 
@@ -340,8 +340,7 @@ void RecordingWidget::clearEvents()
     m_displayedEvents.clear();
 }
 
-void RecordingWidget::setEvents(
-    const std::vector<std::unique_ptr<Core::Event>>& events)
+void RecordingWidget::setEvents(const Core::EventVector& events)
 {
     clearEvents();
 

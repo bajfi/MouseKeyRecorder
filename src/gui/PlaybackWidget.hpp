@@ -2,7 +2,7 @@
 
 #include <QWidget>
 #include "core/IEventPlayer.hpp"
-#include <memory>
+#include "core/EventTypes.hpp"
 
 namespace Ui
 {
@@ -77,7 +77,7 @@ class PlaybackWidget : public QWidget
     Application::MouseRecorderApp& m_app;
     QString m_currentFile;
     bool m_fileLoaded{false};
-    std::vector<std::unique_ptr<Core::Event>> m_loadedEvents;
+    Core::EventVector m_loadedEvents;
     QTimer* m_updateTimer{nullptr};
 };
 

@@ -4,10 +4,8 @@
 #include <QSystemTrayIcon>
 #include <QShortcut>
 #include "application/MouseRecorderApp.hpp"
-#include "core/Event.hpp"
+#include "core/EventTypes.hpp"
 #include "core/MouseMovementOptimizer.hpp"
-#include <vector>
-#include <memory>
 #include <mutex>
 
 QT_BEGIN_NAMESPACE
@@ -109,8 +107,7 @@ class MainWindow : public QMainWindow
     // Helper method for mouse movement optimization
     Core::MouseMovementOptimizer::OptimizationConfig
     getOptimizationConfigFromSettings() const;
-    size_t applyMouseMovementOptimization(
-        std::vector<std::unique_ptr<Core::Event>>& events) const;
+    size_t applyMouseMovementOptimization(Core::EventVector& events) const;
 
     // Helper methods to suppress message boxes in test environments
     void showErrorMessage(const QString& title, const QString& message);
@@ -131,7 +128,7 @@ class MainWindow : public QMainWindow
     PlaybackWidget* m_playbackWidget{nullptr};
 
     // Event storage for recording session
-    std::vector<std::unique_ptr<Core::Event>> m_recordedEvents;
+    Core::EventVector m_recordedEvents;
     mutable std::mutex m_eventsMutex;
 
     // System tray components
