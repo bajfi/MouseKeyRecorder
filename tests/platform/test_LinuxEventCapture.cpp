@@ -1,11 +1,15 @@
 #include <gtest/gtest.h>
-#include "platform/linux/LinuxEventCapture.hpp"
-#include "core/Event.hpp"
-#include "core/QtConfiguration.hpp"
+#include <memory>
 #include <thread>
 #include <chrono>
 #include <atomic>
-#include <memory>
+
+// Qt includes must come before X11 includes to avoid Bool/QVariant conflicts
+#include <QtCore/qmetatype.h>
+#include "core/QtConfiguration.hpp"
+#include "core/Event.hpp"
+// X11 includes come last
+#include "platform/linux/LinuxEventCapture.hpp"
 
 using namespace MouseRecorder::Platform::Linux;
 using namespace MouseRecorder::Core;
