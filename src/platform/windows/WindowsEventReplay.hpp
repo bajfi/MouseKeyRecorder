@@ -42,6 +42,11 @@ class WindowsEventReplay : public Core::IEventPlayer
 
   private:
     /**
+     * @brief Set the last error message
+     * @param error Error message to set
+     */
+    void setLastError(const std::string& error);
+    /**
      * @brief Playback thread function
      */
     void playbackThreadFunc();

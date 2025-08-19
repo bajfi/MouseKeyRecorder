@@ -24,6 +24,9 @@ WindowsEventCapture::~WindowsEventCapture()
 
 bool WindowsEventCapture::startRecording(EventCallback callback)
 {
+    // Suppress unused parameter warning for stub implementation
+    (void) callback;
+
     // Stub: Only implemented on Windows
     setLastError("Not implemented on non-Windows platforms");
     return false;

@@ -50,7 +50,7 @@ function(create_test_executable target_name sources)
             Qt${QT_VERSION_MAJOR}::Widgets
     )
 
-    # Link GTest
+    # Link GTest - prioritize modern targets
     if(TARGET GTest::gtest)
         target_link_libraries(${target_name} PRIVATE GTest::gtest GTest::gtest_main)
     elseif(TARGET gtest)
@@ -63,6 +63,8 @@ function(create_test_executable target_name sources)
         if(GTEST_MAIN_LIBRARY)
             target_link_libraries(${target_name} PRIVATE ${GTEST_MAIN_LIBRARY})
         endif()
+    else()
+        message(FATAL_ERROR "GTest not found and no fallback available")
     endif()
 
     # Set target properties

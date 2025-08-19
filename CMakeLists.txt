@@ -92,11 +92,28 @@ find_or_fetch_dependency(
 # Find GTest only if tests are enabled
 if(BUILD_TESTS)
     find_or_fetch_dependency(
-        gtest
+        googletest
         "https://github.com/google/googletest.git"
         "v1.14.0"
         "GTest"
     )
+
+    # If we fetched GTest via FetchContent, ensure proper targets
+    if(NOT GTest_FOUND AND TARGET gtest)
+        # For FetchContent GTest, create aliases that match find_package behavior
+        if(NOT TARGET GTest::gtest)
+            add_library(GTest::gtest ALIAS gtest)
+        endif()
+        if(NOT TARGET GTest::gtest_main)
+            add_library(GTest::gtest_main ALIAS gtest_main)
+        endif()
+        if(NOT TARGET GTest::gmock)
+            add_library(GTest::gmock ALIAS gmock)
+        endif()
+        if(NOT TARGET GTest::gmock_main)
+            add_library(GTest::gmock_main ALIAS gmock_main)
+        endif()
+    endif()
 endif()
 
 # Find system libraries
