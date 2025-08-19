@@ -20,7 +20,10 @@ namespace MouseRecorder::GUI
 
 PlaybackWidget::PlaybackWidget(Application::MouseRecorderApp& app,
                                QWidget* parent)
-    : QWidget(parent), ui(new Ui::PlaybackWidget), m_app(app)
+    : QWidget(parent),
+      ui(new Ui::PlaybackWidget),
+      m_app(app),
+      m_loadedEvents(std::make_unique<Core::EventVector>())
 {
     ui->setupUi(this);
     setupUI();
@@ -41,7 +44,7 @@ PlaybackWidget::~PlaybackWidget()
     disconnect();
 
     // Clear any loaded events to free memory
-    m_loadedEvents.clear();
+    m_loadedEvents->clear();
 
     delete ui;
 }
@@ -188,7 +191,7 @@ void PlaybackWidget::onReloadFile()
 
 void PlaybackWidget::onPlay()
 {
-    if (!m_fileLoaded || m_loadedEvents.empty())
+    if (!m_fileLoaded || m_loadedEvents->empty())
     {
         showWarningMessage("No Events", "Please load a recording file first.");
         return;
@@ -215,9 +218,9 @@ void PlaybackWidget::onPlay()
         // This prevents the issue where subsequent plays fail due to empty
         // event vector
         Core::EventVector eventsCopy;
-        eventsCopy.reserve(m_loadedEvents.size());
+        eventsCopy.reserve(m_loadedEvents->size());
 
-        for (const auto& event : m_loadedEvents)
+        for (const auto& event : *m_loadedEvents)
         {
             // Create a copy of each event
             auto eventCopy = std::make_unique<Core::Event>(*event);
@@ -281,9 +284,9 @@ void PlaybackWidget::onStop()
         ui->progressSlider->setValue(0);
 
         // Reset time labels to initial state
-        if (!m_loadedEvents.empty())
+        if (!m_loadedEvents->empty())
         {
-            updateTimeLabels(0, m_loadedEvents.size());
+            updateTimeLabels(0, m_loadedEvents->size());
         }
 
         // Stop update timer
@@ -447,17 +450,17 @@ void PlaybackWidget::loadFile(const QString& fileName)
             return;
         }
 
-        m_loadedEvents = std::move(events);
+        *m_loadedEvents = std::move(events);
 
         // Update UI with actual data
         ui->fileFormatValue->setText(fileInfo.suffix().toUpper());
-        ui->totalEventsValue->setText(QString::number(m_loadedEvents.size()));
+        ui->totalEventsValue->setText(QString::number(m_loadedEvents->size()));
 
         // Calculate duration
-        if (!m_loadedEvents.empty())
+        if (!m_loadedEvents->empty())
         {
-            uint64_t startTime = m_loadedEvents.front()->getTimestampMs();
-            uint64_t endTime = m_loadedEvents.back()->getTimestampMs();
+            uint64_t startTime = m_loadedEvents->front()->getTimestampMs();
+            uint64_t endTime = m_loadedEvents->back()->getTimestampMs();
             uint64_t durationMs = endTime - startTime;
 
             int seconds = static_cast<int>(durationMs / 1000);
@@ -472,10 +475,10 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
             // Set progress slider range
             ui->progressSlider->setRange(
-                0, static_cast<int>(m_loadedEvents.size() - 1));
+                0, static_cast<int>(m_loadedEvents->size() - 1));
 
             // Initialize time labels
-            updateTimeLabels(0, m_loadedEvents.size());
+            updateTimeLabels(0, m_loadedEvents->size());
         }
         else
         {
@@ -487,20 +490,21 @@ void PlaybackWidget::loadFile(const QString& fileName)
             fileInfo.birthTime().toString("yyyy-MM-dd hh:mm:ss"));
 
         // Update events preview table
-        ui->eventsPreviewTableWidget->setRowCount(std::min(
-            static_cast<int>(m_loadedEvents.size()), 100) // Show max 100 events
+        ui->eventsPreviewTableWidget->setRowCount(
+            std::min(static_cast<int>(m_loadedEvents->size()),
+                     100) // Show max 100 events
         );
 
         for (int i = 0; i < ui->eventsPreviewTableWidget->rowCount(); ++i)
         {
-            const auto& event = m_loadedEvents[static_cast<size_t>(i)];
+            const auto& event = (*m_loadedEvents)[static_cast<size_t>(i)];
             ui->eventsPreviewTableWidget->setItem(
                 i, 0, new QTableWidgetItem(QString::number(i)));
 
             // Format timestamp
             uint64_t timestamp = event->getTimestampMs();
             uint64_t relativeTime =
-                timestamp - m_loadedEvents.front()->getTimestampMs();
+                timestamp - m_loadedEvents->front()->getTimestampMs();
             int seconds = static_cast<int>(relativeTime / 1000);
             int milliseconds = static_cast<int>(relativeTime % 1000);
 
@@ -552,7 +556,7 @@ void PlaybackWidget::loadFile(const QString& fileName)
 
         m_fileLoaded = true;
         spdlog::info("PlaybackWidget: Loaded {} events from {}",
-                     m_loadedEvents.size(),
+                     m_loadedEvents->size(),
                      m_currentFile.toStdString());
 
         // Close progress dialog before emitting signal
@@ -575,7 +579,7 @@ void PlaybackWidget::loadFile(const QString& fileName)
         showErrorMessage("Error",
                          QString("Failed to load file: %1").arg(e.what()));
         m_fileLoaded = false;
-        m_loadedEvents.clear();
+        m_loadedEvents->clear();
     }
 
     // Re-enable UI
@@ -632,10 +636,10 @@ void PlaybackWidget::updatePlaybackProgress()
             {
                 ui->progressSlider->setValue(ui->progressSlider->maximum());
                 // Update time labels to show total duration
-                if (!m_loadedEvents.empty())
+                if (!m_loadedEvents->empty())
                 {
-                    updateTimeLabels(m_loadedEvents.size(),
-                                     m_loadedEvents.size());
+                    updateTimeLabels(m_loadedEvents->size(),
+                                     m_loadedEvents->size());
                 }
                 emit playbackStopped();
                 spdlog::info("PlaybackWidget: Playback completed");
@@ -686,7 +690,7 @@ void PlaybackWidget::onEventPlayed(const Core::Event& event)
 
 void PlaybackWidget::updateTimeLabels(size_t currentEvent, size_t totalEvents)
 {
-    if (m_loadedEvents.empty())
+    if (m_loadedEvents->empty())
     {
         ui->currentTimeLabel->setText("00:00");
         ui->totalTimeLabel->setText("00:00");
@@ -694,14 +698,14 @@ void PlaybackWidget::updateTimeLabels(size_t currentEvent, size_t totalEvents)
     }
 
     // Calculate current time based on event timestamps
-    auto firstEventTime = m_loadedEvents[0]->getTimestamp();
+    auto firstEventTime = (*m_loadedEvents)[0]->getTimestamp();
     auto totalDuration = std::chrono::milliseconds(0);
     auto currentDuration = std::chrono::milliseconds(0);
 
     if (totalEvents > 0)
     {
         // Calculate total duration (time from first to last event)
-        auto lastEventTime = m_loadedEvents[totalEvents - 1]->getTimestamp();
+        auto lastEventTime = (*m_loadedEvents)[totalEvents - 1]->getTimestamp();
         totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
             lastEventTime - firstEventTime);
 
@@ -709,7 +713,7 @@ void PlaybackWidget::updateTimeLabels(size_t currentEvent, size_t totalEvents)
         if (currentEvent > 0 && currentEvent <= totalEvents)
         {
             auto currentEventTime =
-                m_loadedEvents[currentEvent - 1]->getTimestamp();
+                (*m_loadedEvents)[currentEvent - 1]->getTimestamp();
             currentDuration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(
                     currentEventTime - firstEventTime);

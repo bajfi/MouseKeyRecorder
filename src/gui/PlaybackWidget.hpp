@@ -77,7 +77,9 @@ class PlaybackWidget : public QWidget
     Application::MouseRecorderApp& m_app;
     QString m_currentFile;
     bool m_fileLoaded{false};
-    Core::EventVector m_loadedEvents;
+    // Using unique_ptr to avoid Qt MOC registration issues with non-copyable
+    // types
+    std::unique_ptr<Core::EventVector> m_loadedEvents;
     QTimer* m_updateTimer{nullptr};
 };
 

@@ -44,7 +44,10 @@ namespace MouseRecorder::GUI
 {
 
 MainWindow::MainWindow(Application::MouseRecorderApp& app, QWidget* parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), m_app(app)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      m_app(app),
+      m_recordedEvents(std::make_unique<Core::EventVector>())
 {
     ui->setupUi(this);
     ui->actionAbout->setIcon(QIcon::fromTheme("help-faq"));
@@ -482,7 +485,7 @@ void MainWindow::onNewFile()
 
     // Clear current recording/playback
     std::lock_guard<std::mutex> lock(m_eventsMutex);
-    m_recordedEvents.clear();
+    m_recordedEvents->clear();
 
     if (m_recordingWidget)
     {
@@ -620,7 +623,7 @@ void MainWindow::onClear()
         return;
     }
 
-    if (m_recordedEvents.empty())
+    if (m_recordedEvents->empty())
     {
         showInfoMessage("Clear Events", "No events to clear.");
         return;
@@ -644,7 +647,7 @@ void MainWindow::onClear()
     if (shouldClear)
     {
         std::lock_guard<std::mutex> lock(m_eventsMutex);
-        m_recordedEvents.clear();
+        m_recordedEvents->clear();
 
         if (m_recordingWidget)
         {
@@ -753,7 +756,7 @@ void MainWindow::onStartRecording()
                     Qt::QueuedConnection);
             }
 
-            m_recordedEvents.push_back(std::move(event));
+            m_recordedEvents->push_back(std::move(event));
         }
 
         // Update UI on the main thread
@@ -768,7 +771,7 @@ void MainWindow::onStartRecording()
 
     if (m_app.getEventRecorder().startRecording(eventCallback))
     {
-        m_recordedEvents.clear();
+        m_recordedEvents->clear();
         // Clear the recording widget display and update UI state
         if (m_recordingWidget)
         {
@@ -821,7 +824,7 @@ void MainWindow::onStopRecording()
             spdlog::info("MainWindow: Recording stopped successfully from GUI "
                          "- {} events "
                          "recorded",
-                         m_recordedEvents.size());
+                         m_recordedEvents->size());
         }
         else
         {
@@ -841,7 +844,7 @@ void MainWindow::onStopRecording()
 
 void MainWindow::onExportEvents()
 {
-    if (m_recordedEvents.empty())
+    if (m_recordedEvents->empty())
     {
         QMessageBox::information(
             this,
@@ -903,7 +906,7 @@ void MainWindow::onExportEvents()
         Core::EventVector eventsToExport;
         {
             std::lock_guard<std::mutex> lock(m_eventsMutex);
-            for (const auto& event : m_recordedEvents)
+            for (const auto& event : *m_recordedEvents)
             {
                 if (event)
                 {
@@ -986,7 +989,7 @@ void MainWindow::onStartPlayback()
 {
     try
     {
-        if (m_recordedEvents.empty() && m_currentFile.isEmpty())
+        if (m_recordedEvents->empty() && m_currentFile.isEmpty())
         {
             QMessageBox::information(this,
                                      "No Events",
@@ -1025,10 +1028,10 @@ void MainWindow::onStartPlayback()
 
         // Load events into player
         Core::EventVector eventsToPlay;
-        if (!m_recordedEvents.empty())
+        if (!m_recordedEvents->empty())
         {
             // Copy recorded events for playback
-            for (const auto& event : m_recordedEvents)
+            for (const auto& event : *m_recordedEvents)
             {
                 // Create a copy of the event
                 // This is a simplified approach - in a real implementation
@@ -1204,11 +1207,11 @@ void MainWindow::updateRecordingStatistics()
 
     std::lock_guard<std::mutex> lock(m_eventsMutex);
 
-    size_t totalEvents = m_recordedEvents.size();
+    size_t totalEvents = m_recordedEvents->size();
     size_t mouseEvents = 0;
     size_t keyboardEvents = 0;
 
-    for (const auto& event : m_recordedEvents)
+    for (const auto& event : *m_recordedEvents)
     {
         if (event && event->isMouseEvent())
         {
@@ -1604,7 +1607,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
 
     try
     {
-        if (m_recordedEvents.empty())
+        if (m_recordedEvents->empty())
         {
             spdlog::warn("MainWindow: No events to save");
             showWarningMessage(
@@ -1627,7 +1630,7 @@ bool MainWindow::saveEventsToFile(const QString& filename)
         Core::EventVector eventsToSave;
         {
             std::lock_guard<std::mutex> lock(m_eventsMutex);
-            for (const auto& event : m_recordedEvents)
+            for (const auto& event : *m_recordedEvents)
             {
                 if (event)
                 {

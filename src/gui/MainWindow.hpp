@@ -128,7 +128,9 @@ class MainWindow : public QMainWindow
     PlaybackWidget* m_playbackWidget{nullptr};
 
     // Event storage for recording session
-    Core::EventVector m_recordedEvents;
+    // Using unique_ptr to avoid Qt MOC registration issues with non-copyable
+    // types
+    std::unique_ptr<Core::EventVector> m_recordedEvents;
     mutable std::mutex m_eventsMutex;
 
     // System tray components
