@@ -432,6 +432,8 @@ void PlaybackWidget::loadFile(const QString& fileName)
             {
                 showErrorMessage("Error", "Unsupported file format");
             }
+            m_fileLoaded = false;
+            m_loadedEvents->clear();
             return;
         }
 
@@ -447,6 +449,8 @@ void PlaybackWidget::loadFile(const QString& fileName)
             }
             showErrorMessage("Error",
                              QString::fromStdString(storage->getLastError()));
+            m_fileLoaded = false;
+            m_loadedEvents->clear();
             return;
         }
 

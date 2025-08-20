@@ -430,8 +430,8 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
 
     // Wait for playback to complete
     int timeout = 0;
-    int maxTimeout = isCI ? 600 : 1000; // Longer timeout in CI (6s vs 10s) due
-                                        // to event injection delays
+    int maxTimeout = isCI ? 300 : 1000; // Reduced timeout in CI (3s vs 10s) -
+                                        // must be less than CI thread timeout
     while (!playbackCompleted && timeout < maxTimeout)
     {
         QTest::qWait(10);
