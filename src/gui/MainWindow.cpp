@@ -391,6 +391,7 @@ bool MainWindow::isKeyPressed(int keyCode)
     XCloseDisplay(display);
     return pressed;
 #else
+    (void)keyCode; // Suppress unused parameter warning on non-Linux platforms
     return false;
 #endif
 }

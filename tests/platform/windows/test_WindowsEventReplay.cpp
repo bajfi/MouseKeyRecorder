@@ -34,21 +34,11 @@ class WindowsEventReplayTest : public ::testing::Test
         std::vector<std::unique_ptr<Event>> events;
 
         // Create a simple mouse move event
-        auto mouseEvent = std::make_unique<Event>();
-        mouseEvent->setType(EventType::MouseMove);
-        mouseEvent->setX(100);
-        mouseEvent->setY(100);
-        mouseEvent->setTimestamp(std::chrono::steady_clock::now());
+        auto mouseEvent = EventFactory::createMouseMoveEvent(Point{100, 100});
         events.push_back(std::move(mouseEvent));
 
         // Create a mouse click event
-        auto clickEvent = std::make_unique<Event>();
-        clickEvent->setType(EventType::MouseButtonPress);
-        clickEvent->setMouseButton(MouseButton::Left);
-        clickEvent->setX(100);
-        clickEvent->setY(100);
-        clickEvent->setTimestamp(std::chrono::steady_clock::now() +
-                                 std::chrono::milliseconds(100));
+        auto clickEvent = EventFactory::createMouseClickEvent(Point{100, 100}, MouseButton::Left);
         events.push_back(std::move(clickEvent));
 
         return events;

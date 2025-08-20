@@ -5,7 +5,9 @@
 #include "application/MouseRecorderApp.hpp"
 #include "core/Event.hpp"
 #include "storage/JsonEventStorage.hpp"
+#ifdef __linux__
 #include "platform/linux/LinuxEventReplay.hpp"
+#endif
 #include <memory>
 #include <thread>
 #include <cstdlib>
