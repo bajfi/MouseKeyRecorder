@@ -306,9 +306,13 @@ bool WindowsEventReplay::injectEvent(const Core::Event& event)
         switch (event.getType())
         {
         case Core::EventType::MouseMove: {
+            const auto* mouseData = event.getMouseData();
+            if (!mouseData)
+                return false;
+
             input.type = INPUT_MOUSE;
-            input.mi.dx = event.getPosition().x;
-            input.mi.dy = event.getPosition().y;
+            input.mi.dx = mouseData->position.x;
+            input.mi.dy = mouseData->position.y;
             input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
 
             // Convert to screen coordinates (0-65535 range)
@@ -322,9 +326,13 @@ bool WindowsEventReplay::injectEvent(const Core::Event& event)
         }
 
         case Core::EventType::MouseClick: {
+            const auto* mouseData = event.getMouseData();
+            if (!mouseData)
+                return false;
+
             input.type = INPUT_MOUSE;
-            input.mi.dx = event.getPosition().x;
-            input.mi.dy = event.getPosition().y;
+            input.mi.dx = mouseData->position.x;
+            input.mi.dy = mouseData->position.y;
 
             // Convert to screen coordinates
             int screenWidth = GetSystemMetrics(SM_CXSCREEN);
@@ -334,7 +342,7 @@ bool WindowsEventReplay::injectEvent(const Core::Event& event)
 
             input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE;
 
-            switch (event.getMouseButton())
+            switch (mouseData->button)
             {
             case Core::MouseButton::Left:
                 input.mi.dwFlags |= MOUSEEVENTF_LEFTDOWN;
@@ -354,7 +362,7 @@ bool WindowsEventReplay::injectEvent(const Core::Event& event)
             // Send corresponding button up event
             input.mi.dwFlags &= ~(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_RIGHTDOWN |
                                   MOUSEEVENTF_MIDDLEDOWN);
-            switch (event.getMouseButton())
+            switch (mouseData->button)
             {
             case Core::MouseButton::Left:
                 input.mi.dwFlags |= MOUSEEVENTF_LEFTUP;
@@ -371,11 +379,67 @@ bool WindowsEventReplay::injectEvent(const Core::Event& event)
             break;
         }
 
-        case Core::EventType::MouseWheel: {
+        case Core::EventType::MouseDoubleClick: {
+            const auto* mouseData = event.getMouseData();
+            if (!mouseData)
+                return false;
+
             input.type = INPUT_MOUSE;
-            input.mi.dx = event.getPosition().x;
-            input.mi.dy = event.getPosition().y;
-            input.mi.mouseData = event.getWheelDelta();
+            input.mi.dx = mouseData->position.x;
+            input.mi.dy = mouseData->position.y;
+
+            // Convert to screen coordinates
+            int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+            int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+            input.mi.dx = (input.mi.dx * 65535) / screenWidth;
+            input.mi.dy = (input.mi.dy * 65535) / screenHeight;
+
+            input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE;
+
+            // Determine button flags for down and up events
+            DWORD downFlag = 0, upFlag = 0;
+            switch (mouseData->button)
+            {
+            case Core::MouseButton::Left:
+                downFlag = MOUSEEVENTF_LEFTDOWN;
+                upFlag = MOUSEEVENTF_LEFTUP;
+                break;
+            case Core::MouseButton::Right:
+                downFlag = MOUSEEVENTF_RIGHTDOWN;
+                upFlag = MOUSEEVENTF_RIGHTUP;
+                break;
+            case Core::MouseButton::Middle:
+                downFlag = MOUSEEVENTF_MIDDLEDOWN;
+                upFlag = MOUSEEVENTF_MIDDLEUP;
+                break;
+            default:
+                return false;
+            }
+
+            // Perform double click: down, up, down, up
+            input.mi.dwFlags |= downFlag;
+            result = SendInput(1, &input, sizeof(INPUT)) == 1;
+
+            input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | upFlag;
+            result = result && (SendInput(1, &input, sizeof(INPUT)) == 1);
+
+            input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | downFlag;
+            result = result && (SendInput(1, &input, sizeof(INPUT)) == 1);
+
+            input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | upFlag;
+            result = result && (SendInput(1, &input, sizeof(INPUT)) == 1);
+            break;
+        }
+
+        case Core::EventType::MouseWheel: {
+            const auto* mouseData = event.getMouseData();
+            if (!mouseData)
+                return false;
+
+            input.type = INPUT_MOUSE;
+            input.mi.dx = mouseData->position.x;
+            input.mi.dy = mouseData->position.y;
+            input.mi.mouseData = mouseData->wheelDelta;
             input.mi.dwFlags = MOUSEEVENTF_WHEEL | MOUSEEVENTF_ABSOLUTE;
 
             // Convert to screen coordinates
@@ -390,13 +454,37 @@ bool WindowsEventReplay::injectEvent(const Core::Event& event)
 
         case Core::EventType::KeyPress:
         case Core::EventType::KeyRelease: {
+            const auto* keyData = event.getKeyboardData();
+            if (!keyData)
+                return false;
+
             input.type = INPUT_KEYBOARD;
-            input.ki.wVk = static_cast<WORD>(event.getKeyCode());
+            input.ki.wVk = static_cast<WORD>(keyData->keyCode);
             input.ki.dwFlags = (event.getType() == Core::EventType::KeyRelease)
                                    ? KEYEVENTF_KEYUP
                                    : 0;
 
             result = SendInput(1, &input, sizeof(INPUT)) == 1;
+            break;
+        }
+
+        case Core::EventType::KeyCombination: {
+            const auto* keyData = event.getKeyboardData();
+            if (!keyData)
+                return false;
+
+            // For key combinations, simulate press then release
+            // This is a simplified implementation - could be enhanced for
+            // complex combinations
+            input.type = INPUT_KEYBOARD;
+            input.ki.wVk = static_cast<WORD>(keyData->keyCode);
+            input.ki.dwFlags = 0; // Press
+
+            result = SendInput(1, &input, sizeof(INPUT)) == 1;
+
+            // Then release
+            input.ki.dwFlags = KEYEVENTF_KEYUP;
+            result = result && (SendInput(1, &input, sizeof(INPUT)) == 1);
             break;
         }
 
