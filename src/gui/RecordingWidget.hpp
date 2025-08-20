@@ -39,7 +39,7 @@ class RecordingWidget : public QWidget
                           size_t keyboardEvents);
     void addEvent(const Core::Event* event);
     void clearEvents();
-    void setEvents(const Core::EventVector& events);
+    void setEvents(const Core::EventVector* events);
 
   public:
     // Methods to update button states programmatically (for shortcuts)
@@ -50,7 +50,7 @@ class RecordingWidget : public QWidget
   signals:
     void recordingStarted();
     void recordingStopped();
-    void exportEventsRequested(const Core::EventVector& events);
+    void exportEventsRequested(const Core::EventVector* events);
 
   private slots:
     void onStartRecording();

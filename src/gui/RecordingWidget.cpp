@@ -178,7 +178,7 @@ void RecordingWidget::onExportEvents()
     // Note: This is not ideal but matches the expected signal signature
     // In practice, the MainWindow should handle the actual export
     Core::EventVector emptyEvents;
-    emit exportEventsRequested(emptyEvents);
+    emit exportEventsRequested(&emptyEvents);
 }
 
 void RecordingWidget::updateRecordingTime()
@@ -340,15 +340,18 @@ void RecordingWidget::clearEvents()
     m_displayedEvents.clear();
 }
 
-void RecordingWidget::setEvents(const Core::EventVector& events)
+void RecordingWidget::setEvents(const Core::EventVector* events)
 {
     clearEvents();
 
-    for (const auto& event : events)
+    if (events)
     {
-        if (event)
+        for (const auto& event : *events)
         {
-            addEvent(event.get());
+            if (event)
+            {
+                addEvent(event.get());
+            }
         }
     }
 }
