@@ -48,6 +48,9 @@ class ExportFunctionalityTest : public ::testing::Test
         std::vector<std::string> testFiles = {"test_export.json",
                                               "test_export.xml",
                                               "test_export.mre",
+                                              "test_export_unique_json.json",
+                                              "test_export_unique_xml.xml",
+                                              "test_export_unique_binary.mre",
                                               "format_test.json",
                                               "format_test.xml",
                                               "format_test.mre"};
@@ -270,11 +273,17 @@ TEST_F(ExportFunctionalityTest, ExportWithoutExtensionUsesCorrectFormat)
         auto storage = EventStorageFactory::createStorage(StorageFormat::Json);
         ASSERT_NE(storage, nullptr);
 
-        std::string filename = "test_export";
+        std::string filename = "test_export_unique_json";
         std::string finalFilename = filename + storage->getFileExtension();
 
         EXPECT_TRUE(storage->saveEvents(createEventCopies(), finalFilename));
         verifyFileFormat(finalFilename, "json");
+
+        // Clean up immediately
+        if (std::filesystem::exists(finalFilename))
+        {
+            std::filesystem::remove(finalFilename);
+        }
     }
 
     // Test XML format
@@ -282,11 +291,17 @@ TEST_F(ExportFunctionalityTest, ExportWithoutExtensionUsesCorrectFormat)
         auto storage = EventStorageFactory::createStorage(StorageFormat::Xml);
         ASSERT_NE(storage, nullptr);
 
-        std::string filename = "test_export";
+        std::string filename = "test_export_unique_xml";
         std::string finalFilename = filename + storage->getFileExtension();
 
         EXPECT_TRUE(storage->saveEvents(createEventCopies(), finalFilename));
         verifyFileFormat(finalFilename, "xml");
+
+        // Clean up immediately
+        if (std::filesystem::exists(finalFilename))
+        {
+            std::filesystem::remove(finalFilename);
+        }
     }
 
     // Test Binary format
@@ -295,11 +310,17 @@ TEST_F(ExportFunctionalityTest, ExportWithoutExtensionUsesCorrectFormat)
             EventStorageFactory::createStorage(StorageFormat::Binary);
         ASSERT_NE(storage, nullptr);
 
-        std::string filename = "test_export";
+        std::string filename = "test_export_unique_binary";
         std::string finalFilename = filename + storage->getFileExtension();
 
         EXPECT_TRUE(storage->saveEvents(createEventCopies(), finalFilename));
         verifyFileFormat(finalFilename, "binary");
+
+        // Clean up immediately
+        if (std::filesystem::exists(finalFilename))
+        {
+            std::filesystem::remove(finalFilename);
+        }
     }
 }
 
