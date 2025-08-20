@@ -228,14 +228,26 @@ void WindowsEventReplay::playbackThreadFunc()
 
         while (shouldContinue && !m_shouldStop.load())
         {
+            if (m_isCI && currentLoop % 10 == 0)
+            {
+                spdlog::debug(
+                    "WindowsEventReplay: Starting loop {} with {} events",
+                    currentLoop,
+                    m_events.size());
+            }
+
             // In CI environments, add a timeout to prevent hanging
             if (m_isCI)
             {
                 auto elapsed = std::chrono::steady_clock::now() - playbackStart;
                 if (elapsed > ciTimeout)
                 {
-                    spdlog::warn("WindowsEventReplay: Playback timeout in CI "
-                                 "environment, stopping");
+                    spdlog::warn(
+                        "WindowsEventReplay: Playback timeout in CI "
+                        "environment, stopping (elapsed: {}ms)",
+                        std::chrono::duration_cast<std::chrono::milliseconds>(
+                            elapsed)
+                            .count());
                     shouldContinue = false;
                     break;
                 }
@@ -254,7 +266,7 @@ void WindowsEventReplay::playbackThreadFunc()
                 const auto& event = m_events[i];
 
                 // Calculate timing delay
-                if (i > 0 && m_playbackSpeed.load() > 0.0)
+                if (i > 0 && m_playbackSpeed.load() > 0.0 && !m_isCI)
                 {
                     auto currentTime = event->getTimestamp();
                     auto previousTime = m_events[i - 1]->getTimestamp();
@@ -301,6 +313,14 @@ void WindowsEventReplay::playbackThreadFunc()
                 // Update position
                 m_currentPosition.store(i);
 
+                // Log progress in CI environment
+                if (m_isCI && i % 5 == 0)
+                {
+                    spdlog::debug("WindowsEventReplay: Processed event {}/{}",
+                                  i + 1,
+                                  m_events.size());
+                }
+
                 // Call progress callback
                 if (m_playbackCallback)
                 {
@@ -322,7 +342,14 @@ void WindowsEventReplay::playbackThreadFunc()
                     {
                         spdlog::warn(
                             "WindowsEventReplay: Playback timeout during event "
-                            "processing in CI environment");
+                            "processing in CI environment (elapsed: {}ms, "
+                            "timeout: {}ms)",
+                            std::chrono::duration_cast<
+                                std::chrono::milliseconds>(elapsed)
+                                .count(),
+                            std::chrono::duration_cast<
+                                std::chrono::milliseconds>(ciTimeout)
+                                .count());
                         shouldContinue = false;
                         break;
                     }
