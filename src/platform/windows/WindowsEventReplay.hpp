@@ -80,6 +80,9 @@ class WindowsEventReplay : public Core::IEventPlayer
 
     // Timing
     std::chrono::steady_clock::time_point m_lastEventTime;
+
+    // CI environment detection
+    bool m_isCI;
 };
 
 } // namespace MouseRecorder::Platform::Windows
