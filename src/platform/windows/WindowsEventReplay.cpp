@@ -20,10 +20,22 @@ WindowsEventReplay::WindowsEventReplay()
     m_lastEventTime = std::chrono::steady_clock::now();
 
     // Check if we're in a CI environment
-    const char* ciEnv = std::getenv("CI");
-    const char* githubActions = std::getenv("GITHUB_ACTIONS");
-    m_isCI = (ciEnv && std::string(ciEnv) == "true") ||
-             (githubActions && std::string(githubActions) == "true");
+    // Use Windows-safe environment variable access
+    char* ciEnv = nullptr;
+    char* githubActions = nullptr;
+    size_t ciLen = 0;
+    size_t githubLen = 0;
+    
+    bool isCI = false;
+    if (_dupenv_s(&ciEnv, &ciLen, "CI") == 0 && ciEnv) {
+        isCI = std::string(ciEnv) == "true";
+        free(ciEnv);
+    }
+    if (!isCI && _dupenv_s(&githubActions, &githubLen, "GITHUB_ACTIONS") == 0 && githubActions) {
+        isCI = std::string(githubActions) == "true";
+        free(githubActions);
+    }
+    m_isCI = isCI;
 }
 
 WindowsEventReplay::~WindowsEventReplay()
