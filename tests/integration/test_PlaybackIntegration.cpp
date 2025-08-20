@@ -430,10 +430,25 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
 
     // Wait for playback to complete
     int timeout = 0;
-    while (!playbackCompleted && timeout < 1000)
+    int maxTimeout = isCI ? 300 : 1000; // Shorter timeout in CI (3s vs 10s)
+    while (!playbackCompleted && timeout < maxTimeout)
     {
         QTest::qWait(10);
         timeout += 10;
+
+        // Log progress in CI to help debug
+        if (isCI && timeout % 100 == 0)
+        {
+            qDebug() << "Waiting for playback completion, timeout:" << timeout
+                     << "state:" << static_cast<int>(player.getState());
+        }
+    }
+
+    if (!playbackCompleted && isCI)
+    {
+        qDebug() << "Playback did not complete in CI, final state:"
+                 << static_cast<int>(player.getState())
+                 << "timeout:" << timeout;
     }
 
     EXPECT_TRUE(playbackCompleted);
