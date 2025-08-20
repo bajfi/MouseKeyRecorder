@@ -109,6 +109,9 @@ TEST_F(WindowsEventReplayTest, StartPlaybackWithEvents)
     auto playbackCallback =
         [&](PlaybackState state, size_t current, size_t total)
     {
+        // Suppress unused parameter warning
+        (void) state;
+
         playbackCallbackInvoked = true;
         EXPECT_GE(current, 0);
         EXPECT_LE(current, total);

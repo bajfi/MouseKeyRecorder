@@ -11,6 +11,9 @@
 #include <memory>
 #include <thread>
 #include <cstdlib>
+#ifdef _WIN32
+#include <cstdlib> // for _dupenv_s
+#endif
 
 // Undefine X11 macros that conflict with our enums
 #ifdef None
@@ -341,12 +344,35 @@ TEST_F(PlaybackIntegrationTest, PlaybackRestartAfterCompletion)
 {
     // Check if we're in a CI environment where X11 display might not be
     // available
+#ifdef _WIN32
+    // Use _dupenv_s on Windows to avoid deprecation warnings
+    char* ciEnv = nullptr;
+    char* githubActions = nullptr;
+    char* displayEnv = nullptr;
+
+    _dupenv_s(&ciEnv, nullptr, "CI");
+    _dupenv_s(&githubActions, nullptr, "GITHUB_ACTIONS");
+    _dupenv_s(&displayEnv, nullptr, "DISPLAY");
+
+    bool isCI = (ciEnv && std::string(ciEnv) == "true") ||
+                (githubActions && std::string(githubActions) == "true");
+
+    // Clean up allocated memory
+    if (ciEnv)
+        free(ciEnv);
+    if (githubActions)
+        free(githubActions);
+    if (displayEnv)
+        free(displayEnv);
+#else
+    // Use getenv on Unix-like systems
     const char* ciEnv = std::getenv("CI");
     const char* githubActions = std::getenv("GITHUB_ACTIONS");
     const char* displayEnv = std::getenv("DISPLAY");
 
     bool isCI = (ciEnv && std::string(ciEnv) == "true") ||
                 (githubActions && std::string(githubActions) == "true");
+#endif
 
     // If we're in CI and have no display or empty display, skip this test
     if (isCI && (!displayEnv || std::string(displayEnv).empty()))

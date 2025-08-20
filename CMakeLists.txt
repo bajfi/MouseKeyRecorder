@@ -113,6 +113,9 @@ if(BUILD_TESTS)
         if(NOT TARGET GTest::gmock_main)
             add_library(GTest::gmock_main ALIAS gmock_main)
         endif()
+
+        # Set GTest found flag for proper handling in tests
+        set(GTest_FOUND TRUE)
     endif()
 endif()
 

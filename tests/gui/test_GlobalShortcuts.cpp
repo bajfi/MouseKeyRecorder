@@ -218,6 +218,11 @@ void TestGlobalShortcuts::simulateKeyPress(int keyCode,
                                            bool withCtrl,
                                            bool withShift)
 {
+    // Suppress unused parameter warnings on Windows
+    (void) keyCode;
+    (void) withCtrl;
+    (void) withShift;
+
 #ifdef __linux__
     // This is a simplified simulation - in a real test environment,
     // actually sending X11 events can be problematic
