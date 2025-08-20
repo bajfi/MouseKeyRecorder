@@ -2,7 +2,7 @@
 #include "JsonEventStorage.hpp"
 #include "BinaryEventStorage.hpp"
 #include "XmlEventStorage.hpp"
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 #include <algorithm>
 #include <filesystem>
 

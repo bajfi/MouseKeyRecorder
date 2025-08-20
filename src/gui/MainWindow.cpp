@@ -31,7 +31,7 @@
 #include <QSysInfo>
 #include <QScreen>
 #include <QGuiApplication>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 #include <filesystem>
 
 #ifdef __linux__
@@ -391,7 +391,7 @@ bool MainWindow::isKeyPressed(int keyCode)
     XCloseDisplay(display);
     return pressed;
 #else
-    (void)keyCode; // Suppress unused parameter warning on non-Linux platforms
+    (void) keyCode; // Suppress unused parameter warning on non-Linux platforms
     return false;
 #endif
 }

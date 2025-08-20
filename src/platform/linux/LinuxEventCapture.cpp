@@ -4,7 +4,7 @@
 #include <X11/extensions/XTest.h>
 #include <X11/XKBlib.h>
 #include <X11/keysym.h>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 #include <cmath>
 #include <algorithm>
 

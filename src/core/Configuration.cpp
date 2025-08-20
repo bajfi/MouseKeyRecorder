@@ -1,7 +1,7 @@
 #include "Configuration.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 using json = nlohmann::json;
 

@@ -13,7 +13,7 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QApplication>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 namespace MouseRecorder::GUI
 {

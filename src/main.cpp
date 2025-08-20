@@ -5,7 +5,7 @@
 #include <QCommandLineParser>
 #include <QMessageBox>
 #include <QIcon>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 #include "application/MouseRecorderApp.hpp"
 #include "gui/MainWindow.hpp"

@@ -1,6 +1,6 @@
 #include "XmlEventStorage.hpp"
 #include "core/Event.hpp"
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 namespace MouseRecorder::Storage
 {

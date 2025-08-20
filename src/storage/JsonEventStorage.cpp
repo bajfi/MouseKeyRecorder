@@ -1,7 +1,7 @@
 #include "JsonEventStorage.hpp"
 #include "core/Event.hpp"
 #include <fstream>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 using json = nlohmann::json;
 

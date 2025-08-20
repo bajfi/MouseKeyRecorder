@@ -6,7 +6,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QKeySequence>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 namespace MouseRecorder::GUI
 {

@@ -104,7 +104,7 @@ TEST_F(WindowsEventCaptureTest, MultipleStartStopCycles)
 {
     auto callback = [](std::unique_ptr<Event> event)
     {
-        (void)event; // Suppress unused parameter warning
+        (void) event; // Suppress unused parameter warning
         // Empty callback for testing
     };
 
@@ -127,7 +127,7 @@ TEST_F(WindowsEventCaptureTest, StartRecordingFailsOnNonWindows)
 {
     auto callback = [](std::unique_ptr<Event> event)
     {
-        (void)event; // Suppress unused parameter warning
+        (void) event; // Suppress unused parameter warning
         // Empty callback
     };
 
@@ -144,7 +144,7 @@ TEST_F(WindowsEventCaptureTest, DestructorStopsRecording)
 {
     auto callback = [](std::unique_ptr<Event> event)
     {
-        (void)event; // Suppress unused parameter warning
+        (void) event; // Suppress unused parameter warning
         // Empty callback
     };
 

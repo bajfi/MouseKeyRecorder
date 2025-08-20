@@ -20,7 +20,7 @@ WindowsEventReplay::~WindowsEventReplay()
 bool WindowsEventReplay::loadEvents(
     std::vector<std::unique_ptr<Core::Event>> events)
 {
-    (void)events; // Suppress unused parameter warning
+    (void) events; // Suppress unused parameter warning
     // Stub: Only implemented on Windows
     setLastError("Not implemented on non-Windows platforms");
     return false;
@@ -28,7 +28,7 @@ bool WindowsEventReplay::loadEvents(
 
 bool WindowsEventReplay::startPlayback(PlaybackCallback callback)
 {
-    (void)callback; // Suppress unused parameter warning
+    (void) callback; // Suppress unused parameter warning
     // Stub
     return false;
 }
@@ -85,7 +85,7 @@ size_t WindowsEventReplay::getTotalEvents() const noexcept
 
 bool WindowsEventReplay::seekToPosition(size_t position)
 {
-    (void)position; // Suppress unused parameter warning
+    (void) position; // Suppress unused parameter warning
     // Stub
     return false;
 }

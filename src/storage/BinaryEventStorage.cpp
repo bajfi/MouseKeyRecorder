@@ -1,7 +1,7 @@
 #include "BinaryEventStorage.hpp"
 #include "core/Event.hpp"
 #include <fstream>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 #include <cstring>
 
 namespace MouseRecorder::Storage

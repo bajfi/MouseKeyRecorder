@@ -3,7 +3,7 @@
 #include <math.h>
 #include <ranges>
 #include <set>
-#include <spdlog/spdlog.h>
+#include "core/SpdlogConfig.hpp"
 
 namespace MouseRecorder::Core
 {

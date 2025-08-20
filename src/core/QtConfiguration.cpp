@@ -3,7 +3,7 @@
 #include <QStringList>
 #include <QDir>
 #include <QStandardPaths>
-#include <spdlog/spdlog.h>
+#include "SpdlogConfig.hpp"
 #include <limits>
 #include <cmath>
 

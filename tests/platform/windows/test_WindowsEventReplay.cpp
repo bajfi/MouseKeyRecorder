@@ -38,7 +38,8 @@ class WindowsEventReplayTest : public ::testing::Test
         events.push_back(std::move(mouseEvent));
 
         // Create a mouse click event
-        auto clickEvent = EventFactory::createMouseClickEvent(Point{100, 100}, MouseButton::Left);
+        auto clickEvent = EventFactory::createMouseClickEvent(
+            Point{100, 100}, MouseButton::Left);
         events.push_back(std::move(clickEvent));
 
         return events;
