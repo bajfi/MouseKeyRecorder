@@ -2,7 +2,7 @@ name: Code Quality
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, win-fix ]
   pull_request:
     branches: [ main, develop ]
   schedule:
