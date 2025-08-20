@@ -1,6 +1,7 @@
 #include "WindowsEventReplay.hpp"
 #include "core/Event.hpp"
 #include "core/SpdlogConfig.hpp"
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include <cstdlib>
