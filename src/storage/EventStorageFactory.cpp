@@ -1,3 +1,8 @@
+// Copyright (c) 2025 JackLee
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 #include "EventStorageFactory.hpp"
 #include "JsonEventStorage.hpp"
 #include "BinaryEventStorage.hpp"

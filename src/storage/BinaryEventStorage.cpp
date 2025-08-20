@@ -1,3 +1,8 @@
+// Copyright (c) 2025 JackLee
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 #include "BinaryEventStorage.hpp"
 #include "core/Event.hpp"
 #include <fstream>

@@ -1,3 +1,8 @@
+// Copyright (c) 2025 JackLee
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 #include "Event.hpp"
 #include <sstream>
 #include <iomanip>

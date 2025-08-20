@@ -1,3 +1,8 @@
+// Copyright (c) 2025 JackLee
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 #include "QtConfiguration.hpp"
 #include "application/MouseRecorderApp.hpp"
 #include <QStringList>
