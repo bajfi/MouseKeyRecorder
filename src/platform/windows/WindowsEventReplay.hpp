@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/IEventPlayer.hpp"
+#define NOMINMAX // Prevent Windows from defining min/max macros
 #include <windows.h>
 #include <memory>
 #include <thread>
