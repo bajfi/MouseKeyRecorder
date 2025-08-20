@@ -25,13 +25,16 @@ WindowsEventReplay::WindowsEventReplay()
     char* githubActions = nullptr;
     size_t ciLen = 0;
     size_t githubLen = 0;
-    
+
     bool isCI = false;
-    if (_dupenv_s(&ciEnv, &ciLen, "CI") == 0 && ciEnv) {
+    if (_dupenv_s(&ciEnv, &ciLen, "CI") == 0 && ciEnv)
+    {
         isCI = std::string(ciEnv) == "true";
         free(ciEnv);
     }
-    if (!isCI && _dupenv_s(&githubActions, &githubLen, "GITHUB_ACTIONS") == 0 && githubActions) {
+    if (!isCI && _dupenv_s(&githubActions, &githubLen, "GITHUB_ACTIONS") == 0 &&
+        githubActions)
+    {
         isCI = std::string(githubActions) == "true";
         free(githubActions);
     }
