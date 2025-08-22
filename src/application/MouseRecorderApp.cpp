@@ -4,6 +4,7 @@
 // https://opensource.org/licenses/MIT
 
 #include "MouseRecorderApp.hpp"
+#include "version.hpp"
 #include "core/QtConfiguration.hpp"
 #include "storage/EventStorageFactory.hpp"
 #include "core/SpdlogConfig.hpp"
@@ -215,7 +216,7 @@ std::unique_ptr<Core::IEventStorage> MouseRecorderApp::createStorage(
 
 std::string MouseRecorderApp::getVersion()
 {
-    return "0.0.1";
+    return MouseRecorder::Version::VERSION_FULL;
 }
 
 std::string MouseRecorderApp::getApplicationName()

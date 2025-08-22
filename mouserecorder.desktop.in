@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=@PROJECT_VERSION@
+Type=Application
+Name=MouseRecorder
+Comment=Cross-platform Mouse and Keyboard Event Recorder
+Exec=MouseRecorder
+Icon=mouserecorder
+Terminal=false
+Categories=Utility;Development;
+Keywords=mouse;keyboard;recorder;automation;
+MimeType=application/x-mouserecorder;

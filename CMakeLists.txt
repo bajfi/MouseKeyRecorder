@@ -6,6 +6,9 @@ project(MouseRecorder
     LANGUAGES CXX
 )
 
+# Generate version information
+include(cmake/version.cmake)
+
 # Options
 option(BUILD_TESTS "Build tests" OFF)
 option(USE_SYSTEM_DEPS "Use system dependencies instead of fetching" ON)

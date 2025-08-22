@@ -97,6 +97,14 @@ add_library(MouseRecorderCore STATIC
     ${CORE_HEADERS}
 )
 
+# Add the generated version header as a dependency
+add_custom_target(GenerateVersion ALL
+    DEPENDS "${CMAKE_BINARY_DIR}/generated/version.hpp"
+)
+
+# Make sure libraries depend on version generation
+add_dependencies(MouseRecorderCore GenerateVersion)
+
 # Create GUI library
 add_library(MouseRecorderGUI STATIC
     ${GUI_SOURCES}
@@ -104,6 +112,9 @@ add_library(MouseRecorderGUI STATIC
     ${GUI_UI_FILES}
     ${GUI_RESOURCE_FILES}
 )
+
+# Make sure GUI library also depends on version generation
+add_dependencies(MouseRecorderGUI GenerateVersion)
 
 # Set target properties
 set_target_properties(MouseRecorderCore MouseRecorderGUI PROPERTIES
@@ -190,6 +201,9 @@ endif()
 # Main executable
 add_executable(MouseRecorder main.cpp)
 target_link_libraries(MouseRecorder PRIVATE MouseRecorderGUI)
+
+# Make sure the executable also depends on version generation
+add_dependencies(MouseRecorder GenerateVersion)
 
 # Set target properties for executable
 set_target_properties(MouseRecorder PROPERTIES

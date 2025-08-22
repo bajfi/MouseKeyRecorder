@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Event.hpp"
+#include "version.hpp"
 #include <vector>
 #include <memory>
 #include <string>
@@ -28,7 +29,7 @@ enum class StorageFormat
  */
 struct StorageMetadata
 {
-    std::string version{"0.0.1"};
+    std::string version{MouseRecorder::Version::VERSION_STRING};
     std::string applicationName{"MouseRecorder"};
     std::string createdBy;
     std::string description;

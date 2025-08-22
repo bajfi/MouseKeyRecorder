@@ -10,6 +10,7 @@
 #include <QCommandLineParser>
 #include <QMessageBox>
 #include <QIcon>
+#include "version.hpp"
 #include "core/SpdlogConfig.hpp"
 
 #include "application/MouseRecorderApp.hpp"
@@ -24,7 +25,7 @@ int main(int argc, char* argv[])
 
     // Set application properties
     app.setApplicationName("MouseRecorder");
-    app.setApplicationVersion("0.0.1");
+    app.setApplicationVersion(MouseRecorder::Version::VERSION_STRING);
     app.setApplicationDisplayName(
         "MouseRecorder - Event Recording and Playback");
     app.setOrganizationName("MouseRecorder Team");
