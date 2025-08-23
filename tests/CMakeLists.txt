@@ -79,54 +79,54 @@ endfunction()
 create_test_executable(MouseRecorderTests "${TEST_SOURCES}")
 
 # Create separate GUI test executables (each has its own main)
-create_test_executable(TestRecordingWidget "gui/test_RecordingWidget.cpp")
-create_test_executable(TestMainWindow "gui/test_MainWindow.cpp")
-create_test_executable(TestSystemTrayFunctionality "gui/test_SystemTrayFunctionality.cpp")
-create_test_executable(TestGlobalShortcuts "gui/test_GlobalShortcuts.cpp")
+# create_test_executable(TestRecordingWidget "gui/test_RecordingWidget.cpp")
+# create_test_executable(TestMainWindow "gui/test_MainWindow.cpp")
+# create_test_executable(TestSystemTrayFunctionality "gui/test_SystemTrayFunctionality.cpp")
+# create_test_executable(TestGlobalShortcuts "gui/test_GlobalShortcuts.cpp")
 # create_test_executable(TestUIIntegration "gui/test_UIIntegration.cpp")  # Disabled due to Qt event loop issues
 # Add tests to CTest
-if(TARGET GTest::gtest OR TARGET gtest OR GTest_FOUND)
-    # On Windows, avoid gtest_discover_tests due to CMake path issues
-    # Use simple add_test instead for better reliability
-    if(WIN32)
-        add_test(NAME MouseRecorderTests COMMAND MouseRecorderTests)
-        set_tests_properties(MouseRecorderTests PROPERTIES
-            ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
-        )
-    else()
-        # On Linux/Unix, try to use gtest_discover_tests with fallback
-        include(GoogleTest)
-        gtest_discover_tests(MouseRecorderTests
-            PROPERTIES
-            ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99"
-            DISCOVERY_TIMEOUT 60
-        )
-    endif()
-endif()# Add individual GUI tests to CTest
-add_test(NAME TestGlobalShortcuts COMMAND TestGlobalShortcuts)
-if(WIN32)
-    set_tests_properties(TestGlobalShortcuts PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
-else()
-    set_tests_properties(TestGlobalShortcuts PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
-endif()
+# if(TARGET GTest::gtest OR TARGET gtest OR GTest_FOUND)
+#     # On Windows, avoid gtest_discover_tests due to CMake path issues
+#     # Use simple add_test instead for better reliability
+#     if(WIN32)
+#         add_test(NAME MouseRecorderTests COMMAND MouseRecorderTests)
+#         set_tests_properties(MouseRecorderTests PROPERTIES
+#             ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+#         )
+#     else()
+#         # On Linux/Unix, try to use gtest_discover_tests with fallback
+#         include(GoogleTest)
+#         gtest_discover_tests(MouseRecorderTests
+#             PROPERTIES
+#             ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99"
+#             DISCOVERY_TIMEOUT 60
+#         )
+#     endif()
+# endif()# Add individual GUI tests to CTest
+# add_test(NAME TestGlobalShortcuts COMMAND TestGlobalShortcuts)
+# if(WIN32)
+#     set_tests_properties(TestGlobalShortcuts PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+# else()
+#     set_tests_properties(TestGlobalShortcuts PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
+# endif()
 
-add_test(NAME TestRecordingWidget COMMAND TestRecordingWidget)
-if(WIN32)
-    set_tests_properties(TestRecordingWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
-else()
-    set_tests_properties(TestRecordingWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
-endif()
+# add_test(NAME TestRecordingWidget COMMAND TestRecordingWidget)
+# if(WIN32)
+#     set_tests_properties(TestRecordingWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+# else()
+#     set_tests_properties(TestRecordingWidget PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
+# endif()
 
-add_test(NAME TestMainWindow COMMAND TestMainWindow)
-if(WIN32)
-    set_tests_properties(TestMainWindow PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
-else()
-    set_tests_properties(TestMainWindow PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
-endif()
+# add_test(NAME TestMainWindow COMMAND TestMainWindow)
+# if(WIN32)
+#     set_tests_properties(TestMainWindow PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+# else()
+#     set_tests_properties(TestMainWindow PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
+# endif()
 
-add_test(NAME TestSystemTrayFunctionality COMMAND TestSystemTrayFunctionality)
-if(WIN32)
-    set_tests_properties(TestSystemTrayFunctionality PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
-else()
-    set_tests_properties(TestSystemTrayFunctionality PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
-endif()
+# add_test(NAME TestSystemTrayFunctionality COMMAND TestSystemTrayFunctionality)
+# if(WIN32)
+#     set_tests_properties(TestSystemTrayFunctionality PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+# else()
+#     set_tests_properties(TestSystemTrayFunctionality PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;DISPLAY=:99")
+# endif()

@@ -13,6 +13,12 @@ include(cmake/version.cmake)
 option(BUILD_TESTS "Build tests" OFF)
 option(USE_SYSTEM_DEPS "Use system dependencies instead of fetching" ON)
 
+# Serialization options
+option(USE_QT_SERIALIZATION "Use Qt-based serialization (always available)" ON)
+option(USE_NLOHMANN_JSON "Use nlohmann::json for JSON serialization" OFF)
+option(USE_PUGIXML "Use pugixml for XML serialization" OFF)
+option(DEFAULT_QT_SERIALIZATION "Use Qt serialization by default when both are available" ON)
+
 # Set C++23 standard globally
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -29,12 +35,12 @@ endif()
 include(FetchContent)
 
 # Find Qt (try Qt6 first, fallback to Qt5)
-find_package(Qt6 QUIET COMPONENTS Core Widgets Test Gui)
+find_package(Qt6 QUIET COMPONENTS Core Widgets Test Gui Xml)
 if(Qt6_FOUND)
     set(QT_VERSION_MAJOR 6)
     message(STATUS "Using Qt6")
 else()
-    find_package(Qt5 REQUIRED COMPONENTS Core Widgets Test Gui)
+    find_package(Qt5 REQUIRED COMPONENTS Core Widgets Test Gui Xml)
     set(QT_VERSION_MAJOR 5)
     message(STATUS "Using Qt5")
 endif()
@@ -70,13 +76,15 @@ function(find_or_fetch_dependency name git_url git_tag find_package_name)
     endif()
 endfunction()
 
-# Find or fetch third-party dependencies
-find_or_fetch_dependency(
-    nlohmann_json
-    "https://github.com/nlohmann/json.git"
-    "v3.11.3"
-    "nlohmann_json"
-)
+# Find or fetch third-party dependencies based on serialization options
+if(USE_NLOHMANN_JSON)
+    find_or_fetch_dependency(
+        nlohmann_json
+        "https://github.com/nlohmann/json.git"
+        "v3.11.3"
+        "nlohmann_json"
+    )
+endif()
 
 find_or_fetch_dependency(
     spdlog
@@ -85,12 +93,14 @@ find_or_fetch_dependency(
     "spdlog"
 )
 
-find_or_fetch_dependency(
-    pugixml
-    "https://github.com/zeux/pugixml.git"
-    "v1.14"
-    "pugixml"
-)
+if(USE_PUGIXML)
+    find_or_fetch_dependency(
+        pugixml
+        "https://github.com/zeux/pugixml.git"
+        "v1.14"
+        "pugixml"
+    )
+endif()
 
 # Find GTest only if tests are enabled
 if(BUILD_TESTS)

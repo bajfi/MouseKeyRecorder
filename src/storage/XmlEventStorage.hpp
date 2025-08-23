@@ -6,7 +6,8 @@
 #pragma once
 
 #include "core/IEventStorage.hpp"
-#include <pugixml.hpp>
+#include "core/serialization/IEventSerializer.hpp"
+#include <memory>
 
 namespace MouseRecorder::Storage
 {
@@ -14,13 +15,25 @@ namespace MouseRecorder::Storage
 /**
  * @brief XML implementation of event storage
  *
- * This class handles saving and loading events in XML format using pugixml.
- * The XML structure includes metadata and events in a human-readable format.
+ * This class handles saving and loading events in XML format using
+ * the abstract serialization framework. It can work with Qt's XML
+ * serialization or third-party libraries like pugixml.
  */
 class XmlEventStorage : public Core::IEventStorage
 {
   public:
+    /**
+     * @brief Default constructor using factory-created XML serializer
+     */
     XmlEventStorage();
+
+    /**
+     * @brief Constructor with custom XML serializer
+     * @param serializer Custom XML serializer implementation
+     */
+    explicit XmlEventStorage(
+        std::unique_ptr<Core::Serialization::IEventSerializer> serializer);
+
     ~XmlEventStorage() override = default;
 
     // IEventStorage interface
@@ -44,35 +57,6 @@ class XmlEventStorage : public Core::IEventStorage
 
   private:
     /**
-     * @brief Convert Event to XML node
-     * @param event Event to convert
-     * @param parent Parent XML node
-     */
-    void eventToXml(const Core::Event& event, pugi::xml_node& parent) const;
-
-    /**
-     * @brief Convert XML node to Event
-     * @param node XML node
-     * @return unique_ptr to Event or nullptr if conversion failed
-     */
-    std::unique_ptr<Core::Event> xmlToEvent(const pugi::xml_node& node) const;
-
-    /**
-     * @brief Convert StorageMetadata to XML node
-     * @param metadata Metadata to convert
-     * @param parent Parent XML node
-     */
-    void metadataToXml(const Core::StorageMetadata& metadata,
-                       pugi::xml_node& parent) const;
-
-    /**
-     * @brief Convert XML node to StorageMetadata
-     * @param node XML node
-     * @return StorageMetadata
-     */
-    Core::StorageMetadata xmlToMetadata(const pugi::xml_node& node) const;
-
-    /**
      * @brief Set last error message
      * @param error Error message
      */
@@ -80,7 +64,7 @@ class XmlEventStorage : public Core::IEventStorage
 
   private:
     mutable std::string m_lastError;
-    bool m_prettyPrint{true};
+    std::unique_ptr<Core::Serialization::IEventSerializer> m_serializer;
 };
 
 } // namespace MouseRecorder::Storage

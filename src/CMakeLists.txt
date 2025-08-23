@@ -19,6 +19,35 @@ set(CORE_HEADERS
     core/MouseMovementOptimizer.hpp
 )
 
+# Serialization sources and headers
+set(SERIALIZATION_SOURCES
+    core/serialization/QtJsonEventSerializer.cpp
+    core/serialization/QtXmlEventSerializer.cpp
+    core/serialization/EventSerializerFactory.cpp
+)
+
+set(SERIALIZATION_HEADERS
+    core/serialization/IEventSerializer.hpp
+    core/serialization/QtJsonEventSerializer.hpp
+    core/serialization/QtXmlEventSerializer.hpp
+    core/serialization/EventSerializerFactory.hpp
+)
+
+# Add third-party serializers based on options
+if(USE_NLOHMANN_JSON)
+    list(APPEND SERIALIZATION_SOURCES core/serialization/NlohmannJsonEventSerializer.cpp)
+    list(APPEND SERIALIZATION_HEADERS core/serialization/NlohmannJsonEventSerializer.hpp)
+endif()
+
+if(USE_PUGIXML)
+    list(APPEND SERIALIZATION_SOURCES core/serialization/PugixmlEventSerializer.cpp)
+    list(APPEND SERIALIZATION_HEADERS core/serialization/PugixmlEventSerializer.hpp)
+endif()
+
+# Add serialization to core sources
+list(APPEND CORE_SOURCES ${SERIALIZATION_SOURCES})
+list(APPEND CORE_HEADERS ${SERIALIZATION_HEADERS})
+
 # Platform-specific sources
 if(WIN32)
     list(APPEND CORE_SOURCES
@@ -105,6 +134,19 @@ add_custom_target(GenerateVersion ALL
 # Make sure libraries depend on version generation
 add_dependencies(MouseRecorderCore GenerateVersion)
 
+# Set serialization preprocessor definitions
+if(USE_NLOHMANN_JSON)
+    target_compile_definitions(MouseRecorderCore PRIVATE MOUSERECORDER_USE_NLOHMANN_JSON)
+endif()
+
+if(USE_PUGIXML)
+    target_compile_definitions(MouseRecorderCore PRIVATE MOUSERECORDER_USE_PUGIXML)
+endif()
+
+if(DEFAULT_QT_SERIALIZATION)
+    target_compile_definitions(MouseRecorderCore PRIVATE MOUSERECORDER_DEFAULT_QT_SERIALIZATION)
+endif()
+
 # Create GUI library
 add_library(MouseRecorderGUI STATIC
     ${GUI_SOURCES}
@@ -135,6 +177,7 @@ target_include_directories(MouseRecorderCore
 target_link_libraries(MouseRecorderCore
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Xml
 )
 
 target_link_libraries(MouseRecorderGUI
@@ -144,7 +187,7 @@ target_link_libraries(MouseRecorderGUI
         Qt${QT_VERSION_MAJOR}::Gui
 )
 
-# Link third-party dependencies
+# Link third-party dependencies based on options
 # spdlog
 if(TARGET spdlog::spdlog)
     target_link_libraries(MouseRecorderCore PUBLIC spdlog::spdlog)
@@ -153,21 +196,25 @@ elseif(spdlog_FOUND)
     target_include_directories(MouseRecorderCore PUBLIC ${spdlog_INCLUDE_DIRS})
 endif()
 
-# nlohmann_json
-if(TARGET nlohmann_json::nlohmann_json)
-    target_link_libraries(MouseRecorderCore PUBLIC nlohmann_json::nlohmann_json)
-elseif(nlohmann_json_FOUND)
-    target_include_directories(MouseRecorderCore PUBLIC ${nlohmann_json_INCLUDE_DIRS})
+# nlohmann_json (conditionally)
+if(USE_NLOHMANN_JSON)
+    if(TARGET nlohmann_json::nlohmann_json)
+        target_link_libraries(MouseRecorderCore PUBLIC nlohmann_json::nlohmann_json)
+    elseif(nlohmann_json_FOUND)
+        target_include_directories(MouseRecorderCore PUBLIC ${nlohmann_json_INCLUDE_DIRS})
+    endif()
 endif()
 
-# pugixml
-if(TARGET pugixml::pugixml)
-    target_link_libraries(MouseRecorderCore PUBLIC pugixml::pugixml)
-elseif(TARGET pugixml)
-    target_link_libraries(MouseRecorderCore PUBLIC pugixml)
-elseif(pugixml_FOUND)
-    target_link_libraries(MouseRecorderCore PUBLIC ${pugixml_LIBRARIES})
-    target_include_directories(MouseRecorderCore PUBLIC ${pugixml_INCLUDE_DIRS})
+# pugixml (conditionally)
+if(USE_PUGIXML)
+    if(TARGET pugixml::pugixml)
+        target_link_libraries(MouseRecorderCore PUBLIC pugixml::pugixml)
+    elseif(TARGET pugixml)
+        target_link_libraries(MouseRecorderCore PUBLIC pugixml)
+    elseif(pugixml_FOUND)
+        target_link_libraries(MouseRecorderCore PUBLIC ${pugixml_LIBRARIES})
+        target_include_directories(MouseRecorderCore PUBLIC ${pugixml_INCLUDE_DIRS})
+    endif()
 endif()
 
 # Platform-specific libraries
