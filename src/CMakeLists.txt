@@ -140,11 +140,11 @@ add_dependencies(MouseRecorderCore GenerateVersion)
 
 # Set serialization preprocessor definitions
 if(USE_NLOHMANN_JSON)
-    target_compile_definitions(MouseRecorderCore PRIVATE MOUSERECORDER_USE_NLOHMANN_JSON)
+    target_compile_definitions(MouseRecorderCore PUBLIC MOUSERECORDER_USE_NLOHMANN_JSON)
 endif()
 
 if(USE_PUGIXML)
-    target_compile_definitions(MouseRecorderCore PRIVATE MOUSERECORDER_USE_PUGIXML)
+    target_compile_definitions(MouseRecorderCore PUBLIC MOUSERECORDER_USE_PUGIXML)
 endif()
 
 if(DEFAULT_QT_SERIALIZATION)

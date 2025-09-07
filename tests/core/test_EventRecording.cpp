@@ -5,11 +5,14 @@
 
 #include <gtest/gtest.h>
 #include "application/MouseRecorderApp.hpp"
-#include "core/Configuration.hpp"
 #include "core/Event.hpp"
 #include <chrono>
 #include <thread>
 #include <atomic>
+
+#ifdef MOUSERECORDER_USE_NLOHMANN_JSON
+#include "core/Configuration.hpp"
+#endif
 
 namespace MouseRecorder::Tests
 {
@@ -126,6 +129,7 @@ TEST_F(EventRecordingTest, EventCallbackReceivesEvents)
     EXPECT_LE(mouseEvents.load() + keyboardEvents.load(), totalEvents.load());
 }
 
+#ifdef MOUSERECORDER_USE_NLOHMANN_JSON
 TEST_F(EventRecordingTest, ConfigurationPersistence)
 {
     // Test configuration persistence directly using JSON-based Configuration
@@ -160,5 +164,6 @@ TEST_F(EventRecordingTest, ConfigurationPersistence)
     // Clean up
     std::remove(jsonConfigFile.c_str());
 }
+#endif // MOUSERECORDER_USE_NLOHMANN_JSON
 
 } // namespace MouseRecorder::Tests
