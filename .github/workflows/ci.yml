@@ -160,7 +160,10 @@ jobs:
         cmake -B build -G "Visual Studio 17 2022" -A x64 `
           -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} `
           -DBUILD_TESTS=ON `
-          -DUSE_SYSTEM_DEPS=OFF
+          -DUSE_SYSTEM_DEPS=OFF `
+          -DUSE_NLOHMANN_JSON=OFF `
+          -DUSE_QT_SERIALIZATION=ON `
+          -DDEFAULT_QT_SERIALIZATION=ON
 
     - name: Build
       run: cmake --build build --config ${{ env.CMAKE_BUILD_TYPE }} --parallel

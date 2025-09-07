@@ -3,7 +3,6 @@
 # Core library sources and headers
 set(CORE_SOURCES
     core/Event.cpp
-    core/Configuration.cpp
     core/QtConfiguration.cpp
     core/MouseMovementOptimizer.cpp
 )
@@ -14,10 +13,15 @@ set(CORE_HEADERS
     core/IEventPlayer.hpp
     core/IEventStorage.hpp
     core/IConfiguration.hpp
-    core/Configuration.hpp
     core/QtConfiguration.hpp
     core/MouseMovementOptimizer.hpp
 )
+
+# Conditionally add nlohmann::json-based Configuration
+if(USE_NLOHMANN_JSON)
+    list(APPEND CORE_SOURCES core/Configuration.cpp)
+    list(APPEND CORE_HEADERS core/Configuration.hpp)
+endif()
 
 # Serialization sources and headers
 set(SERIALIZATION_SOURCES
