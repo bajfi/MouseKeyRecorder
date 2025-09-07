@@ -162,7 +162,7 @@ jobs:
       run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
     - name: Update release notes
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
